@@ -32,7 +32,8 @@ def reduction_options(request, reduction_id=None):
 
     #TODO: add New an Save-As functionality
     template_values = {'options_form': options_form,
-                       'title': 'EQSANS Reduction'}
+                       'title': 'EQSANS Reduction',
+                       'errors': len(options_form.errors) }
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values.update(csrf(request))
     return render_to_response('eqsans/reduction_options.html',

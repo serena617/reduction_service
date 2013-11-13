@@ -1,4 +1,26 @@
-.errorlist {
+body {
+    color:#222222;
+}
+
+.property_table {
+    font-size:inherit;
+    margin-left: 10px;
+}
+
+#tabs {
+    font-size:12px;
+    font-family: "Lucida Grande", Verdana, Arial, sans-serif;
+}
+.modifiable_title input {
+    width: 50%;
+}
+
+/* Remove LastPass form fill box */
+#__lpform_id_reduction_name {
+    display: none;
+}
+
+table .errorlist {
     float:right;
     font-size:75%;
     display: inline;

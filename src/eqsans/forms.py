@@ -20,12 +20,25 @@ class ReductionOptions(forms.Form):
     direct_beam_run = forms.CharField(required=False)
     
     # Sensitivity
-    
+    perform_sensitivity = forms.BooleanField(required=False, initial=True)
+    sensitivity_file = forms.CharField(required=False)
+    sensitivity_min = forms.FloatField(required=False)
+    sensitivity_max = forms.FloatField(required=False)
     
     # Data
-    
+    data_file = forms.CharField(required=False)
+    sample_thickness = forms.FloatField(required=False, initial=1.0)
+    transmission_sample = forms.CharField(required=False)
+    transmission_empty = forms.CharField(required=False)
+    beam_radius = forms.FloatField(required=False, initial=3.0)
+    fit_frames_together = forms.BooleanField(required=False, initial=False)
+    theta_dependent_correction = forms.BooleanField(required=False, initial=True)
     
     # Background
+    subtract_background = forms.BooleanField(required=False, initial=False)
+    background_file = forms.CharField(required=False)
+    background_transmission_sample = forms.CharField(required=False)
+    background_transmission_empty = forms.CharField(required=False)
     
     def as_xml(self):
         """
@@ -92,5 +105,10 @@ class ReductionOptions(forms.Form):
             data[p.name] = p.value
         
         return data
-
+    
+    def is_reduction_valid(self):
+        """
+            Check whether the form data would produce a valid reduction script
+        """
+        return True
         

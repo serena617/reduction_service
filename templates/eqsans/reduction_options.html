@@ -1,9 +1,8 @@
 {% extends "base.html" %}
 {% block header %}
 <script>
-    var hide_beam_center = {{ options_form.fit_direct_beam.value|lower }};
+    var hide_beam_center = !{{ options_form.fit_direct_beam.value|lower }};
     function toggle_beam_center() {
-        hide_beam_center = !hide_beam_center;
         if (hide_beam_center) {
             $("#id_direct_beam_run").fadeOut(10);
             $("#th_direct_beam_run").fadeOut(10);
@@ -19,30 +18,149 @@
             $("#th_beam_center_x").fadeOut(10);
             $("#th_beam_center_y").fadeOut(10);
         }
+        hide_beam_center = !hide_beam_center;
     }
+    
+    var hide_sensitivity = !{{ options_form.perform_sensitivity.value|lower }};
+    function toggle_sensitivity() {
+        if (hide_sensitivity) {
+            $("#th_sensitivity_file").fadeOut(10);
+            $("#th_sensitivity_min").fadeOut(10);
+            $("#th_sensitivity_max").fadeOut(10);
+            $("#id_sensitivity_file").fadeOut(10);
+            $("#id_sensitivity_min").fadeOut(10);
+            $("#id_sensitivity_max").fadeOut(10);
+        } else {
+            $("#th_sensitivity_file").fadeIn(10);
+            $("#th_sensitivity_min").fadeIn(10);
+            $("#th_sensitivity_max").fadeIn(10);
+            $("#id_sensitivity_file").fadeIn(10);
+            $("#id_sensitivity_min").fadeIn(10);
+            $("#id_sensitivity_max").fadeIn(10);
+        }
+        hide_sensitivity = !hide_sensitivity;
+    }
+
+    var hide_background = !{{ options_form.subtract_background.value|lower }};
+    function toggle_background() {
+        if (hide_background) {
+            $("#th_background_file").fadeOut(10);
+            $("#th_background_transmission_sample").fadeOut(10);
+            $("#th_background_transmission_empty").fadeOut(10);
+            $("#id_background_file").fadeOut(10);
+            $("#id_background_transmission_sample").fadeOut(10);
+            $("#id_background_transmission_empty").fadeOut(10);
+        } else {
+            $("#th_background_file").fadeIn(10);
+            $("#th_background_transmission_sample").fadeIn(10);
+            $("#th_background_transmission_empty").fadeIn(10);
+            $("#id_background_file").fadeIn(10);
+            $("#id_background_transmission_sample").fadeIn(10);
+            $("#id_background_transmission_empty").fadeIn(10);
+        }
+        hide_background = !hide_background;
+    }
+
+    $(function() {
+      $( "#tabs" ).tabs({ active: 0 });
+    });
 </script>
 {% endblock %}
 {% block content %}
 
 <form action="" method="POST">{% csrf_token %}
- <table cellspacing="0" class="message_table" id="error_table">
-  <tbody>
-    <tr><th>{{ options_form.reduction_name.label_tag }}</th><td>{{ options_form.reduction_name.errors }}{{ options_form.reduction_name }}</td></tr>
-    <tr><th>{{ options_form.absolute_scale.label_tag }}</th><td>{{ options_form.absolute_scale.errors }}{{ options_form.absolute_scale }}</td></tr>
-    <tr><th>{{ options_form.dark_current_run.label_tag }}</th><td>{{ options_form.dark_current_run.errors }}{{ options_form.dark_current_run }}</td></tr>
-    <tr><th>{{ options_form.sample_aperture.label_tag }}</th><td>{{ options_form.sample_aperture.errors }}{{ options_form.sample_aperture }}</td></tr>
-    <tr><th>{{ options_form.fit_direct_beam.label_tag }}</th><td><a href='javascript:void(0);' onClick="toggle_beam_center();">{{ options_form.fit_direct_beam }}</a></td></tr>
-    <tr><th id="th_direct_beam_run">{{ options_form.direct_beam_run.label_tag }}</th><td>{{ options_form.direct_beam_run.errors }}{{ options_form.direct_beam_run }}</td></tr>
-    <tr><th id="th_beam_center_x">{{ options_form.beam_center_x.label_tag }}</th><td>{{ options_form.beam_center_x.errors }}{{ options_form.beam_center_x }}</td></tr>
-    <tr><th id="th_beam_center_y">{{ options_form.beam_center_y.label_tag }}</th><td>{{ options_form.beam_center_y.errors }}{{ options_form.beam_center_y }}</td></tr>
-  </tbody>
- </table>
-<p><input type="submit" value="Update" /></p>
+  <div class="modifiable_title">
+    <b>{{ options_form.reduction_name.label_tag }}</b> {{ options_form.reduction_name.errors }}{{ options_form.reduction_name }}
+  </div>
+  <p>
+  <div id="tabs">
+    <ul>
+      <li><a href="#tabs-1">Basic options</a></li>
+      <li><a href="#tabs-2">Detector</a></li>
+      <li><a href="#tabs-3">Data</a></li>
+    </ul>
+    <div id="tabs-1">
+      <table cellspacing="0" class="property_table">
+        <tbody>
+          <tr><th>{{ options_form.absolute_scale.label_tag }}</th><td>{{ options_form.absolute_scale.errors }}{{ options_form.absolute_scale }}</td></tr>
+          <tr><th>{{ options_form.dark_current_run.label_tag }}</th><td>{{ options_form.dark_current_run.errors }}{{ options_form.dark_current_run }}</td></tr>
+          <tr><th>{{ options_form.sample_aperture.label_tag }}</th><td>{{ options_form.sample_aperture.errors }}{{ options_form.sample_aperture }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="tabs-2">
+      <h3>Beam center position:</h3><br>
+      <table cellspacing="0" class="property_table">
+        <tbody>
+          <tr><th>{{ options_form.fit_direct_beam.label_tag }}</th><td><a href='javascript:void(0);' onClick="toggle_beam_center();">{{ options_form.fit_direct_beam }}</a></td></tr>
+          <tr><th id="th_direct_beam_run">{{ options_form.direct_beam_run.label_tag }}</th><td>{{ options_form.direct_beam_run.errors }}{{ options_form.direct_beam_run }}</td></tr>
+          <tr><th id="th_beam_center_x">{{ options_form.beam_center_x.label_tag }}</th><td>{{ options_form.beam_center_x.errors }}{{ options_form.beam_center_x }}</td></tr>
+          <tr><th id="th_beam_center_y">{{ options_form.beam_center_y.label_tag }}</th><td>{{ options_form.beam_center_y.errors }}{{ options_form.beam_center_y }}</td></tr>
+        </tbody>
+      </table>
+
+      <hr>
+      <h3>Sensitivity correction:</h3><br>
+      <table cellspacing="0" class="property_table">
+        <tbody>
+          <tr><th>{{ options_form.perform_sensitivity.label_tag }}</th><td><a href='javascript:void(0);' onClick="toggle_sensitivity();">{{ options_form.perform_sensitivity }}</a></td></tr>
+          <tr><th id="th_sensitivity_file">{{ options_form.sensitivity_file.label_tag }}</th><td>{{ options_form.sensitivity_file.errors }}{{ options_form.sensitivity_file }}</td></tr>
+          <tr><th id="th_sensitivity_min">{{ options_form.sensitivity_min.label_tag }}</th><td>{{ options_form.sensitivity_min.errors }}{{ options_form.sensitivity_min }}</td></tr>
+          <tr><th id="th_sensitivity_max">{{ options_form.sensitivity_max.label_tag }}</th><td>{{ options_form.sensitivity_max.errors }}{{ options_form.sensitivity_max }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="tabs-3">
+      <h3>Sample:</h3><br>
+      <table cellspacing="0" class="property_table">
+        <tbody>
+          <tr><th>{{ options_form.data_file.label_tag }}</th><td>{{ options_form.data_file.errors }}{{ options_form.data_file }}</td></tr>
+          <tr><th>{{ options_form.sample_thickness.label_tag }}</th><td>{{ options_form.sample_thickness.errors }}{{ options_form.sample_thickness }}</td></tr>
+          <tr><th>{{ options_form.transmission_sample.label_tag }}</th><td>{{ options_form.transmission_sample.errors }}{{ options_form.transmission_sample }}</td></tr>
+          <tr><th>{{ options_form.transmission_empty.label_tag }}</th><td>{{ options_form.transmission_empty.errors }}{{ options_form.transmission_empty }}</td></tr>
+          <tr><th>{{ options_form.beam_radius.label_tag }}</th><td>{{ options_form.beam_radius.errors }}{{ options_form.beam_radius }}</td></tr>
+          <tr><th>{{ options_form.fit_frames_together.label_tag }}</th><td>{{ options_form.fit_frames_together }}</td></tr>
+          <tr><th>{{ options_form.theta_dependent_correction.label_tag }}</th><td>{{ options_form.theta_dependent_correction }}</td></tr>
+        </tbody>
+      </table>
+
+      <hr>
+      <h3>Background:</h3><br>
+      <table cellspacing="0" class="property_table">
+        <tbody>
+          <tr><th>{{ options_form.subtract_background.label_tag }}</th><td><a href='javascript:void(0);' onClick="toggle_background();">{{ options_form.subtract_background }}</a></td></tr>
+          <tr><th id="th_background_file">{{ options_form.background_file.label_tag }}</th><td>{{ options_form.background_file.errors }}{{ options_form.background_file }}</td></tr>
+          <tr><th id="th_background_transmission_sample">{{ options_form.background_transmission_sample.label_tag }}</th><td>{{ options_form.background_transmission_sample.errors }}{{ options_form.background_transmission_sample }}</td></tr>
+          <tr><th id="th_background_transmission_empty">{{ options_form.background_transmission_empty.label_tag }}</th><td>{{ options_form.background_transmission_empty.errors }}{{ options_form.background_transmission_empty }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p><input type="submit" value="Update"/></p>
 </form>
 
-{{ notes }}
+{% if errors > 0 %}
+<div class="error_section">
+  The submitted parameters are not valid because of the following reasons:<br>
+  <ol>
+  {% for field in options_form %}
+  {% if field.errors %}
+    {{ field.label }}
+    <ul>
+      {% for e in field.errors %}
+      <li>{{ e }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endfor %}
+  </ol>
+</div>
+{% endif %}
 <script id="source" language="javascript" type="text/javascript">
-    $(document).ready(toggle_beam_center);
+$(document).ready(toggle_beam_center);
+$(document).ready(toggle_sensitivity);
+$(document).ready(toggle_background);
 </script>
 {% endblock %}
 
