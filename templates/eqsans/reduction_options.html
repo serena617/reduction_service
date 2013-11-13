@@ -161,6 +161,14 @@
 $(document).ready(toggle_beam_center);
 $(document).ready(toggle_sensitivity);
 $(document).ready(toggle_background);
+$(document).ready(function() {
+      $(window).keydown(function(event){
+        if(event.keyCode == 13) {
+          event.preventDefault();
+          return false;
+        }
+      });
+    });
 </script>
 {% endblock %}
 

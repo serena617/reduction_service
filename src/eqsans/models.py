@@ -11,6 +11,26 @@ class ReductionProcess(models.Model):
     def __str__(self):
         return self.name
     
+    def get_data_dict(self):
+        """
+            Return a dictionary of properties for this entry
+        """
+        data = {}
+        data['reduction_name'] = self.name
+        
+        # Go through the list of reduction parameters
+        params = FloatReductionProperty.objects.filter(reduction=self)
+        for p in params:
+            data[p.name] = p.value
+        params = CharReductionProperty.objects.filter(reduction=self)
+        for p in params:
+            data[p.name] = p.value
+        params = BoolReductionProperty.objects.filter(reduction=self)
+        for p in params:
+            data[p.name] = p.value
+            
+        return data
+    
 class ReductionProperty(models.Model):
     reduction = models.ForeignKey(ReductionProcess)
     name = models.CharField(max_length=56)

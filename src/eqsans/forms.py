@@ -90,21 +90,7 @@ class ReductionOptions(forms.Form):
     @classmethod
     def data_from_db(cls, user, reduction_id):
         reduction_proc = get_object_or_404(ReductionProcess, pk=reduction_id, owner=user)
-        data = {}
-        data['reduction_name'] = reduction_proc.name
-        
-        # Go through the list of reduction parameters
-        params = FloatReductionProperty.objects.filter(reduction=reduction_proc)
-        for p in params:
-            data[p.name] = p.value
-        params = CharReductionProperty.objects.filter(reduction=reduction_proc)
-        for p in params:
-            data[p.name] = p.value
-        params = BoolReductionProperty.objects.filter(reduction=reduction_proc)
-        for p in params:
-            data[p.name] = p.value
-        
-        return data
+        return reduction_proc.get_data_dict()
     
     def is_reduction_valid(self):
         """
