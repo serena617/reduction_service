@@ -1,0 +1,9 @@
+.errorlist {
+    float:right;
+    font-size:75%;
+    display: inline;
+    list-style: none;
+    padding: 0px;
+    margin: 0px;
+    margin-left: 0px;
+}  

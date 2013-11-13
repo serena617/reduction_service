@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block header %}
+<script>
+    var hide_beam_center = {{ options_form.fit_direct_beam.value|lower }};
+    function toggle_beam_center() {
+        hide_beam_center = !hide_beam_center;
+        if (hide_beam_center) {
+            $("#id_direct_beam_run").fadeOut(10);
+            $("#th_direct_beam_run").fadeOut(10);
+            $("#id_beam_center_x").fadeIn(10);
+            $("#id_beam_center_y").fadeIn(10);
+            $("#th_beam_center_x").fadeIn(10);
+            $("#th_beam_center_y").fadeIn(10);
+        } else {
+            $("#id_direct_beam_run").fadeIn(10);
+            $("#th_direct_beam_run").fadeIn(10);
+            $("#id_beam_center_x").fadeOut(10);
+            $("#id_beam_center_y").fadeOut(10);
+            $("#th_beam_center_x").fadeOut(10);
+            $("#th_beam_center_y").fadeOut(10);
+        }
+    }
+</script>
+{% endblock %}
+{% block content %}
+
+<form action="" method="POST">{% csrf_token %}
+ <table cellspacing="0" class="message_table" id="error_table">
+  <tbody>
+    <tr><th>{{ options_form.reduction_name.label_tag }}</th><td>{{ options_form.reduction_name.errors }}{{ options_form.reduction_name }}</td></tr>
+    <tr><th>{{ options_form.absolute_scale.label_tag }}</th><td>{{ options_form.absolute_scale.errors }}{{ options_form.absolute_scale }}</td></tr>
+    <tr><th>{{ options_form.dark_current_run.label_tag }}</th><td>{{ options_form.dark_current_run.errors }}{{ options_form.dark_current_run }}</td></tr>
+    <tr><th>{{ options_form.sample_aperture.label_tag }}</th><td>{{ options_form.sample_aperture.errors }}{{ options_form.sample_aperture }}</td></tr>
+    <tr><th>{{ options_form.fit_direct_beam.label_tag }}</th><td><a href='javascript:void(0);' onClick="toggle_beam_center();">{{ options_form.fit_direct_beam }}</a></td></tr>
+    <tr><th id="th_direct_beam_run">{{ options_form.direct_beam_run.label_tag }}</th><td>{{ options_form.direct_beam_run.errors }}{{ options_form.direct_beam_run }}</td></tr>
+    <tr><th id="th_beam_center_x">{{ options_form.beam_center_x.label_tag }}</th><td>{{ options_form.beam_center_x.errors }}{{ options_form.beam_center_x }}</td></tr>
+    <tr><th id="th_beam_center_y">{{ options_form.beam_center_y.label_tag }}</th><td>{{ options_form.beam_center_y.errors }}{{ options_form.beam_center_y }}</td></tr>
+  </tbody>
+ </table>
+<p><input type="submit" value="Update" /></p>
+</form>
+
+{{ notes }}
+<script id="source" language="javascript" type="text/javascript">
+    $(document).ready(toggle_beam_center);
+</script>
+{% endblock %}
+
