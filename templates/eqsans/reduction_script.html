@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+Reduction name: <a href='.' title='Go back to reduction parameters'>{{ reduction_name|default:"No title set" }}</a>
+
+<div class="reduction_code">
+<pre><code>{{ code|safe }}</code></pre>
+</div>
+
+{% if errors %}
+<div class="error_section">
+  The submitted parameters are not valid because of the following reasons:<br>
+  {{ errors }}
+</div>
+{% endif %}
+
+{% endblock %}
+
