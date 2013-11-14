@@ -1,2 +1,1 @@
-reduction_service
-=================
+Prototype for a reduction web service
