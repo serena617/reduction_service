@@ -4,7 +4,7 @@ from models import ReductionProcess, BoolReductionProperty, FloatReductionProper
 
 class ReductionOptions(forms.Form):
     """
-        Simple form to select a data file on the user's machine
+        Reduction parameter form
     """
     # Reduction name
     reduction_name = forms.CharField(required=False)
@@ -203,4 +203,12 @@ class ReductionOptions(forms.Form):
             Check whether the form data would produce a valid reduction script
         """
         return True
+    
+class ReductionStart(forms.Form):
+    """
+        Simple form to select run to reduce
+    """
+    run_number = forms.IntegerField()
+
+
         

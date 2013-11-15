@@ -66,6 +66,15 @@
     });
 </script>
 {% endblock %}
+{% block right_side_links %}
+{% if reduction_id %}
+    <span style="float:right">
+    <a href="script" title="See reduction script">script</a> | 
+    download [<a href="download/py" title="Download python script">python</a> | 
+              <a href="download/xml" title="Download Mantid xml file">xml</a>]
+    </span>
+{% endif %}
+{% endblock %}
 {% block content %}
 
 <form action="" method="POST">{% csrf_token %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block right_side_links %}
+    <span style="float:right">
+    <a href="reduction" title="Start new reduction">new</a>
+    </span>
+{% endblock %}
+
+{% block content %}
+<p>
+Title: {{ icat_info.title|default:"unknown" }}<br>
+IPTS date: {{ icat_info.createTime|default:"unknown" }}<br>
+Run range: {{ icat_info.run_range }}
+</p>
+
+<form action="" method="POST">{% csrf_token %}
+Start reduction for run: {{ form.run_number.errors }}{{ form.run_number }}
+
+</form>
+
+<table cellspacing="2" class="reduction_table">
+  <thead>
+    <tr>
+      <th>Run</th><th>Title</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for r in reductions %}
+    <tr><td>{{ r.data_file }}</td><td>{{ r.reduction_name }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<hr>
+{% if errors %}
+<div class="error_section">
+  The submitted parameters are not valid because of the following reasons:<br>
+  {{ errors }}
+</div>
+{% endif %}
+
+{% endblock %}
+

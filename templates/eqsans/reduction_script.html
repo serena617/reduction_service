@@ -1,5 +1,12 @@
 {% extends "base.html" %}
 
+{% block right_side_links %}
+    <span style="float:right"> 
+    download [<a href="download/py" title="Download python script">python</a> | 
+              <a href="download/xml" title="Download Mantid xml file">xml</a>]
+    </span>
+{% endblock %}
+
 {% block content %}
 Reduction name: <a href='.' title='Go back to reduction parameters'>{{ reduction_name|default:"No title set" }}</a>
 
