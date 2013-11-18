@@ -5,7 +5,7 @@ from django.core.context_processors import csrf
 from django.core.urlresolvers import reverse
 
 from icat_server_communication import get_ipts_info, get_run_info
-from models import ReductionProcess
+from models import ReductionProcess, Instrument
 import users.view_util
 from . import forms
 
@@ -14,15 +14,20 @@ def reduction_home(request):
     """
         List of reductions
     """
-    if request.method == 'POST':
-        reduction_start_form = forms.ReductionStart(request.POST)
-        if reduction_start_form.is_valid():
-            return redirect(reverse('eqsans.views.reduction_start', args=[reduction_start_form.cleaned_data['run_number']]))
-    else:
-        reduction_start_form = forms.ReductionStart()
+    errors = None
+    reduction_start_form = forms.ReductionStart(request.GET)
 
     # Get all the user's reductions
-    red_list = ReductionProcess.objects.filter(owner=request.user)
+    red_list = []
+    if 'run_number' in request.GET:
+        red_list = ReductionProcess.objects.filter(owner=request.user,
+                                                   data_file__contains=request.GET['run_number'])
+        if len(red_list) == 0:
+            create_url  = reverse('eqsans.views.reduction_options')
+            create_url +=  '?reduction_name=Reduction for r%s' % request.GET['run_number']
+            create_url +=  '&data_file=%s' % request.GET['run_number']
+            return redirect(create_url)
+
     reductions = []
     for r in red_list:
         data_dict = r.get_data_dict()
@@ -47,7 +52,8 @@ def reduction_home(request):
                 run_list.append({'run':r})
         except:
             pass
-        
+
+
     breadcrumbs = "eqsans"
     template_values = {'reductions': reductions,
                        'title': 'EQSANS %s' % ipts_number,
@@ -55,19 +61,12 @@ def reduction_home(request):
                        'ipts_number': ipts_number,
                        'run_list': run_list,
                        'icat_info': icat_ipts,
-                       'form': reduction_start_form,
-                       'errors':icat_ipts }
+                       'errors': errors,
+                       'form': reduction_start_form}
     template_values = users.view_util.fill_template_values(request, **template_values)
-    template_values.update(csrf(request))
+    #template_values.update(csrf(request))
     return render_to_response('eqsans/reduction_home.html',
                               template_values)
-    
-@login_required
-def reduction_start(request, run_number):
-    """
-        Initiate a new reduction process
-    """
-    return HttpResponse()
 
 @login_required
 def reduction_options(request, reduction_id=None):
@@ -81,14 +80,15 @@ def reduction_options(request, reduction_id=None):
             if reduction_id is not None:
                 return redirect(reverse('eqsans.views.reduction_options', args=[reduction_id]))
     else:
-        initial_values = {}
         if reduction_id is not None:
             initial_values = forms.ReductionOptions.data_from_db(request.user, reduction_id)
+        else:
+            initial_values = request.GET
         options_form = forms.ReductionOptions(initial=initial_values)
 
     breadcrumbs = "<a href='%s'>eqsans</a>" % reverse('eqsans.views.reduction_home')
     if reduction_id is not None:
-        breadcrumbs += " &rsaquo; reduction %s" % reduction_id
+        breadcrumbs += " &rsaquo; reduction"
 
     #TODO: add New an Save-As functionality
     template_values = {'options_form': options_form,
@@ -106,8 +106,7 @@ def reduction_script(request, reduction_id):
     data = forms.ReductionOptions.data_from_db(request.user, reduction_id)
     
     breadcrumbs = "<a href='%s'>eqsans</a>" % reverse('eqsans.views.reduction_home')
-    breadcrumbs += " &rsaquo; <a href='.'>reduction %s</a>" % reduction_id
-    breadcrumbs += " &rsaquo; script"
+    breadcrumbs += " &rsaquo; <a href='.'>reduction</a> &rsaquo; script"
     
     template_values = {'reduction_name': data['reduction_name'],
                        'breadcrumbs': breadcrumbs,

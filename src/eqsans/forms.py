@@ -1,6 +1,6 @@
 from django import forms
 from django.shortcuts import get_object_or_404
-from models import ReductionProcess, BoolReductionProperty, FloatReductionProperty, CharReductionProperty
+from models import ReductionProcess, Instrument, BoolReductionProperty, FloatReductionProperty, CharReductionProperty
 
 class ReductionOptions(forms.Form):
     """
@@ -16,11 +16,14 @@ class ReductionOptions(forms.Form):
     # Beam center
     beam_center_x = forms.FloatField(required=False)
     beam_center_y = forms.FloatField(required=False)
-    fit_direct_beam = forms.BooleanField(required=False, initial=True)
+    fit_direct_beam = forms.BooleanField(required=False, initial=True,
+                                         help_text='Select to fit the beam center')
     direct_beam_run = forms.CharField(required=False)
     
     # Sensitivity
-    perform_sensitivity = forms.BooleanField(required=False, initial=True)
+    perform_sensitivity = forms.BooleanField(required=False, initial=True,
+                                             label='Perform sensitivity correction',
+                                             help_text='Select to enable sensitivity correction')
     sensitivity_file = forms.CharField(required=False)
     sensitivity_min = forms.FloatField(required=False)
     sensitivity_max = forms.FloatField(required=False)
@@ -35,10 +38,11 @@ class ReductionOptions(forms.Form):
     theta_dependent_correction = forms.BooleanField(required=False, initial=True)
     
     # Background
-    subtract_background = forms.BooleanField(required=False, initial=False)
+    subtract_background = forms.BooleanField(required=False, initial=False,
+                                             help_text='Select to enable background subtraction')
     background_file = forms.CharField(required=False)
-    background_transmission_sample = forms.CharField(required=False)
-    background_transmission_empty = forms.CharField(required=False)
+    background_transmission_sample = forms.CharField(label='Transmission sample', required=False)
+    background_transmission_empty = forms.CharField(label='Transmission empty', required=False)
     
     @classmethod
     def as_xml(cls, data):
@@ -112,8 +116,16 @@ class ReductionOptions(forms.Form):
             reduction_proc = get_object_or_404(ReductionProcess, pk=reduction_id, owner=user)
         else:
             # Make sure we don't try to store a string that's longer than allowed
-            reduction_proc = ReductionProcess(owner=user)
-        reduction_proc.name=self.cleaned_data['reduction_name'][:128]
+            try:
+                eqsans = Instrument.objects.get(name='eqsans')
+            except:
+                eqsans = Instrument(name='eqsans')
+                eqsans.save()
+            
+            reduction_proc = ReductionProcess(owner=user,
+                                              instrument=eqsans)
+        reduction_proc.name = self.cleaned_data['reduction_name'][:128]
+        reduction_proc.data_file = self.cleaned_data['data_file'][:128]
         reduction_proc.save()
         
         # Clean up the old values
@@ -208,7 +220,7 @@ class ReductionStart(forms.Form):
     """
         Simple form to select run to reduce
     """
-    run_number = forms.IntegerField()
+    run_number = forms.IntegerField(required=False)
 
 
         

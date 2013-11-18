@@ -1,11 +1,20 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+class Instrument(models.Model):
+    name = models.CharField(max_length=24)
+    
+class Experiment(models.Model):
+    ipts = models.CharField(max_length=24)
+    
 class ReductionProcess(models.Model):
     """
     """
+    instrument = models.ForeignKey(Instrument)
+    experiments = models.ManyToManyField(Experiment, related_name='_reduction_experiment+')
     name = models.CharField(max_length=128)
     owner = models.ForeignKey(User)
+    data_file = models.CharField(max_length=128)
     timestamp = models.DateTimeField('timestamp', auto_now=True)
     
     def __str__(self):

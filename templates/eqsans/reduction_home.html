@@ -2,7 +2,7 @@
 
 {% block right_side_links %}
     <span style="float:right">
-    <a href="reduction" title="Start new reduction">new</a>
+    <a href="reduction" title="Start new reduction">new reduction</a>
     </span>
 {% endblock %}
 
@@ -13,11 +13,11 @@ IPTS date: {{ icat_info.createTime|default:"unknown" }}<br>
 Run range: {{ icat_info.run_range }}
 </p>
 
-<form action="" method="POST">{% csrf_token %}
-Start reduction for run: {{ form.run_number.errors }}{{ form.run_number }}
-
+<form action="" method="GET">{% csrf_token %}
+Search or create reductions for run: {{ form.run_number.errors }}{{ form.run_number }}
 </form>
 
+{% if reductions %}
 <table cellspacing="2" class="reduction_table">
   <thead>
     <tr>
@@ -26,12 +26,14 @@ Start reduction for run: {{ form.run_number.errors }}{{ form.run_number }}
   </thead>
   <tbody>
   {% for r in reductions %}
-    <tr><td>{{ r.data_file }}</td><td>{{ r.reduction_name }}</td></tr>
+    <tr><td><a href='reduction/{{ r.id }}' >{{ r.data_file }}</a></td><td>{{ r.reduction_name }}</td></tr>
   {% endfor %}
   </tbody>
 </table>
+{% endif %}
 
-<hr>
+<p>
+
 {% if errors %}
 <div class="error_section">
   The submitted parameters are not valid because of the following reasons:<br>
