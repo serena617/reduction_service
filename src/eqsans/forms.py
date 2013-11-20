@@ -1,6 +1,6 @@
 from django import forms
 from django.shortcuts import get_object_or_404
-from models import ReductionProcess, Instrument, BoolReductionProperty, FloatReductionProperty, CharReductionProperty
+from models import ReductionProcess, Instrument, Experiment, BoolReductionProperty, FloatReductionProperty, CharReductionProperty
 
 class ReductionOptions(forms.Form):
     """
@@ -8,10 +8,11 @@ class ReductionOptions(forms.Form):
     """
     # Reduction name
     reduction_name = forms.CharField(required=False)
+    expt_id = forms.IntegerField(required=False, widget=forms.HiddenInput)
     # General options
     absolute_scale_factor = forms.FloatField(required=False, initial=1.0)
     dark_current_run = forms.CharField(required=False)
-    sample_aperture_diameter = forms.FloatField(required=False)
+    sample_aperture_diameter = forms.FloatField(required=False, initial=10.0)
     
     # Beam center
     beam_center_x = forms.FloatField(required=False)
@@ -25,17 +26,17 @@ class ReductionOptions(forms.Form):
                                              label='Perform sensitivity correction',
                                              help_text='Select to enable sensitivity correction')
     sensitivity_file = forms.CharField(required=False)
-    sensitivity_min = forms.FloatField(required=False)
-    sensitivity_max = forms.FloatField(required=False)
+    sensitivity_min = forms.FloatField(required=False, initial=0.4)
+    sensitivity_max = forms.FloatField(required=False, initial=2.0)
     
     # Data
-    data_file = forms.CharField(required=False)
+    data_file = forms.CharField(required=True)
     sample_thickness = forms.FloatField(required=False, initial=1.0)
-    transmission_sample = forms.CharField(required=False)
-    transmission_empty = forms.CharField(required=False)
-    beam_radius = forms.FloatField(required=False, initial=3.0)
-    fit_frames_together = forms.BooleanField(required=False, initial=False)
-    theta_dependent_correction = forms.BooleanField(required=False, initial=True)
+    transmission_sample = forms.CharField(required=True)
+    transmission_empty = forms.CharField(required=True)
+    beam_radius = forms.FloatField(required=False, initial=3.0, widget=forms.HiddenInput)
+    fit_frames_together = forms.BooleanField(required=False, initial=False, widget=forms.HiddenInput)
+    theta_dependent_correction = forms.BooleanField(required=False, initial=True, widget=forms.HiddenInput)
     
     # Background
     subtract_background = forms.BooleanField(required=False, initial=False,
@@ -93,6 +94,7 @@ class ReductionOptions(forms.Form):
         xml += "  <use_sample_beam_center>True</use_sample_beam_center>\n"
         xml += "</Sensitivity>\n"
 
+        # Beam center
         xml += "<BeamFinder>\n"
         xml += "  <position>\n"
         xml += "    <x>%s</x>\n" % data['beam_center_x']
@@ -103,6 +105,39 @@ class ReductionOptions(forms.Form):
         xml += "  <use_direct_beam>True</use_direct_beam>\n"
         xml += "  <beam_radius>%s</beam_radius>\n" % data['beam_radius']
         xml += "</BeamFinder>\n"
+        
+        # Sample transmission
+        xml += "<Transmission>\n"
+        xml += "  <calculate_trans>True</calculate_trans>\n"
+        xml += "  <theta_dependent>%s</theta_dependent>\n" % data['theta_dependent_correction']
+        xml += "  <DirectBeam>\n"
+        xml += "    <sample_file>%s</sample_file>\n" % data['transmission_sample']
+        xml += "    <direct_beam>%s</direct_beam>\n" % data['transmission_empty']
+        xml += "    <beam_radius>%g</beam_radius>\n" % data['beam_radius']
+        xml += "  </DirectBeam>\n"
+        xml += "  <combine_transmission_frames>%s</combine_transmission_frames>\n" % data['fit_frames_together']
+        xml += "</Transmission>\n"
+        xml += "<SampleData>\n"
+        xml += "  <separate_jobs>False</separate_jobs>\n"
+        xml += "  <sample_thickness>%g</sample_thickness>\n" % data['sample_thickness']
+        xml += "  <data_file>%s</data_file>\n" % data['data_file']
+        xml += "</SampleData>\n"
+        
+        # Background
+        xml += "<Background>\n"
+        xml += "  <background_corr>%s</background_corr>\n" % data['subtract_background']
+        xml += "  <background_file>%s</background_file>\n" % data['background_file']
+        xml += "  <bck_trans_enabled>True</bck_trans_enabled>\n"
+        xml += "  <calculate_trans>True</calculate_trans>\n"
+        xml += "  <theta_dependent>%s</theta_dependent>\n" % data['theta_dependent_correction']
+        xml += "  <DirectBeam>\n"
+        xml += "    <sample_file>%s</sample_file>\n" % data['background_transmission_sample']
+        xml += "    <direct_beam>%s</direct_beam>\n" % data['background_transmission_empty']
+        xml += "    <beam_radius>%s</beam_radius>\n" % data['beam_radius']
+        xml += "  </DirectBeam>\n"
+        xml += "  <combine_transmission_frames>%s</combine_transmission_frames>\n" % data['fit_frames_together']
+        xml += "</Background>\n"
+
         return xml
 
     def to_db(self, user, reduction_id=None):
@@ -126,8 +161,15 @@ class ReductionOptions(forms.Form):
                                               instrument=eqsans)
         reduction_proc.name = self.cleaned_data['reduction_name'][:128]
         reduction_proc.data_file = self.cleaned_data['data_file'][:128]
-        reduction_proc.save()
         
+        reduction_proc.save()
+                # Find experiment
+        if self.cleaned_data['expt_id'] is not None:
+            expt = get_object_or_404(Experiment, id=self.cleaned_data['expt_id'])
+            if expt not in reduction_proc.experiments.all():
+                reduction_proc.experiments.add(expt)
+        reduction_proc.save()
+                
         # Clean up the old values
         FloatReductionProperty.objects.filter(reduction=reduction_proc).delete()
         BoolReductionProperty.objects.filter(reduction=reduction_proc).delete()
@@ -156,7 +198,7 @@ class ReductionOptions(forms.Form):
         # Ensure all the fields are there
         for f in cls.base_fields:
             if not f in data:
-                data[f]=''
+                data[f]=cls.base_fields[f].initial
         return data
     
     @classmethod
@@ -174,15 +216,16 @@ class ReductionOptions(forms.Form):
         script += "EQSANS()\n"
         script += "SolidAngle(detector_tubes=True)\n"
         script += "TotalChargeNormalization()\n"
-        script += "SetAbsoluteScale(%g)\n" % data['absolute_scale_factor']
+        if data['absolute_scale_factor'] != 1.0:
+            script += "SetAbsoluteScale(%g)\n" % data['absolute_scale_factor']
 
         script += "AzimuthalAverage(n_bins=100, n_subpix=1, log_binning=False)\n" # TODO
         script += "IQxQy(nbins=100)\n" # TODO
-        script += "OutputPath('\tmp')\n" # TODO
+        script += "OutputPath('\\tmp')\n" # TODO
         
         script += "UseConfigTOFTailsCutoff(True)\n"
         script += "UseConfigMask(True)\n"
-        #script += "Resolution(sample_aperture_diameter=10)\n" # TODO
+        script += "Resolution(sample_aperture_diameter=%s)\n" % data['sample_aperture_diameter']
         script += "PerformFlightPathCorrection(True)\n"
         
         if len(data['dark_current_run'])>0:
@@ -200,11 +243,22 @@ class ReductionOptions(forms.Form):
         else:
             script += "NoSensitivityCorrection()\n"
             
-        script += "DirectBeamTransmission(, , beam_radius=3)\n"
+        script += "DirectBeamTransmission(\"%s\", \"%s\", beam_radius=%g)\n" % (data['transmission_sample'],
+                                                                                data['transmission_empty'],
+                                                                                data['beam_radius'])
         
-        script += "ThetaDependentTransmission(True)\n"
+        script += "ThetaDependentTransmission(%s)\n" % data['theta_dependent_correction']
         script += "AppendDataFile([\"%s\"])\n" % data['data_file']
-        script += "CombineTransmissionFits(False)\n"
+        script += "CombineTransmissionFits(%s)\n" % data['fit_frames_together']
+        
+        if data['subtract_background']:
+            script += "Background(\"%s\")\n" % data['background_file']
+            script += "BckThetaDependentTransmission(%s)\n" % data['theta_dependent_correction']
+            script += "BckCombineTransmissionFits(%s)\n" % data['fit_frames_together']
+            script += "BckDirectBeamTransmission(\"%s\", \"%s\", beam_radius=%g)\n" % (data['background_transmission_sample'],
+                                                                                       data['background_transmission_empty'],
+                                                                                       data['beam_radius'])
+        
         script += "SaveIq(process='None')\n"
         script += "Reduce()"
 

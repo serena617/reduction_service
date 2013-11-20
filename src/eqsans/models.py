@@ -4,8 +4,14 @@ from django.contrib.auth.models import User
 class Instrument(models.Model):
     name = models.CharField(max_length=24)
     
+    def __str__(self):
+        return self.name
+    
 class Experiment(models.Model):
-    ipts = models.CharField(max_length=24)
+    name = models.CharField(max_length=24, unique=True)
+    
+    def __str__(self):
+        return self.name
     
 class ReductionProcess(models.Model):
     """

@@ -1,8 +1,8 @@
-from models import ReductionProcess, BoolReductionProperty, FloatReductionProperty, CharReductionProperty
+from models import ReductionProcess, Experiment, BoolReductionProperty, FloatReductionProperty, CharReductionProperty
 from django.contrib import admin
 
 class ReductionProcessAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'owner', 'timestamp', 'properties')
+    list_display = ('id', 'name', 'owner', 'timestamp', 'properties', 'get_experiments')
     
     def properties(self, obj):
         try:
@@ -18,9 +18,23 @@ class ReductionProcessAdmin(admin.ModelAdmin):
         return props
     properties.short_description = "Properties"
     
+    def get_experiments(self, obj):
+        try:
+            expts = []
+            for item in obj.experiments.all():
+                expts.append(str(item))
+            return '.'.join(expts) 
+        except:
+            return ''
+    get_experiments.short_description = "Experiments"
+    
 class ReductionPropertyAdmin(admin.ModelAdmin):
     list_display = ('name', 'reduction_link', 'value')
 
+class ExperimentAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    
+admin.site.register(Experiment, ExperimentAdmin)
 admin.site.register(ReductionProcess, ReductionProcessAdmin)
 admin.site.register(BoolReductionProperty, ReductionPropertyAdmin)
 admin.site.register(FloatReductionProperty, ReductionPropertyAdmin)

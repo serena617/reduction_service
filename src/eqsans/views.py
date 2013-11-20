@@ -5,7 +5,7 @@ from django.core.context_processors import csrf
 from django.core.urlresolvers import reverse
 
 from icat_server_communication import get_ipts_info, get_run_info
-from models import ReductionProcess, Instrument
+from models import ReductionProcess, Instrument, Experiment
 import users.view_util
 from . import forms
 
@@ -13,7 +13,18 @@ from . import forms
 def reduction_home(request):
     """
         List of reductions
+        #TODO add a way to delete your own entries
+        #TODO create new reduction using a pre-existing one as a template
     """
+    ipts_number = 'IPTS-9388'
+    # Get experiment object
+    experiment_list = Experiment.objects.filter(name=ipts_number)
+    if len(experiment_list)>0:
+        experiment_obj = experiment_list[0]
+    else:
+        experiment_obj = Experiment(name=ipts_number)
+        experiment_obj.save()
+
     errors = None
     reduction_start_form = forms.ReductionStart(request.GET)
 
@@ -25,8 +36,13 @@ def reduction_home(request):
         if len(red_list) == 0:
             create_url  = reverse('eqsans.views.reduction_options')
             create_url +=  '?reduction_name=Reduction for r%s' % request.GET['run_number']
+            create_url +=  '&expt_id=%d' % experiment_obj.id
             create_url +=  '&data_file=%s' % request.GET['run_number']
             return redirect(create_url)
+    else:
+        red_list = ReductionProcess.objects.filter(owner=request.user,
+                                                   experiments=experiment_obj)
+
 
     reductions = []
     for r in red_list:
@@ -38,9 +54,8 @@ def reduction_home(request):
         except:
             pass
         reductions.append(data_dict)
-        
+    
     # Query ICAT
-    ipts_number = 'IPTS-9388'
     icat_ipts = get_ipts_info('EQSANS', ipts_number)
     run_list = []
     if 'run_range' in icat_ipts:

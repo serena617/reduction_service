@@ -84,6 +84,7 @@
 <form action="" method="POST">{% csrf_token %}
   <div class="modifiable_title">
     <b>{{ options_form.reduction_name.label_tag }}</b> {{ options_form.reduction_name.errors }}{{ options_form.reduction_name }}
+    {{ options_form.expt_id }}
   </div>
   <p>
   <div id="tabs">
@@ -132,12 +133,9 @@
           <tr><th>{{ options_form.sample_thickness.label_tag }}</th><td>{{ options_form.sample_thickness.errors }}{{ options_form.sample_thickness }} [cm]</td></tr>
           <tr><th>{{ options_form.transmission_sample.label_tag }}</th><td>{{ options_form.transmission_sample.errors }}{{ options_form.transmission_sample }}</td></tr>
           <tr><th>{{ options_form.transmission_empty.label_tag }}</th><td>{{ options_form.transmission_empty.errors }}{{ options_form.transmission_empty }}</td></tr>
-          <tr><th>{{ options_form.beam_radius.label_tag }} </th><td>{{ options_form.beam_radius.errors }}{{ options_form.beam_radius }} [pixel]</td></tr>
-          <tr><th>{{ options_form.fit_frames_together.label_tag }}</th><td>{{ options_form.fit_frames_together }}</td></tr>
-          <tr><th>{{ options_form.theta_dependent_correction.label_tag }}</th><td>{{ options_form.theta_dependent_correction }}</td></tr>
         </tbody>
       </table>
-
+      {{ options_form.beam_radius }} {{ options_form.fit_frames_together }} {{ options_form.theta_dependent_correction }}
       <hr>
       <h3>Background:</h3><br>
       <table cellspacing="0" class="property_table">
