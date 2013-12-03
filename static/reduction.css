@@ -39,3 +39,41 @@ table .errorlist {
     background: #fffeee;
     overflow: auto;
 }
+
+.reduction_table {
+    margin-left:auto;
+    margin-right:auto;
+    border-spacing: 0;
+}
+
+.reduction_table thead th,
+.reduction_table tbody td,
+.reduction_table tfoot td {
+    padding-left:5px;
+    padding-right:5px;
+    border-left: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+}
+
+.reduction_table tfoot td {
+    border-bottom: none;
+    border-top: 1px solid #ddd;
+}
+
+.reduction_table thead th:first-child,
+.reduction_table tbody td:first-child,
+.reduction_table tfoot td:first-child {
+    border-left: none !important;
+}
+
+.reduction_table fieldset table {
+    border-right: 1px solid #eee;
+}
+
+.even {
+    background: #f5ede3;
+}
+
+.odd {
+    background: none;
+}

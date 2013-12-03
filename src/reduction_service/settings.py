@@ -124,6 +124,7 @@ INSTALLED_APPS = (
     'django_auth_ldap',
     'eqsans',
     'users',
+    'remote',
 )
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block right_side_links %}
+{% endblock %}
+
+{% block content %}
+
+{% if need_authentication %}
+<div>
+Authenticate with the Fermi cluster:<br>
+  <form action="#" method="post"> {% csrf_token %}
+    <input type="text" name="username" placeholder="username">
+    <input type="password" name="password" placeholder="password">
+    <input type="submit" value="log in">
+  </form>
+</div>
+{% endif %}
+<p>
+<table class="reduction_table">
+  <thead>
+    <tr>
+      <th>Job</th><th>Name</th><th>Start</th><th>Completion</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for job in status_data|dictsort:"ID" %}
+    <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
+      <td><a href='' >{{ job.ID }}</a></td><td>{{ job.JobName }}</td>
+      <td>{{ job.StartDate|date:"n/d H:i" }}</td><td>{{ job.CompletionDate|date:"n/d H:i" }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+
+
+{% if errors %}
+<div class="error_section">
+  The submitted parameters are not valid because of the following reasons:<br>
+  {{ errors }}
+</div>
+{% endif %}
+
+{% endblock %}
