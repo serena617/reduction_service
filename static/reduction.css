@@ -1,5 +1,35 @@
-body {
-    color:#222222;
+.analysis_tools {
+    width:130px;
+    position:absolute;
+    right:0px;
+    padding-bottom:5px;
+	padding-top:5px;
+	padding-left:5px;
+	padding-right:5px;
+    border: 1px solid #aaaaaa;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	border-radius: 4px; /* future proofing */
+}
+.tool_area {
+    border-top: 1px solid #aaaaaa;
+    padding-top: 5px;
+}
+.tool_area ul {padding-left:5px; margin-top:5px; margin-bottom:5px;}
+.tool_area li {list-style:none;}
+.analysis_tools form {
+    margin: 5px 5px 5px 5px;
+}
+.analysis_tools form .form_text {width:80px;}
+.analysis_tools input {
+    margin-top:4px;
+    padding-left:2px;
+}
+.fermi_notification {padding:40px 40px 40px 40px; border: 1px solid silver; background: #fffeee; font-size:14px;}
+.main_content {position:relative; min-height:400px;}
+.center_area {
+    width:700px;
+    position:relative;
 }
 
 .property_table {

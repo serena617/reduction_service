@@ -70,17 +70,27 @@
     });
 </script>
 {% endblock %}
-{% block right_side_links %}
+
+{% block page_specific_tools %}
 {% if reduction_id %}
-    <span style="float:right">
-    <a href="script" title="See reduction script">script</a> | 
-    download [<a href="download/py" title="Download python script">python</a> | 
-              <a href="download/xml" title="Download Mantid xml file">xml</a>]
-    </span>
+    <div class="tool_area">
+      <b>Remote jobs</b><br>
+      <ul>
+        <li><a href="/remote/jobs/" title="See remote jobs">see jobs</a></li>
+      </ul>
+    </div>
+    <div class="tool_area">
+      <b>Reduction script</b><br>
+      <ul>
+        <li><a href="script" title="See reduction script">see script</a></li>
+        <li><a href="download/py" title="Download python script">download python</a></li>
+        <li><a href="download/xml" title="Download Mantid xml file">download xml</a></li>
+      </ul>
+    </div>
 {% endif %}
 {% endblock %}
-{% block content %}
 
+{% block content %}
 <form action="" method="POST">{% csrf_token %}
   <div class="modifiable_title">
     <b>{{ options_form.reduction_name.label_tag }}</b> {{ options_form.reduction_name.errors }}{{ options_form.reduction_name }}
@@ -148,7 +158,7 @@
       </table>
     </div>
   </div>
-  <p><input type="submit" value="Update"/></p>
+  <p><input type="submit" value="update"/></p>
 </form>
 
 {% if errors > 0 %}

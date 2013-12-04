@@ -7,6 +7,7 @@ from django.core.urlresolvers import reverse
 from icat_server_communication import get_ipts_info, get_run_info
 from models import ReductionProcess, Instrument, Experiment
 import users.view_util
+import remote.view_util
 from . import forms
 
 @login_required
@@ -112,6 +113,7 @@ def reduction_options(request, reduction_id=None):
                        'reduction_id': reduction_id,
                        'errors': len(options_form.errors) }
     template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = remote.view_util.fill_template_values(request, **template_values)
     template_values.update(csrf(request))
     return render_to_response('eqsans/reduction_options.html',
                               template_values)
@@ -142,6 +144,16 @@ def py_reduction_script(request, reduction_id):
 
 @login_required
 def xml_reduction_script(request, reduction_id):
+    """
+        Return the python script for a reduction process
+    """
+    data = forms.ReductionOptions.data_from_db(request.user, reduction_id) 
+    response = HttpResponse(forms.ReductionOptions.as_xml(data))
+    response['Content-Disposition'] = 'attachment; filename="eqsans_reduction.xml"'
+    return response
+
+@login_required
+def submit_job(request, reduction_id):
     """
         Return the python script for a reduction process
     """

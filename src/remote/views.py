@@ -4,10 +4,11 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
 from django.utils.dateparse import parse_datetime
-from django import forms
+
 from models import ReductionJob
 
 import users.view_util
+import remote.view_util
 
 import httplib
 from base64 import b64encode
@@ -24,13 +25,6 @@ FERMI_QUERY = '/MantidRemote/query'
 #FERMI_QUERY = '/remote/query/'
 
 
-class FermiLoginForm(forms.Form):
-    """
-        Simple form to submit authentication
-    """
-    username = forms.CharField()
-    password = forms.CharField()
-
 @login_required
 def query_remote_jobs(request):
     """
@@ -46,23 +40,6 @@ def query_remote_jobs(request):
                     "TransID": 57 } }
     """
     sessionid = request.session.get('fermi', '')
-    if request.method == 'POST':
-        form = FermiLoginForm(request.POST, request.FILES)
-        if form.is_valid():
-            try:
-                conn = httplib.HTTPSConnection(FERMI_HOST, timeout=0.5)
-                userAndPass = b64encode(b"%s:%s" % (request.POST['username'], request.POST['password'])).decode("ascii")
-                headers = { 'Authorization' : 'Basic %s' %  userAndPass }
-                conn.request('GET', FERMI_BASE_URL+'authenticate', headers=headers)
-                r = conn.getresponse()  
-                logging.error(r.getheaders())
-                logging.error(r.status)
-                sessionid = r.getheader('set-cookie', '')
-                request.session['fermi']=sessionid
-                #headers['Cookie'] = response['set-cookie']  
-            except:
-                logging.error("Could not authenticate with Fermi: %s" % sys.exc_value)
-
     template_values = {}
     try:
         conn = httplib.HTTPSConnection(FERMI_HOST, timeout=30)
@@ -94,23 +71,18 @@ def query_remote_jobs(request):
         template_values['errors'] = "Could not connect to Fermi: %s" % sys.exc_value
     
     template_values = users.view_util.fill_template_values(request, **template_values)   
+    template_values = remote.view_util.fill_template_values(request, **template_values)
     template_values.update(csrf(request))
     return render_to_response('remote/query_remote_jobs.html',
                               template_values)
 
-def fake_query(request):
-    data = { "3974": { "CompletionDate": "2013-10-29T17:13:08+00:00",
-                "StartDate": "2013-10-29T17:12:32+00:00",
-                "SubmitDate": "2013-10-29T17:12:31+00:00",
-                "JobName": "eqsans",
-                "ScriptName": "job_submission_0.py",
-                "JobStatus": "COMPLETED",
-                "TransID": 57 },
-            "3954": { "CompletionDate": "2013-10-29T17:13:08+00:00",
-                "StartDate": "2013-10-29T17:12:32+00:00",
-                "SubmitDate": "2013-10-29T17:12:31+00:00",
-                "JobName": "eqsans",
-                "ScriptName": "job_submission_0.py",
-                "JobStatus": "COMPLETED",
-                "TransID": 57 } }
-    return HttpResponse(json.dumps(data), mimetype="application/json")
+def authenticate(request):
+    """
+        Authenticate and return to the previous page    
+    """
+    if request.method == 'POST':
+        form = remote.view_util.FermiLoginForm(request.POST, request.FILES)
+        if form.is_valid():
+            status = remote.view_util.authenticate(request)
+    return redirect(request.POST['redirect'])
+

@@ -71,7 +71,28 @@
   {% endblock %}
 </div>
 
-{% block content %}{% endblock %}
+<div class="main_content">
+    <div class="analysis_tools">
+      <div class="top_tool_area">
+          <b>Fermi status</b><br>
+          {% if fermi_authenticated %}
+          <div class='green'>Authenticated as: {{ fermi_uid }}</div>
+          {% else %}
+          <div class='red'>Not authenticated</div>
+          {% endif %}
+          <form action="/remote/authenticate/" method="post">{% csrf_token %}
+            <input class="form_text" type="text" name="username" placeholder="username"><br>
+            <input class="form_text" type="password" name="password" placeholder="password"><br>
+            <input type="submit" value="log in">
+            <input type="hidden" name="redirect" value="{{ current_path }}">
+          </form>
+      </div>
+      {% block page_specific_tools %}{% endblock %}
+    </div>
+    <div class="center_area">
+    {% block content %}{% endblock %}
+    </div>
+</div>
 
 <footer>
   <div class="ornlFooter">

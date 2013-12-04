@@ -4,18 +4,12 @@
 {% endblock %}
 
 {% block content %}
-
 {% if need_authentication %}
-<div>
-Authenticate with the Fermi cluster:<br>
-  <form action="#" method="post"> {% csrf_token %}
-    <input type="text" name="username" placeholder="username">
-    <input type="password" name="password" placeholder="password">
-    <input type="submit" value="log in">
-  </form>
+<div class="fermi_notification">
+You need to authenticate with the Fermi remote submission service.
+Please use the form on this page.
 </div>
 {% endif %}
-<p>
 <table class="reduction_table">
   <thead>
     <tr>
@@ -30,8 +24,6 @@ Authenticate with the Fermi cluster:<br>
   {% endfor %}
   </tbody>
 </table>
-
-
 
 {% if errors %}
 <div class="error_section">

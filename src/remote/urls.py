@@ -4,5 +4,5 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     url(r'^jobs/$', 'remote.views.query_remote_jobs'),
-    url(r'^query/$', 'remote.views.fake_query'),
+    url(r'^authenticate/$', 'remote.views.authenticate'),
 )
