@@ -76,7 +76,13 @@
     <div class="tool_area">
       <b>Remote jobs</b><br>
       <ul>
-        <li><a href="/remote/jobs/" title="See remote jobs">see jobs</a></li>
+        <li><a href="/remote/jobs/" title="See remote jobs">see all jobs</a></li>
+        <li><a href="submit" title="Submit this reduction job">submit this job</a></li>
+{% if existing_jobs and existing_jobs|length > 0 %}
+    {% for job in existing_jobs %}
+        <li><a href="/remote/query/{{ job.remote_id }}/" title="See job details">job: {{ job.remote_id }}</a></li>
+    {% endfor %}
+{% endif %}
       </ul>
     </div>
     <div class="tool_area">
@@ -178,6 +184,8 @@
   </ol>
 </div>
 {% endif %}
+
+
 <script id="source" language="javascript" type="text/javascript">
 $(document).ready(toggle_beam_center);
 $(document).ready(toggle_sensitivity);

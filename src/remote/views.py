@@ -1,11 +1,11 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
 from django.utils.dateparse import parse_datetime
 
-from models import ReductionJob
+from models import ReductionJob, Transaction
 
 import users.view_util
 import remote.view_util
@@ -20,10 +20,6 @@ import sys
 FERMI_HOST = 'fermi.ornl.gov'
 FERMI_BASE_URL = '/MantidRemote/'
 FERMI_QUERY = '/MantidRemote/query'
-
-#FERMI_HOST = 'localhost:8000'
-#FERMI_QUERY = '/remote/query/'
-
 
 @login_required
 def query_remote_jobs(request):
@@ -72,10 +68,10 @@ def query_remote_jobs(request):
     
     template_values = users.view_util.fill_template_values(request, **template_values)   
     template_values = remote.view_util.fill_template_values(request, **template_values)
-    template_values.update(csrf(request))
     return render_to_response('remote/query_remote_jobs.html',
                               template_values)
 
+@login_required
 def authenticate(request):
     """
         Authenticate and return to the previous page    
@@ -85,4 +81,40 @@ def authenticate(request):
         if form.is_valid():
             status = remote.view_util.authenticate(request)
     return redirect(request.POST['redirect'])
+      
+@login_required
+def job_details(request, job_id):
+    """
+        Show job details
+    """
+    # Query basic job info
+    job_info = remote.view_util.query_job(request, job_id)
+    if job_info is None:
+        raise Http404
 
+    # Get list of files for this transaction
+    transaction = get_object_or_404(Transaction, trans_id=job_info['TransID'])
+    files = remote.view_util.query_files(request, transaction.trans_id)
+
+    template_values = {'title':'Reduction job %s' % job_id,
+                       'job_id': job_id,
+                       'trans_id': transaction.trans_id,
+                       'job_info': job_info,
+                       'job_directory': transaction.directory,
+                       'job_files': files}
+    template_values = users.view_util.fill_template_values(request, **template_values)   
+    template_values = remote.view_util.fill_template_values(request, **template_values)
+    return render_to_response('remote/job_details.html',
+                              template_values)
+    
+@login_required
+def download_file(request, trans_id, filename):
+    """
+        Get a file from the compute node
+        
+    """
+    file_content = remote.view_util.download_file(request, trans_id, filename)
+    response = HttpResponse(file_content)
+    response['Content-Disposition'] = 'attachment; filename="%s"' % filename
+    return response
+ 

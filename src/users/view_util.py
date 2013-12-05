@@ -2,6 +2,7 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from django.contrib.auth.models import Group
 from django.http import HttpResponse
+from django.core.context_processors import csrf
 
 # import code for encoding urls and generating md5 hashes
 import hashlib
@@ -34,7 +35,7 @@ def fill_template_values(request, **template_args):
     
     # Determine whether the user is using a mobile device
     template_args['is_mobile'] = hasattr(request, 'mobile') and request.mobile
-
+    template_args.update(csrf(request))
     return template_args
 
 def _check_credentials(request):

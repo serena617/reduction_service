@@ -21,4 +21,8 @@ class ReductionJob(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     
-    
+class Transaction(models.Model):
+    trans_id = models.IntegerField(unique=True)   
+    owner = models.ForeignKey(User)
+    directory = models.TextField()
+    start_time = models.DateTimeField(auto_now = False, auto_now_add = True)

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from remote.models import Transaction
 
 class Instrument(models.Model):
     name = models.CharField(max_length=24)
@@ -65,4 +66,9 @@ class FloatReductionProperty(ReductionProperty):
     
 class CharReductionProperty(ReductionProperty):
     value = models.CharField(max_length=128)
+    
+class RemoteJob(models.Model):
+    reduction = models.ForeignKey(ReductionProcess)
+    remote_id = models.CharField(max_length = 30)
+    transaction = models.ForeignKey(Transaction)
     

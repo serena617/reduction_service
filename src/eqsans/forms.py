@@ -202,7 +202,7 @@ class ReductionOptions(forms.Form):
         return data
     
     @classmethod
-    def as_mantid_script(self, data):
+    def as_mantid_script(self, data, output_path='/tmp'):
         """
             Return the Mantid script associated with the current parameters
         """
@@ -221,7 +221,8 @@ class ReductionOptions(forms.Form):
 
         script += "AzimuthalAverage(n_bins=100, n_subpix=1, log_binning=False)\n" # TODO
         script += "IQxQy(nbins=100)\n" # TODO
-        script += "OutputPath('\\tmp')\n" # TODO
+        #output_path = "/SNS/users/m2d"
+        script += "OutputPath(\"%s\")\n" % output_path
         
         script += "UseConfigTOFTailsCutoff(True)\n"
         script += "UseConfigMask(True)\n"
