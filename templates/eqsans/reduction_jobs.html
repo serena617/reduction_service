@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block right_side_links %}
+{% endblock %}
+
+{% block content %}
+{% if need_authentication %}
+<div class="fermi_notification">
+You need to authenticate with the Fermi remote submission service.
+Please use the form on this page.
+</div>
+{% endif %}
+<table class="reduction_table">
+  <thead>
+    <tr>
+      <th>Job</th><th>Name</th><th>Submitted</th><th>Data runs</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for job in status_data|dictsort:"ID" %}
+    <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
+      <td><a href="{% url 'remote_job_details' job.ID%}">{{ job.ID }}</a></td><td>{{ job.JobName }}</td>
+      <td>{{ job.StartDate|date:"n/d H:i" }}</td><td>{{ job.Data }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% if errors %}
+<div class="error_section">
+  The submitted parameters are not valid because of the following reasons:<br>
+  {{ errors }}
+</div>
+{% endif %}
+
+{% endblock %}

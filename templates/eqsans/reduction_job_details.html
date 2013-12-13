@@ -1,0 +1,20 @@
+{% extends "remote/job_details.html" %}
+
+{% block page_specific_tools %}
+      <div class="tool_area">
+        <b>Remote jobs</b><br>
+        <ul>
+          <li><a href="/remote/jobs/" title="See remote jobs">see all jobs</a></li>
+        </ul>
+      </div>
+      <div class="tool_area">
+        <b>Reduction</b><br>
+        <ul>
+          <li><a href="/eqsans/reduction/{{ remote_job.reduction.id }}/" title="See reduction parameters">see reduction</a></li>
+        </ul>
+      </div>
+{% endblock %}
+
+{% block analysis_view %}
+  <p>TEST</p>
+{% endblock %}
