@@ -19,7 +19,7 @@ Please use the form on this page.
   <tbody>
   {% for job in status_data|dictsort:"ID" %}
     <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
-      <td><a href='' >{{ job.ID }}</a></td><td>{{ job.JobName }}</td>
+      <td><a href="{% url 'remote_job_details' job.ID%}">{{ job.ID }}</a></td><td>{{ job.JobName }}</td>
       <td>{{ job.StartDate|date:"n/d H:i" }}</td><td>{{ job.CompletionDate|date:"n/d H:i" }}</td></tr>
   {% endfor %}
   </tbody>

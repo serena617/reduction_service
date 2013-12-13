@@ -163,7 +163,9 @@ class ReductionOptions(forms.Form):
         reduction_proc.data_file = self.cleaned_data['data_file'][:128]
         
         reduction_proc.save()
-                # Find experiment
+        
+        # Find experiment
+        
         if self.cleaned_data['expt_id'] is not None:
             expt = get_object_or_404(Experiment, id=self.cleaned_data['expt_id'])
             if expt not in reduction_proc.experiments.all():

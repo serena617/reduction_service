@@ -1,16 +1,19 @@
 {% extends "base.html" %}
 
-{% block right_side_links %}
-    <span style="float:right">
-    <a href="reduction" title="Start new reduction">new reduction</a>
-    </span>
+{% block page_specific_tools %}
+    <div class="tool_area">
+      <b>Reduction</b><br>
+      <ul>
+        <li><a href="{% url 'eqsans_new_reduction' %}" title="Start a new reduction">new reduction</a></li>
+      </ul>
+    </div>
 {% endblock %}
 
 {% block content %}
 <p>
 Title: {{ icat_info.title|default:"unknown" }}<br>
 IPTS date: {{ icat_info.createTime|default:"unknown" }}<br>
-Run range: {{ icat_info.run_range }}
+Run range: <b>{{ icat_info.run_range }}</b>
 </p>
 
 <form action="" method="GET">{% csrf_token %}
@@ -18,7 +21,8 @@ Search or create reductions for run: {{ form.run_number.errors }}{{ form.run_num
 </form>
 
 {% if reductions %}
-<table cellspacing="2" class="reduction_table">
+<p>
+<table class="reduction_table">
   <thead>
     <tr>
       <th>Run</th><th>Title</th>
@@ -26,12 +30,11 @@ Search or create reductions for run: {{ form.run_number.errors }}{{ form.run_num
   </thead>
   <tbody>
   {% for r in reductions %}
-    <tr><td><a href='reduction/{{ r.id }}' >{{ r.data_file }}</a></td><td>{{ r.reduction_name }}</td></tr>
+    <tr><td><a href="{% url 'eqsans_reduction' r.id %}" >{{ r.data_file }}</a></td><td>{{ r.reduction_name }}</td></tr>
   {% endfor %}
   </tbody>
 </table>
 {% endif %}
-
 <p>
 
 {% if errors %}

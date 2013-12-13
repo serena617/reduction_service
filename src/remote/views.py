@@ -86,22 +86,10 @@ def authenticate(request):
 def job_details(request, job_id):
     """
         Show job details
+        https://fermi.ornl.gov/MantidRemote/query?JobID=5782
+        https://fermi.ornl.gov/MantidRemote/files?TransID=75
     """
-    # Query basic job info
-    job_info = remote.view_util.query_job(request, job_id)
-    if job_info is None:
-        raise Http404
-
-    # Get list of files for this transaction
-    transaction = get_object_or_404(Transaction, trans_id=job_info['TransID'])
-    files = remote.view_util.query_files(request, transaction.trans_id)
-
-    template_values = {'title':'Reduction job %s' % job_id,
-                       'job_id': job_id,
-                       'trans_id': transaction.trans_id,
-                       'job_info': job_info,
-                       'job_directory': transaction.directory,
-                       'job_files': files}
+    template_values = remote.view_util.fill_job_dictionary(request, job_id)
     template_values = users.view_util.fill_template_values(request, **template_values)   
     template_values = remote.view_util.fill_template_values(request, **template_values)
     return render_to_response('remote/job_details.html',

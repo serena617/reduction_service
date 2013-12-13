@@ -20,15 +20,27 @@ def reduction_home(request):
     """
     ipts_number = 'IPTS-9388'
     # Get experiment object
-    experiment_list = Experiment.objects.filter(name=ipts_number)
-    if len(experiment_list)>0:
-        experiment_obj = experiment_list[0]
-    else:
+    try:
+        experiment_obj = Experiment.objects.get(name=ipts_number)
+    except:
         experiment_obj = Experiment(name=ipts_number)
         experiment_obj.save()
 
     errors = None
     reduction_start_form = forms.ReductionStart(request.GET)
+
+    # Query ICAT
+    icat_ipts = get_ipts_info('EQSANS', ipts_number)
+    run_list = []
+    if 'run_range' in icat_ipts:
+        try:
+            toks = icat_ipts['run_range'].split('-')
+            r_min = int(toks[0])
+            r_max = int(toks[1])
+            for r in range(r_min, r_max+1):
+                run_list.append({'run':r})
+        except:
+            logging.error("Problem generating run list: %s" % sys.exc_value)
 
     # Get all the user's reductions
     red_list = []
@@ -42,9 +54,10 @@ def reduction_home(request):
             create_url +=  '&data_file=%s' % request.GET['run_number']
             return redirect(create_url)
     else:
-        red_list = ReductionProcess.objects.filter(owner=request.user,
-                                                   experiments=experiment_obj)
-
+        for item in run_list:
+            partial_list = ReductionProcess.objects.filter(owner=request.user,
+                                                           data_file__contains=str(item['run']))
+            red_list.extend(partial_list)
 
     reductions = []
     for r in red_list:
@@ -57,20 +70,6 @@ def reduction_home(request):
             pass
         reductions.append(data_dict)
     
-    # Query ICAT
-    icat_ipts = get_ipts_info('EQSANS', ipts_number)
-    run_list = []
-    if 'run_range' in icat_ipts:
-        try:
-            toks = icat_ipts['run_range'].split('-')
-            r_min = int(toks[0])
-            r_max = int(toks[1])
-            for r in range(r_min, r_max+1):
-                run_list.append({'run':r})
-        except:
-            pass
-
-
     breadcrumbs = "eqsans"
     template_values = {'reductions': reductions,
                        'title': 'EQSANS %s' % ipts_number,
@@ -81,7 +80,7 @@ def reduction_home(request):
                        'errors': errors,
                        'form': reduction_start_form}
     template_values = users.view_util.fill_template_values(request, **template_values)
-    #template_values.update(csrf(request))
+    template_values = remote.view_util.fill_template_values(request, **template_values)
     return render_to_response('eqsans/reduction_home.html',
                               template_values)
 
@@ -123,7 +122,6 @@ def reduction_options(request, reduction_id=None):
         template_values['existing_jobs'] = existing_jobs
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = remote.view_util.fill_template_values(request, **template_values)
-    template_values.update(csrf(request))
     return render_to_response('eqsans/reduction_options.html',
                               template_values)
 
@@ -190,8 +188,40 @@ def job_details(request, job_id):
     """
     #TODO plot I(q)
     #TODO download files
-    # https://fermi.ornl.gov/MantidRemote/query?JobID=5782
-    
-    # https://fermi.ornl.gov/MantidRemote/files?TransID=75
-    pass
+    remote_job = get_object_or_404(RemoteJob, remote_id=job_id)
+
+    template_values = {'remote_job': remote_job}
+    template_values = remote.view_util.fill_job_dictionary(request, job_id, **template_values)
+    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = remote.view_util.fill_template_values(request, **template_values)
+    return render_to_response('eqsans/reduction_job_details.html',
+                              template_values)
+
+@login_required
+def reduction_jobs(request):
+    """
+        { "3954": { "CompletionDate": "2013-10-29T17:13:08+00:00",
+                    "StartDate": "2013-10-29T17:12:32+00:00",
+                    "SubmitDate": "2013-10-29T17:12:31+00:00",
+                    "JobName": "eqsans",
+                    "ScriptName": "job_submission_0.py",
+                    "JobStatus": "COMPLETED",
+                    "TransID": 57 } }
+jobs[key]['ID'] = key
+    """
+    #TODO sorting
+    jobs = RemoteJob.objects.filter(transaction__owner=request.user)
+    status_data = []
+    for job in jobs:
+        j_data = {'ID': job.remote_id,
+                  'JobName': job.reduction.name,
+                  'StartDate': job.transaction.start_time,
+                  'Data': job.reduction.data_file,
+                 }
+        status_data.append(j_data)
+    template_values = {"status_data":status_data}
+    template_values = users.view_util.fill_template_values(request, **template_values)   
+    template_values = remote.view_util.fill_template_values(request, **template_values)
+    return render_to_response('eqsans/reduction_jobs.html',
+                              template_values)
 

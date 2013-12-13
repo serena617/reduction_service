@@ -69,6 +69,6 @@ class CharReductionProperty(ReductionProperty):
     
 class RemoteJob(models.Model):
     reduction = models.ForeignKey(ReductionProcess)
-    remote_id = models.CharField(max_length = 30)
+    remote_id = models.CharField(max_length = 30, unique=True)
     transaction = models.ForeignKey(Transaction)
     

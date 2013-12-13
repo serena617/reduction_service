@@ -2,30 +2,28 @@
 
 {% block content %}
 {% if need_authentication %}
-<div class="fermi_notification">
-You need to authenticate with the Fermi remote submission service.
-Please use the form on this page.
-</div>
+    <div class="fermi_notification">
+      You need to authenticate with the Fermi remote submission service.
+      Please use the form on this page.
+    </div>
 {% endif %}
+    <div>Job {{ job_id }}: <b>{{ job_info.JobName }}</b></div>
+    <div class='tool_area'>
+      <ul>
+        <li>Status: {{ job_info.JobStatus }}</li>
+        <li>Start time: {{ job_info.StartDate }}</li>
+        <li>End time: {{ job_info.CompletionDate }}</li>
+      </ul>
+    </div>
 
-<div>
-Job {{ job_id }}: <b>{{ job_info.JobName }}</b>
-</div>
-<div class='tool_area'>
-<ul >
-<li>Status: {{ job_info.JobStatus }}</li>
-<li>Start time: {{ job_info.StartDate }}</li>
-<li>End time: {{ job_info.CompletionDate }}</li>
-</ul>
-</div>
+{% block analysis_view %}{% endblock %}
 
-Job directory: <b>{{ job_directory }}</b>
-<div class='tool_area'>
-
-<ul >
-{% for file in job_files %}
-<li><a href='/remote/download/{{ trans_id }}/{{ file }}'>{{ file }}</a></li>
-{% endfor %}
-</ul>
-</div>
+    Job directory: <b>{{ job_directory }}</b>
+    <div class='tool_area'>
+      <ul>
+      {% for file in job_files %}
+        <li><a href='/remote/download/{{ trans_id }}/{{ file }}'>{{ file }}</a></li>
+      {% endfor %}
+      </ul>
+    </div>
 {% endblock %}

@@ -1,5 +1,7 @@
 from django import forms
 from django.utils.dateparse import parse_datetime
+from django.http import Http404
+from django.shortcuts import get_object_or_404
 import httplib, urllib
 from base64 import b64encode
 import json
@@ -178,4 +180,22 @@ def download_file(request, trans_id, filename):
     except:
         logging.error("Could not get file from compute node: %s" % sys.exc_value)
     return None
+
+def fill_job_dictionary(request, remote_job_id, **template_values):
+    # Query basic job info
+    job_info = query_job(request, remote_job_id)
+    if job_info is None:
+        raise Http404
+
+    # Get list of files for this transaction
+    transaction = get_object_or_404(Transaction, trans_id=job_info['TransID'])
+    files = query_files(request, transaction.trans_id)
+
+    template_values['title'] = 'Job %s' % remote_job_id
+    template_values['job_id'] = remote_job_id
+    template_values['trans_id'] = transaction.trans_id
+    template_values['job_info'] = job_info
+    template_values['job_directory'] = transaction.directory
+    template_values['job_files'] = files
+    return template_values
 
