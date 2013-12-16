@@ -182,17 +182,21 @@ def download_file(request, trans_id, filename):
     return None
 
 def fill_job_dictionary(request, remote_job_id, **template_values):
+
+    template_values['title'] = 'Job %s' % remote_job_id
+    template_values['job_id'] = remote_job_id
+
     # Query basic job info
     job_info = query_job(request, remote_job_id)
     if job_info is None:
-        raise Http404
-
+        template_values['user_alert'] = ["Could not connect to Fermi"]
+        return template_values
+    
     # Get list of files for this transaction
     transaction = get_object_or_404(Transaction, trans_id=job_info['TransID'])
     files = query_files(request, transaction.trans_id)
 
-    template_values['title'] = 'Job %s' % remote_job_id
-    template_values['job_id'] = remote_job_id
+
     template_values['trans_id'] = transaction.trans_id
     template_values['job_info'] = job_info
     template_values['job_directory'] = transaction.directory

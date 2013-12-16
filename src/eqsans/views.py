@@ -160,7 +160,7 @@ def xml_reduction_script(request, reduction_id):
     return response
 
 @login_required
-def submit_job(request, reduction_id=None):
+def submit_job(request, reduction_id):
     """
         Submit a reduction script to Fermi
     """
@@ -170,6 +170,14 @@ def submit_job(request, reduction_id=None):
 
     # Start a new transaction
     transaction = remote.view_util.transaction(request, start=True)
+    if transaction is None:
+        template_values = {'message':"Could not connect to Fermi and establish transaction",
+                           'back_url': reverse('eqsans.views.reduction_options', args=[reduction_id])}
+        template_values = users.view_util.fill_template_values(request, **template_values)
+        template_values = remote.view_util.fill_template_values(request, **template_values)
+
+        return render_to_response('remote/failed_connection.html',
+                                  template_values)        
 
     data = forms.ReductionOptions.data_from_db(request.user, reduction_id)     
     code = forms.ReductionOptions.as_mantid_script(data, transaction.directory)
