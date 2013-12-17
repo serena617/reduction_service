@@ -4,12 +4,13 @@ from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
 from django.core.urlresolvers import reverse
 
-from icat_server_communication import get_ipts_info, get_run_info
 from models import ReductionProcess, Instrument, Experiment, RemoteJob
 import users.view_util
 import remote.view_util
+from catalog.icat_server_communication import get_ipts_info
 from . import forms
 import logging
+import copy
 
 @login_required
 def reduction_home(request):
@@ -103,7 +104,15 @@ def reduction_options(request, reduction_id=None):
         if reduction_id is not None:
             initial_values = forms.ReductionOptions.data_from_db(request.user, reduction_id)
         else:
-            initial_values = request.GET
+            initial_values = copy.deepcopy(request.GET)
+            if 'expt_name' in request.GET:
+                try:
+                    experiment_obj = Experiment.objects.get(name=request.GET['expt_name'])
+                except:
+                    experiment_obj = Experiment(name=request.GET['expt_name'])
+                    experiment_obj.save()
+                initial_values['expt_id'] = experiment_obj.id
+        
         options_form = forms.ReductionOptions(initial=initial_values)
 
     breadcrumbs = "<a href='%s'>eqsans</a>" % reverse('eqsans.views.reduction_home')

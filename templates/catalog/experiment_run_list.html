@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load catalog_tags %}
+
+{% block content %}
+<p>
+
+
+{% if run_data %}
+<p>
+
+<table class="reduction_table">
+  <thead>
+    <tr>
+      <th>Run</th><th>Title</th><th>Duration [sec]</th><th>Proton charge</th><th>Total counts</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for r in run_data|dictsortreversed:'id' %}
+    <tr><td><a href="{% url 'eqsans_new_reduction' %}?reduction_name=Reduction for r{{ r.id }}&expt_name={{ experiment }}&data_file={{ r.id }}" >{{ r.id }}</a></td>
+    <td>{{ r.title }}
+       <div class='subtitle'>{{ r.startTime|timeperiod:r.endTime}}</div>
+    </td>
+    <td>{{ r.duration }}</td><td>{{ r.protonCharge }}</td><td>{{ r.totalCounts }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+
+
+
+{% endif %}
+<p>
+
+{% if errors %}
+<div class="error_section">
+  The submitted parameters are not valid because of the following reasons:<br>
+  {{ errors }}
+</div>
+{% endif %}
+
+{% endblock %}
+

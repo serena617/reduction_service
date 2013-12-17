@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load catalog_tags %}
+
+{% block content %}
+<p>
+
+
+{% if instruments %}
+<p>
+
+<ul>
+    {% for instr in instruments %}
+    <li><a href='{{ instr }}'>{{ instr }}</a></li>
+    {% endfor %}
+</ul>
+
+
+
+
+{% endif %}
+<p>
+
+{% if errors %}
+<div class="error_section">
+  The submitted parameters are not valid because of the following reasons:<br>
+  {{ errors }}
+</div>
+{% endif %}
+
+{% endblock %}
+

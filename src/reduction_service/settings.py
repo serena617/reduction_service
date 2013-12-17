@@ -125,6 +125,7 @@ INSTALLED_APPS = (
     'eqsans',
     'users',
     'remote',
+    'catalog',
 )
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'

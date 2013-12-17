@@ -107,3 +107,5 @@ table .errorlist {
 .odd {
     background: none;
 }
+
+.subtitle { font-size:10px; color:silver; }
