@@ -1,10 +1,9 @@
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from django.core.context_processors import csrf
 from django.core.urlresolvers import reverse
 
-from models import ReductionProcess, Instrument, Experiment, RemoteJob
+from models import ReductionProcess, Experiment, RemoteJob
 import users.view_util
 import remote.view_util
 from catalog.icat_server_communication import get_ipts_info
