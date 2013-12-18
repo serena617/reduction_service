@@ -35,6 +35,9 @@ def experiment_list(request, instrument):
     template_values = {'experiments': experiments,
                        'instrument': instrument,
                        'title': '%s experiments' % instrument.upper(),
+                       'new_reduction_url': catalog.view_util.get_new_reduction_url(instrument),
+                       'reduction_url': catalog.view_util.get_reduction_url(instrument),
+                       'remote_url': catalog.view_util.get_remote_jobs_url(instrument),
                        'breadcrumbs': breadcrumbs}
     if len(experiments)==0:
         template_values['user_alert'] = ['No experiments were returned for instrument %s' % instrument]

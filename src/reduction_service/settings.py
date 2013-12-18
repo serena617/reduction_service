@@ -141,7 +141,7 @@ AUTH_LDAP_USER_DN_TEMPLATE = ""
 # Set the following to the local domain name
 ALLOWED_DOMAIN = ''
 LOGIN_URL = '/users/login'
-LANDING_VIEW = 'eqsans.views.reduction_options'
+LANDING_VIEW = 'catalog.views.instrument_list'
 
 LOGGING = {
     'version': 1,

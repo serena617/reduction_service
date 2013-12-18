@@ -129,7 +129,7 @@ def query_job(request, job_id):
         Query Fermi for a specific job
     """
     try:
-        conn = httplib.HTTPSConnection(FERMI_HOST, timeout=0.5)
+        conn = httplib.HTTPSConnection(FERMI_HOST, timeout=1.5)
         conn.request('GET', '%squery?JobID=%s' % (FERMI_BASE_URL, job_id),
                      headers={'Cookie':request.session.get('fermi', '')})
         r = conn.getresponse()
@@ -150,7 +150,7 @@ def query_files(request, trans_id):
         Query files for a given transaction
     """
     try:
-        conn = httplib.HTTPSConnection(FERMI_HOST, timeout=0.5)
+        conn = httplib.HTTPSConnection(FERMI_HOST, timeout=1.5)
         conn.request('GET', '%sfiles?TransID=%s' % (FERMI_BASE_URL, trans_id),
                      headers={'Cookie':request.session.get('fermi', '')})
         r = conn.getresponse()

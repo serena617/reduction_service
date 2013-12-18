@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
+from django.conf import settings
 
 from models import ReductionProcess, Experiment, RemoteJob
 import users.view_util
@@ -70,7 +71,7 @@ def reduction_home(request):
             pass
         reductions.append(data_dict)
     
-    breadcrumbs = "eqsans"
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; eqsans" % reverse(settings.LANDING_VIEW)
     template_values = {'reductions': reductions,
                        'title': 'EQSANS %s' % ipts_number,
                        'breadcrumbs': breadcrumbs,
@@ -114,7 +115,8 @@ def reduction_options(request, reduction_id=None):
         
         options_form = forms.ReductionOptions(initial=initial_values)
 
-    breadcrumbs = "<a href='%s'>eqsans</a>" % reverse('eqsans.views.reduction_home')
+    breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
+    breadcrumbs += " &rsaquo; <a href='%s'>eqsans</a>" % reverse('eqsans.views.reduction_home')
     if reduction_id is not None:
         breadcrumbs += " &rsaquo; reduction"
 
@@ -137,7 +139,8 @@ def reduction_options(request, reduction_id=None):
 def reduction_script(request, reduction_id):
     data = forms.ReductionOptions.data_from_db(request.user, reduction_id)
     
-    breadcrumbs = "<a href='%s'>eqsans</a>" % reverse('eqsans.views.reduction_home')
+    breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
+    breadcrumbs += " &rsaquo; <a href='%s'>eqsans</a>" % reverse('eqsans.views.reduction_home')
     breadcrumbs += " &rsaquo; <a href='.'>reduction</a> &rsaquo; script"
     
     template_values = {'reduction_name': data['reduction_name'],
@@ -206,7 +209,13 @@ def job_details(request, job_id):
     #TODO download files
     remote_job = get_object_or_404(RemoteJob, remote_id=job_id)
 
-    template_values = {'remote_job': remote_job}
+    breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
+    breadcrumbs += " &rsaquo; <a href='%s'>eqsans</a>" % reverse('eqsans.views.reduction_home')
+    breadcrumbs += " &rsaquo; <a href='%s'>jobs</a>" % reverse('eqsans.views.reduction_jobs')
+    breadcrumbs += " &rsaquo; %s" % job_id
+
+    template_values = {'remote_job': remote_job,
+                       'breadcrumbs': breadcrumbs}
     template_values = remote.view_util.fill_job_dictionary(request, job_id, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = remote.view_util.fill_template_values(request, **template_values)
@@ -235,7 +244,12 @@ jobs[key]['ID'] = key
                   'Data': job.reduction.data_file,
                  }
         status_data.append(j_data)
-    template_values = {"status_data":status_data}
+    
+    breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
+    breadcrumbs += " &rsaquo; <a href='%s'>eqsans</a>" % reverse('eqsans.views.reduction_home')
+    breadcrumbs += " &rsaquo; jobs"
+    template_values = {'status_data': status_data,
+                       'breadcrumbs': breadcrumbs}
     template_values = users.view_util.fill_template_values(request, **template_values)   
     template_values = remote.view_util.fill_template_values(request, **template_values)
     return render_to_response('eqsans/reduction_jobs.html',

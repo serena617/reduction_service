@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "eqsans/eqsans_base.html" %}
 {% block header %}
 <script>
     var hide_beam_center = !{{ options_form.fit_direct_beam.value|lower }};
@@ -69,34 +69,6 @@
       $( "#tabs" ).tabs({ active: 2 });
     });
 </script>
-{% endblock %}
-
-{% block page_specific_tools %}
-    <div class="tool_area">
-      <b>Reduction</b><br>
-      <ul>
-        <li><a href="{% url 'eqsans_new_reduction' %}" title="Start a new reduction">new reduction</a></li>
-{% if reduction_id %}
-        <li><a href="script" title="See reduction script">see script</a></li>
-        <li><a href="download/py" title="Download python script">download python</a></li>
-        <li><a href="download/xml" title="Download Mantid xml file">download xml</a></li>
-{% endif %}
-      </ul>
-    </div>
-{% if reduction_id %}
-    <div class="tool_area">
-      <b>Remote jobs</b><br>
-      <ul>
-        <li><a href="{% url 'eqsans_reduction_jobs'%}" title="See remote jobs">see all jobs</a></li>
-        <li><a href="submit" title="Submit this reduction job">submit this job</a></li>
-{% if existing_jobs and existing_jobs|length > 0 %}
-    {% for job in existing_jobs %}
-        <li><a href="/eqsans/query/{{ job.remote_id }}/" title="See job details">job: {{ job.remote_id }}</a></li>
-    {% endfor %}
-{% endif %}
-      </ul>
-    </div>
-{% endif %}
 {% endblock %}
 
 {% block content %}

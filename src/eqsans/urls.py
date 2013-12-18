@@ -12,7 +12,7 @@ urlpatterns = patterns('',
     url(r'^reduction/(?P<reduction_id>\d+)/submit$', 'eqsans.views.submit_job'),
     url(r'^reduction/(?P<reduction_id>\d+)/download/py$', 'eqsans.views.py_reduction_script'),
     url(r'^reduction/(?P<reduction_id>\d+)/download/xml$', 'eqsans.views.xml_reduction_script'),
-    url(r'^query/(?P<job_id>\d+)/$', 'eqsans.views.job_details'),
+    url(r'^query/(?P<job_id>\d+)/$', 'eqsans.views.job_details', name='eqsans_job_details'),
     url(r'^jobs/$', 'eqsans.views.reduction_jobs', name='eqsans_reduction_jobs'),
 
 )

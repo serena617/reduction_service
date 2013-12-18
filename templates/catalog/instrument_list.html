@@ -10,7 +10,7 @@
 
 <ul>
     {% for instr in instruments %}
-    <li><a href='{{ instr }}'>{{ instr }}</a></li>
+    <li><a href='{{ instr|lower }}'>{{ instr }}</a></li>
     {% endfor %}
 </ul>
 

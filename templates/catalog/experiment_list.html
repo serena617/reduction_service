@@ -1,13 +1,32 @@
 {% extends "base.html" %}
 {% load catalog_tags %}
 
+{% block page_specific_tools %}
+    {% if reduction_url %}
+    <div class="tool_area">
+      <b>Reduction</b><br>
+      <ul>
+        <li><a href="{{ reduction_url }}" title="See all reductions">see all reductions</a></li>
+        <li><a href="{{ new_reduction_url }}" title="Start a new reduction">new reduction</a></li>
+      </ul>
+    </div>
+    {% endif %}
+    {% if remote_url %}
+    <div class="tool_area">
+      <b>Remote jobs</b><br>
+      <ul>
+        <li><a href="{{ remote_url }}" title="See remote jobs">see all jobs</a></li>
+      </ul>
+    </div>
+    {% endif %}
+{% endblock %}
+
 {% block content %}
 <p>
 
 
 {% if experiments %}
 <p>
-
 <table class="reduction_table">
   <thead>
     <tr>
@@ -21,18 +40,6 @@
   {% endfor %}
   </tbody>
 </table>
-
-
-
-
-{% endif %}
-<p>
-
-{% if errors %}
-<div class="error_section">
-  The submitted parameters are not valid because of the following reasons:<br>
-  {{ errors }}
-</div>
 {% endif %}
 
 {% endblock %}
