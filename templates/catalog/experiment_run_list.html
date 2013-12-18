@@ -16,9 +16,9 @@
   </thead>
   <tbody>
   {% for r in run_data|dictsortreversed:'id' %}
-    <tr><td><a href="{% url 'eqsans_new_reduction' %}?reduction_name=Reduction for r{{ r.id }}&expt_name={{ experiment }}&data_file={{ r.id }}" >{{ r.id }}</a></td>
+    <tr><td><a href="{% if r.url %}{{ r.url }}{% endif %}" >{{ r.id }}</a></td>
     <td>{{ r.title }}
-       <div class='subtitle'>{{ r.startTime|timeperiod:r.endTime}}</div>
+       {% if r.endTime and r.startTime %}<div class='subtitle'>{{ r.startTime|timeperiod:r.endTime}}</div>{% endif %}
     </td>
     <td>{{ r.duration }}</td><td>{{ r.protonCharge }}</td><td>{{ r.totalCounts }}</td></tr>
   {% endfor %}

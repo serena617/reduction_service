@@ -4,6 +4,7 @@ import logging
 import sys
 import datetime
 from django.conf import settings
+import catalog.view_util
 
 if hasattr(settings, 'ICAT_DOMAIN'):
     ICAT_DOMAIN = settings.ICAT_DOMAIN
@@ -142,7 +143,6 @@ def get_ipts_runs(instrument, ipts):
         </run>
     """
     run_data = []
-    # Get the range of runs
     try:
         conn = httplib.HTTPConnection(ICAT_DOMAIN, 
                                       ICAT_PORT, timeout=1.5)
@@ -151,7 +151,8 @@ def get_ipts_runs(instrument, ipts):
         r = conn.getresponse()
         dom = xml.dom.minidom.parseString(r.read())
         for r in dom.getElementsByTagName('run'):
-            run_info = {'id': r.attributes['id'].value}
+            run_info = {'id': r.attributes['id'].value,
+                        'url': catalog.view_util.get_new_reduction_url(instrument, r.attributes['id'].value, ipts)}
             for n in r.childNodes:
                 if n.hasChildNodes():
                     if n.nodeName in ['title']:

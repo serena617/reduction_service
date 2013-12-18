@@ -2,9 +2,12 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response
 from django.core.urlresolvers import reverse
 
-from icat_server_communication import get_ipts_runs, get_instruments, get_experiments
+from icat_server_communication import get_ipts_runs, get_instruments, get_experiments, get_ipts_info
 import users.view_util
 import remote.view_util
+import catalog.view_util
+import logging
+import sys
 
 @login_required
 def instrument_list(request):
@@ -49,6 +52,20 @@ def experiment_run_list(request, instrument, ipts='IPTS-8340'):
                                                                                              ipts.lower(),
                                                                                              )
     runs = get_ipts_runs(instrument.upper(), ipts)
+    # Backward compatibility while we are developing ICAT in parallel
+    if len(runs)==0:
+        icat_ipts = get_ipts_info(instrument.upper(), ipts)
+        if 'run_range' in icat_ipts:
+            try:
+                toks = icat_ipts['run_range'].split('-')
+                r_min = int(toks[0])
+                r_max = int(toks[1])
+                for r in range(r_min, r_max+1):
+                    runs.append({'id':r,
+                                 'url': catalog.view_util.get_new_reduction_url(instrument, r, ipts)})
+            except:
+                logging.error("Problem generating run list: %s" % sys.exc_value)
+
     template_values = {'run_data': runs,
                        'experiment': ipts,
                        'title': '%s %s' % (instrument.upper(), ipts.upper()),
