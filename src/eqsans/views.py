@@ -59,6 +59,10 @@ def reduction_home(request):
             partial_list = ReductionProcess.objects.filter(owner=request.user,
                                                            data_file__contains=str(item['run']))
             red_list.extend(partial_list)
+        red_list.extend(ReductionProcess.objects.filter(owner=request.user,
+                                                        experiments=experiment_obj))
+        # Remove duplicates
+        red_list = list(red_list)
 
     reductions = []
     for r in red_list:
@@ -80,6 +84,8 @@ def reduction_home(request):
                        'icat_info': icat_ipts,
                        'errors': errors,
                        'form': reduction_start_form}
+    if 'icat_error' in icat_ipts:
+        template_values['user_alert'] = [icat_ipts['icat_error']]
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = remote.view_util.fill_template_values(request, **template_values)
     return render_to_response('eqsans/reduction_home.html',
@@ -182,8 +188,12 @@ def submit_job(request, reduction_id):
     # Start a new transaction
     transaction = remote.view_util.transaction(request, start=True)
     if transaction is None:
+        breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
+        breadcrumbs += " &rsaquo; <a href='%s'>eqsans</a>" % reverse('eqsans.views.reduction_home')
+        breadcrumbs += " &rsaquo; <a href='%s'>reduction</a>" % reverse('eqsans.views.reduction_options', args=[reduction_id])
         template_values = {'message':"Could not connect to Fermi and establish transaction",
-                           'back_url': reverse('eqsans.views.reduction_options', args=[reduction_id])}
+                           'back_url': reverse('eqsans.views.reduction_options', args=[reduction_id]),
+                           'breadcrumbs': breadcrumbs,}
         template_values = users.view_util.fill_template_values(request, **template_values)
         template_values = remote.view_util.fill_template_values(request, **template_values)
 
@@ -215,6 +225,8 @@ def job_details(request, job_id):
     breadcrumbs += " &rsaquo; %s" % job_id
 
     template_values = {'remote_job': remote_job,
+                       'parameters': remote_job.reduction.get_data_dict(),
+                       'reduction_id': remote_job.reduction.id,
                        'breadcrumbs': breadcrumbs}
     template_values = remote.view_util.fill_job_dictionary(request, job_id, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
@@ -232,7 +244,6 @@ def reduction_jobs(request):
                     "ScriptName": "job_submission_0.py",
                     "JobStatus": "COMPLETED",
                     "TransID": 57 } }
-jobs[key]['ID'] = key
     """
     #TODO sorting
     jobs = RemoteJob.objects.filter(transaction__owner=request.user)

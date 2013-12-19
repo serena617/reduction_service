@@ -30,7 +30,7 @@
 {% block header %}{% endblock %}
 <script type="text/javascript">
     function show_alert() {
-        $(".user_alert").show("slide", {direction:'right'}, 500 );
+        $(".user_alert").show("highlight");
         $(".user_alert").click(function(){$(this).fadeOut("fast");});
     };
     function new_alert(msg) {
@@ -90,7 +90,14 @@
       {% block page_specific_tools %}{% endblock %}
     </div>
 
-  <div class="center_area">{% block content %}{% endblock %}
+  <div class="center_area">
+    {% if need_authentication %}
+    <div class="fermi_notification">
+      You need to authenticate with the Fermi remote submission service.
+      Please use the form on this page.
+    </div>
+    {% endif %}
+    {% block content %}{% endblock %}
   </div>
 
 </div>

@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, redirect
 from django.core.urlresolvers import reverse
+from django.conf import settings
 
 from icat_server_communication import get_ipts_runs, get_instruments, get_experiments, get_ipts_info
 import users.view_util
@@ -19,6 +20,10 @@ def instrument_list(request):
     template_values = {'instruments': instruments,
                        'breadcrumbs': breadcrumbs}
     if len(instruments)==0:
+        if settings.DEBUG:
+            if hasattr(settings, 'ALTERNATE_LANDING_VIEW'):
+                return redirect(reverse(settings.ALTERNATE_LANDING_VIEW))
+            
         template_values['user_alert'] = ['No instruments were returned']
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = remote.view_util.fill_template_values(request, **template_values)

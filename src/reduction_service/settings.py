@@ -142,6 +142,7 @@ AUTH_LDAP_USER_DN_TEMPLATE = ""
 ALLOWED_DOMAIN = ''
 LOGIN_URL = '/users/login'
 LANDING_VIEW = 'catalog.views.instrument_list'
+ALTERNATE_LANDING_VIEW = 'eqsans.views.reduction_home'
 
 LOGGING = {
     'version': 1,

@@ -1,32 +1,31 @@
-{% extends "remote/job_details.html" %}
-{% block page_specific_tools %}
-    <div class="tool_area">
-      <b>Reduction</b><br>
-      <ul>
-        <li><a href="{% url 'eqsans_new_reduction' %}" title="Start a new reduction">new reduction</a></li>
-{% if reduction_id %}
-        <li><a href="script" title="See reduction script">see script</a></li>
-        <li><a href="download/py" title="Download python script">download python</a></li>
-        <li><a href="download/xml" title="Download Mantid xml file">download xml</a></li>
-{% endif %}
-      </ul>
-    </div>
-    <div class="tool_area">
-      <b>Remote jobs</b><br>
-      <ul>
-        <li><a href="{% url 'eqsans_reduction_jobs'%}" title="See remote jobs">see all jobs</a></li>
-{% if reduction_id %}
-        <li><a href="submit" title="Submit this reduction job">submit this job</a></li>
-{% if existing_jobs and existing_jobs|length > 0 %}
-    {% for job in existing_jobs %}
-        <li><a href="/eqsans/query/{{ job.remote_id }}/" title="See job details">job: {{ job.remote_id }}</a></li>
-    {% endfor %}
-{% endif %}
-{% endif %}
-      </ul>
-    </div>
-{% endblock %}
+{% extends "eqsans/eqsans_base.html" %}
 
-{% block analysis_view %}
-  <p>TEST</p>
+{% block content %}
+    <div>Job {{ job_id }}: <b>{{ job_info.JobName }}</b></div>
+    <div class='tool_area'>
+      <ul>
+        <li>Status: {{ job_info.JobStatus }}</li>
+        <li>Start time: {{ job_info.StartDate }}</li>
+        <li>End time: {{ job_info.CompletionDate }}</li>
+      </ul>
+    </div>
+	
+	<p>
+    <div>Reduction</div>
+    <div class='tool_area'>
+      <ul>
+        <li><a href=' {% url 'eqsans_reduction' remote_job.reduction.id %}'>Job details</a>: {{ remote_job.reduction }}</li>
+        <li>Data: {{ parameters.data_file }}</li>
+      </ul>
+    </div>
+  
+  	<p>
+    Job directory: <b>{{ job_directory }}</b>
+    <div class='tool_area'>
+      <ul>
+      {% for file in job_files %}
+        <li><a href='/remote/download/{{ trans_id }}/{{ file }}'>{{ file }}</a></li>
+      {% endfor %}
+      </ul>
+    </div>
 {% endblock %}

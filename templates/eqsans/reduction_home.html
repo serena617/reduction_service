@@ -3,14 +3,14 @@
 
 {% block content %}
 <p>
-Title: {{ icat_info.title|default:"unknown" }}<br>
-IPTS date: {{ icat_info.createTime|default:"unknown" }}<br>
-Run range: <b>{{ icat_info.run_range }}</b>
+Title: {{ icat_info.title|default:"-" }}<br>
+IPTS date: {{ icat_info.createTime|default:"-" }}<br>
+Run range: <b>{{ icat_info.run_range|default:"-" }}</b>
 </p>
 
-<form action="" method="GET">{% csrf_token %}
+<!-- form action="" method="GET">{% csrf_token %}
 Search or create reductions for run: {{ form.run_number.errors }}{{ form.run_number }}
-</form>
+</form -->
 
 {% if reductions %}
 <p>

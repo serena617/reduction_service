@@ -65,6 +65,7 @@ def get_ipts_info(instrument, ipts):
                     timestr = get_text_from_xml(n.childNodes)
                     run_info['createTime'] = decode_time(timestr)
     except:
+        run_info['icat_error'] = 'Could not communicate with catalog server'
         logging.error("Communication with ICAT server failed: %s" % sys.exc_value)
     
     # Get the range of runs
@@ -82,6 +83,7 @@ def get_ipts_info(instrument, ipts):
                 if n.nodeName=='runRange' and n.hasChildNodes():
                     run_info['run_range'] = get_text_from_xml(n.childNodes)
     except:
+        run_info['icat_error'] = 'Could not communicate with catalog server'
         logging.error("Communication with ICAT server failed: %s" % sys.exc_value)
     return run_info
     
