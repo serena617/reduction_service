@@ -2,17 +2,45 @@ from django.db import models
 from django.contrib.auth.models import User
 from remote.models import Transaction
 
+UNCATEGORIZED = 'uncategorized'
+
 class Instrument(models.Model):
     name = models.CharField(max_length=24)
     
     def __str__(self):
         return self.name
+
+class ExperimentManager(models.Manager):
     
+    def experiments_for_instrument(self, instrument_id):
+        return super(ExperimentManager, self).get_query_set().filter(instruments=instrument_id)
+
+    def get_uncategorized(self, instrument):
+        expt_list = super(ExperimentManager, self).get_query_set().filter(name=UNCATEGORIZED)
+        if len(expt_list)>0:
+            expt = expt_list[0]
+        else:
+            expt = Experiment(name=UNCATEGORIZED)
+            expt.save()
+        if instrument is not None:
+            instrument_id = Instrument.objects.get_or_create(name=instrument.lower())
+            expt.instruments.add(instrument_id[0])
+        return expt
+        
 class Experiment(models.Model):
+    """
+        Table holding IPTS information
+    """
     name = models.CharField(max_length=24, unique=True)
+    instruments = models.ManyToManyField(Instrument, related_name='_ipts_instruments+')
+    created_on = models.DateTimeField('Timestamp', auto_now_add=True)
+    objects = ExperimentManager()
     
-    def __str__(self):
+    def __unicode__(self):
         return self.name
+    
+    def is_uncategorized(self):
+        return self.name == UNCATEGORIZED
     
 class ReductionProcess(models.Model):
     """

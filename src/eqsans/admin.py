@@ -1,4 +1,4 @@
-from models import ReductionProcess, Experiment, BoolReductionProperty, FloatReductionProperty, CharReductionProperty, RemoteJob
+from models import ReductionProcess, Instrument, Experiment, BoolReductionProperty, FloatReductionProperty, CharReductionProperty, RemoteJob
 from django.contrib import admin
 
 class ReductionProcessAdmin(admin.ModelAdmin):
@@ -32,12 +32,25 @@ class ReductionPropertyAdmin(admin.ModelAdmin):
     list_display = ('name', 'reduction_link', 'value')
 
 class ExperimentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name')
+    list_display = ('id', 'name', 'get_instruments')
+    def get_instruments(self, obj):
+        try:
+            instr = []
+            for item in obj.instruments.all():
+                instr.append(str(item))
+            return ', '.join(instr) 
+        except:
+            return ''
+    get_instruments.short_description = "Instruments"    
 
 class RemoteJobAdmin(admin.ModelAdmin):
     list_display = ('id', 'reduction', 'remote_id')
     
+class InstrumentAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    
 admin.site.register(Experiment, ExperimentAdmin)
+admin.site.register(Instrument, InstrumentAdmin)
 admin.site.register(ReductionProcess, ReductionProcessAdmin)
 admin.site.register(BoolReductionProperty, ReductionPropertyAdmin)
 admin.site.register(FloatReductionProperty, ReductionPropertyAdmin)

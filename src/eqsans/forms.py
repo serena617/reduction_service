@@ -170,6 +170,9 @@ class ReductionOptions(forms.Form):
             expt = get_object_or_404(Experiment, id=self.cleaned_data['expt_id'])
             if expt not in reduction_proc.experiments.all():
                 reduction_proc.experiments.add(expt)
+        else:
+            expt = Experiment.objects.get_uncategorized('eqsans')
+            reduction_proc.experiments.add(expt)
         reduction_proc.save()
                 
         # Clean up the old values

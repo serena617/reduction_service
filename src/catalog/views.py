@@ -17,14 +17,12 @@ def instrument_list(request):
     """
     breadcrumbs = "home"
     instruments = get_instruments()
-    template_values = {'instruments': instruments,
-                       'breadcrumbs': breadcrumbs}
+    template_values = {'breadcrumbs': breadcrumbs}
     if len(instruments)==0:
         if settings.DEBUG:
-            if hasattr(settings, 'ALTERNATE_LANDING_VIEW'):
-                return redirect(reverse(settings.ALTERNATE_LANDING_VIEW))
-            
-        template_values['user_alert'] = ['No instruments were returned']
+            instruments=['eqsans']
+        template_values['user_alert'] = ['No instruments were found in the catalog']
+    template_values['instruments'] = instruments
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = remote.view_util.fill_template_values(request, **template_values)
     return render_to_response('catalog/instrument_list.html',
@@ -35,7 +33,7 @@ def experiment_list(request, instrument):
     """
         Return the list of experiments for a given instrument
     """
-    breadcrumbs = "<a href='/catalog/'>home</a> &rsaquo; %s" % (instrument.lower())
+    breadcrumbs = "<a href='/catalog/'>home</a> &rsaquo; %s catalog" % (instrument.lower())
     experiments = get_experiments(instrument.upper())
     template_values = {'experiments': experiments,
                        'instrument': instrument,
@@ -45,7 +43,7 @@ def experiment_list(request, instrument):
                        'remote_url': catalog.view_util.get_remote_jobs_url(instrument),
                        'breadcrumbs': breadcrumbs}
     if len(experiments)==0:
-        template_values['user_alert'] = ['No experiments were returned for instrument %s' % instrument]
+        template_values['user_alert'] = ['No experiments were found for instrument %s' % instrument]
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = remote.view_util.fill_template_values(request, **template_values)
     return render_to_response('catalog/experiment_list.html',
@@ -54,7 +52,7 @@ def experiment_list(request, instrument):
 @login_required
 def experiment_run_list(request, instrument, ipts='IPTS-8340'):
 
-    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse('catalog.views.instrument_list'),
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s catalog</a> &rsaquo; %s" % (reverse('catalog.views.instrument_list'),
                                                                                              reverse('catalog.views.experiment_list', args=[instrument]),
                                                                                              instrument.lower(),
                                                                                              ipts.lower(),
@@ -79,7 +77,7 @@ def experiment_run_list(request, instrument, ipts='IPTS-8340'):
                        'title': '%s %s' % (instrument.upper(), ipts.upper()),
                        'breadcrumbs': breadcrumbs}
     if len(runs)==0:
-        template_values['user_alert'] = ['No runs were returned for instrument %s experiment %s' % (instrument, ipts)]
+        template_values['user_alert'] = ['No runs were found for instrument %s experiment %s' % (instrument, ipts)]
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = remote.view_util.fill_template_values(request, **template_values)
     return render_to_response('catalog/experiment_run_list.html',

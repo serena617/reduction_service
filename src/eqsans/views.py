@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
-from models import ReductionProcess, Experiment, RemoteJob
+from models import ReductionProcess, Experiment, RemoteJob, Instrument
 import users.view_util
 import remote.view_util
 from catalog.icat_server_communication import get_ipts_info
@@ -13,35 +13,36 @@ import logging
 import copy
 
 @login_required
-def reduction_home(request):
+def experiment(request, ipts):
     """
         List of reductions
         #TODO add a way to delete your own entries
         #TODO create new reduction using a pre-existing one as a template
     """
-    ipts_number = 'IPTS-9388'
     # Get experiment object
     try:
-        experiment_obj = Experiment.objects.get(name=ipts_number)
+        experiment_obj = Experiment.objects.get(name=ipts)
     except:
-        experiment_obj = Experiment(name=ipts_number)
-        experiment_obj.save()
+        experiment_obj = Experiment.objects.get_uncategorized('eqsans')
+    
+    IS_UNCATEGORIZED = experiment_obj.is_uncategorized()
 
-    errors = None
     reduction_start_form = forms.ReductionStart(request.GET)
 
     # Query ICAT
-    icat_ipts = get_ipts_info('EQSANS', ipts_number)
     run_list = []
-    if 'run_range' in icat_ipts:
-        try:
-            toks = icat_ipts['run_range'].split('-')
-            r_min = int(toks[0])
-            r_max = int(toks[1])
-            for r in range(r_min, r_max+1):
-                run_list.append({'run':r})
-        except:
-            logging.error("Problem generating run list: %s" % sys.exc_value)
+    icat_ipts = {}
+    if not IS_UNCATEGORIZED:
+        icat_ipts = get_ipts_info('EQSANS', ipts)
+        if 'run_range' in icat_ipts:
+            try:
+                toks = icat_ipts['run_range'].split('-')
+                r_min = int(toks[0])
+                r_max = int(toks[1])
+                for r in range(r_min, r_max+1):
+                    run_list.append({'run':r})
+            except:
+                logging.error("Problem generating run list: %s" % sys.exc_value)
 
     # Get all the user's reductions
     red_list = []
@@ -75,20 +76,22 @@ def reduction_home(request):
             pass
         reductions.append(data_dict)
     
-    breadcrumbs = "<a href='%s'>home</a> &rsaquo; eqsans" % reverse(settings.LANDING_VIEW)
+    breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
+    breadcrumbs += " &rsaquo; <a href='%s'>eqsans reduction</a>" % reverse('eqsans.views.reduction_home')
+    breadcrumbs += " &rsaquo; %s" % ipts.lower()
     template_values = {'reductions': reductions,
-                       'title': 'EQSANS %s' % ipts_number,
+                       'title': 'EQSANS %s' % ipts,
                        'breadcrumbs': breadcrumbs,
-                       'ipts_number': ipts_number,
+                       'ipts_number': ipts,
                        'run_list': run_list,
                        'icat_info': icat_ipts,
-                       'errors': errors,
-                       'form': reduction_start_form}
+                       'form': reduction_start_form,
+                       'is_categorized': not IS_UNCATEGORIZED}
     if 'icat_error' in icat_ipts:
         template_values['user_alert'] = [icat_ipts['icat_error']]
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = remote.view_util.fill_template_values(request, **template_values)
-    return render_to_response('eqsans/reduction_home.html',
+    return render_to_response('eqsans/experiment.html',
                               template_values)
 
 @login_required
@@ -122,9 +125,11 @@ def reduction_options(request, reduction_id=None):
         options_form = forms.ReductionOptions(initial=initial_values)
 
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
-    breadcrumbs += " &rsaquo; <a href='%s'>eqsans</a>" % reverse('eqsans.views.reduction_home')
+    breadcrumbs += " &rsaquo; <a href='%s'>eqsans reduction</a>" % reverse('eqsans.views.reduction_home')
     if reduction_id is not None:
-        breadcrumbs += " &rsaquo; reduction"
+        breadcrumbs += " &rsaquo; reduction %s" % reduction_id
+    else:
+        breadcrumbs += " &rsaquo; new reduction"
 
     #TODO: add New an Save-As functionality
     template_values = {'options_form': options_form,
@@ -146,7 +151,7 @@ def reduction_script(request, reduction_id):
     data = forms.ReductionOptions.data_from_db(request.user, reduction_id)
     
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
-    breadcrumbs += " &rsaquo; <a href='%s'>eqsans</a>" % reverse('eqsans.views.reduction_home')
+    breadcrumbs += " &rsaquo; <a href='%s'>eqsans reduction</a>" % reverse('eqsans.views.reduction_home')
     breadcrumbs += " &rsaquo; <a href='.'>reduction</a> &rsaquo; script"
     
     template_values = {'reduction_name': data['reduction_name'],
@@ -189,7 +194,7 @@ def submit_job(request, reduction_id):
     transaction = remote.view_util.transaction(request, start=True)
     if transaction is None:
         breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
-        breadcrumbs += " &rsaquo; <a href='%s'>eqsans</a>" % reverse('eqsans.views.reduction_home')
+        breadcrumbs += " &rsaquo; <a href='%s'>eqsans reduction</a>" % reverse('eqsans.views.reduction_home')
         breadcrumbs += " &rsaquo; <a href='%s'>reduction</a>" % reverse('eqsans.views.reduction_options', args=[reduction_id])
         template_values = {'message':"Could not connect to Fermi and establish transaction",
                            'back_url': reverse('eqsans.views.reduction_options', args=[reduction_id]),
@@ -220,7 +225,7 @@ def job_details(request, job_id):
     remote_job = get_object_or_404(RemoteJob, remote_id=job_id)
 
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
-    breadcrumbs += " &rsaquo; <a href='%s'>eqsans</a>" % reverse('eqsans.views.reduction_home')
+    breadcrumbs += " &rsaquo; <a href='%s'>eqsans reduction</a>" % reverse('eqsans.views.reduction_home')
     breadcrumbs += " &rsaquo; <a href='%s'>jobs</a>" % reverse('eqsans.views.reduction_jobs')
     breadcrumbs += " &rsaquo; %s" % job_id
 
@@ -257,7 +262,7 @@ def reduction_jobs(request):
         status_data.append(j_data)
     
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
-    breadcrumbs += " &rsaquo; <a href='%s'>eqsans</a>" % reverse('eqsans.views.reduction_home')
+    breadcrumbs += " &rsaquo; <a href='%s'>eqsans reduction</a>" % reverse('eqsans.views.reduction_home')
     breadcrumbs += " &rsaquo; jobs"
     template_values = {'status_data': status_data,
                        'breadcrumbs': breadcrumbs}
@@ -266,3 +271,16 @@ def reduction_jobs(request):
     return render_to_response('eqsans/reduction_jobs.html',
                               template_values)
 
+@login_required
+def reduction_home(request):
+    eqsans = get_object_or_404(Instrument, name='eqsans')
+    experiments = Experiment.objects.experiments_for_instrument(eqsans)
+
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; eqsans reduction" % reverse(settings.LANDING_VIEW)
+    template_values = {'title': 'EQSANS Reduction',
+                       'experiments':experiments,
+                       'breadcrumbs': breadcrumbs}
+    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = remote.view_util.fill_template_values(request, **template_values)
+    return render_to_response('eqsans/reduction_home.html',
+                              template_values)

@@ -5,7 +5,8 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    url(r'^$', 'eqsans.views.reduction_home'),
+    url(r'^$', 'eqsans.views.reduction_home', name='eqsans_reduction_home'),
+    url(r'^experiment/(?P<ipts>[\w\-]+)/$', 'eqsans.views.experiment', name='eqsans_experiment'),
     url(r'^reduction/$', 'eqsans.views.reduction_options', name='eqsans_new_reduction'),
     url(r'^reduction/(?P<reduction_id>\d+)/$', 'eqsans.views.reduction_options', name='eqsans_reduction'),
     url(r'^reduction/(?P<reduction_id>\d+)/script$', 'eqsans.views.reduction_script', name='eqsans_reduction_script'),

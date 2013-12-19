@@ -2,8 +2,18 @@
 
 {% block page_specific_tools %}
     <div class="tool_area">
+      <b>Catalog</b><br>
+      <ul>
+        <li><a href="{% url 'catalog_experiments' 'eqsans'%}" title="See all experiments for this instrument">see experiments</a></li>
+{% if ipts_number %}
+        <li><a href="{% url 'catalog_runs' 'eqsans' ipts_number%}" title="See all runs for this experiment">see {{ ipts_number }} runs</a></li>
+{% endif %}
+	  </ul>
+	</div>
+    <div class="tool_area">
       <b>Reduction</b><br>
       <ul>
+        <li><a href="{% url 'eqsans_reduction_home' %}" title="Go to reduction home for this instrument">reduction home</a></li>
         <li><a href="{% url 'eqsans_new_reduction' %}" title="Start a new reduction">new reduction</a></li>
 {% if reduction_id %}
         <li><a href="{% url 'eqsans_reduction_script' reduction_id %}" title="See reduction script">see script</a></li>
@@ -26,4 +36,5 @@
 {% endif %}
       </ul>
     </div>
+    
 {% endblock %}
