@@ -38,6 +38,8 @@ def get_authentication_status(request):
         if "Authenticated_As" in info:
             request.session['fermi_uid'] = info["Authenticated_As"]
             return info["Authenticated_As"]
+        if "Err_Msg" in info:
+            logging.error("MantidRemote: %s" % info["Err_Msg"])
     except:
         logging.error("Could not obtain information from Fermi: %s" % sys.exc_value)
     return None
@@ -57,20 +59,25 @@ def authenticate(request):
     """
         Authenticate with Fermi
     """
+    reason = ''
     try:
         conn = httplib.HTTPSConnection(FERMI_HOST, timeout=0.5)
         userAndPass = b64encode(b"%s:%s" % (request.POST['username'], request.POST['password'])).decode("ascii")
         headers = { 'Authorization' : 'Basic %s' %  userAndPass }
         conn.request('GET', FERMI_BASE_URL+'authenticate', headers=headers)
-        r = conn.getresponse()  
+        r = conn.getresponse()
+        info = json.loads(r.read())
+        if "Err_Msg" in info:
+            logging.error("MantidRemote: %s" % info["Err_Msg"])
+            reason = info["Err_Msg"]
         sessionid = r.getheader('set-cookie', '')
         if len(sessionid)>0:
             request.session['fermi']=sessionid
             request.session['fermi_uid']=request.POST['username']
-        return r.status
+        return r.status, reason
     except:
         logging.error("Could not authenticate with Fermi: %s" % sys.exc_value)
-    return 500
+    return 500, reason
 
 def transaction(request, start=False):
     """
@@ -90,6 +97,9 @@ def transaction(request, start=False):
         if not r.status == 200:
             logging.error("Fermi transaction call failed: %s" % r.status)
         info = json.loads(r.read())
+        if "Err_Msg" in info:
+            logging.error("MantidRemote: %s" % info["Err_Msg"])
+
         request.session['fermi_transID'] = info["TransID"]
         transaction = Transaction(trans_id = info["TransID"],
                                   directory = info["Directory"],
@@ -118,6 +128,8 @@ def submit_job(request, transaction, script_code, script_name='web_submission.py
                      headers={'Cookie':request.session.get('fermi', '')})
         r = conn.getresponse()
         resp = json.loads(r.read())
+        if "Err_Msg" in resp:
+            logging.error("MantidRemote: %s" % resp["Err_Msg"])
         if 'JobID' in resp:
             jobID = request.session['fermi_jobID'] = resp['JobID']
     except:

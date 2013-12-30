@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
 from django.utils.dateparse import parse_datetime
+from django.conf import settings
 
 from models import ReductionJob, Transaction
 
@@ -79,7 +80,19 @@ def authenticate(request):
     if request.method == 'POST':
         form = remote.view_util.FermiLoginForm(request.POST, request.FILES)
         if form.is_valid():
-            status = remote.view_util.authenticate(request)
+            status, reason = remote.view_util.authenticate(request)
+            if status is not 200:
+                breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
+                message = "Could not authenticate with Fermi"
+                if len(reason)>0:
+                    message += "<p>Server message: %s" % reason
+                template_values = {'message': message,
+                                   'back_url': request.POST['redirect'],
+                                   'breadcrumbs': breadcrumbs,}
+                template_values = users.view_util.fill_template_values(request, **template_values)
+                template_values = remote.view_util.fill_template_values(request, **template_values)
+                return render_to_response('remote/failed_connection.html',
+                                          template_values)
     return redirect(request.POST['redirect'])
       
 @login_required
