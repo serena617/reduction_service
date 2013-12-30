@@ -5,7 +5,7 @@
       <b>Catalog</b><br>
       <ul>
         <li><a href="{% url 'catalog_experiments' 'eqsans'%}" title="See all experiments for this instrument">see experiments</a></li>
-{% if ipts_number %}
+{% if ipts_number and is_categorized %}
         <li><a href="{% url 'catalog_runs' 'eqsans' ipts_number%}" title="See all runs for this experiment">see {{ ipts_number }} runs</a></li>
 {% endif %}
 	  </ul>

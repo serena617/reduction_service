@@ -77,6 +77,9 @@ def authenticate(request):
     """
         Authenticate and return to the previous page    
     """
+    redirect_url = reverse(settings.LANDING_VIEW)
+    if 'redirect' in request.POST:
+        redirect_url = request.POST['redirect']
     if request.method == 'POST':
         form = remote.view_util.FermiLoginForm(request.POST, request.FILES)
         if form.is_valid():
@@ -87,13 +90,13 @@ def authenticate(request):
                 if len(reason)>0:
                     message += "<p>Server message: %s" % reason
                 template_values = {'message': message,
-                                   'back_url': request.POST['redirect'],
+                                   'back_url': redirect_url,
                                    'breadcrumbs': breadcrumbs,}
                 template_values = users.view_util.fill_template_values(request, **template_values)
                 template_values = remote.view_util.fill_template_values(request, **template_values)
                 return render_to_response('remote/failed_connection.html',
                                           template_values)
-    return redirect(request.POST['redirect'])
+    return redirect(redirect_url)
       
 @login_required
 def job_details(request, job_id):
