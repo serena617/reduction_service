@@ -108,5 +108,7 @@ table .errorlist {
     background: none;
 }
 
+.disabled { background: #ccc; }
+
 .subtitle { font-size:10px; color:silver; }
 .subtitle_black { font-size:10px; }
