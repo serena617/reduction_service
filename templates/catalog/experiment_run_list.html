@@ -11,12 +11,13 @@
 <table class="reduction_table">
   <thead>
     <tr>
-      <th>Run</th><th>Title</th><th>Duration [sec]</th><th>Proton charge</th><th>Total counts</th>
+      <th>Run</th><th>Reduce</th><th>Title</th><th>Duration [sec]</th><th>Proton charge</th><th>Total counts</th>
     </tr>
   </thead>
   <tbody>
   {% for r in run_data|dictsortreversed:'id' %}
-    <tr><td><a href="{% if r.url %}{{ r.url }}{% endif %}" >{{ r.id }}</a></td>
+    <tr><td>{% if r.webmon_url %}<a ref="nofollow" class="external" target="_blank" href="{{ r.webmon_url }}" >{{ r.id }}</a>{% else %}{{ r.id }}{% endif %}</td>
+    <td>{% if r.reduce_url %}<a class="gear" href="{{ r.reduce_url }}"></a>{% endif %}</td>
     <td>{{ r.title }}
        {% if r.endTime and r.startTime %}<div class='subtitle'>{{ r.startTime|timeperiod:r.endTime}}</div>{% endif %}
     </td>

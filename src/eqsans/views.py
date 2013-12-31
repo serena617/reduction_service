@@ -99,9 +99,12 @@ def reduction_options(request, reduction_id=None):
     """
         Display the reduction options form
     """
+    #TODO: add ICAT info on top of the page
+    #TODO: add notes?
     if reduction_id is not None:
         reduction_proc = get_object_or_404(ReductionProcess, pk=reduction_id, owner=request.user)
-
+    
+    experiment_obj = None
     if request.method == 'POST':
         options_form = forms.ReductionOptions(request.POST)
         # If the form is valid update or create an entry for it
@@ -121,6 +124,10 @@ def reduction_options(request, reduction_id=None):
                     experiment_obj = Experiment(name=request.GET['expt_name'])
                     experiment_obj.save()
                 initial_values['expt_id'] = experiment_obj.id
+                instrument_obj = Instrument.objects.get(name='eqsans')
+                if not instrument_obj in experiment_obj.instruments.all():
+                    experiment_obj.instruments.add(instrument_obj)
+                    experiment_obj.save()
         
         options_form = forms.ReductionOptions(initial=initial_values)
 
@@ -141,6 +148,9 @@ def reduction_options(request, reduction_id=None):
     if reduction_id is not None:
         existing_jobs = RemoteJob.objects.filter(reduction=reduction_proc).order_by('id')
         template_values['existing_jobs'] = existing_jobs
+        template_values['expt_list'] = reduction_proc.experiments.all()
+    elif experiment_obj is not None:
+        template_values['expt_list'] = [experiment_obj]
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = remote.view_util.fill_template_values(request, **template_values)
     return render_to_response('eqsans/reduction_options.html',

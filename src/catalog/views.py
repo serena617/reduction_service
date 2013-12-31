@@ -68,7 +68,8 @@ def experiment_run_list(request, instrument, ipts='IPTS-8340'):
                 r_max = int(toks[1])
                 for r in range(r_min, r_max+1):
                     runs.append({'id':r,
-                                 'url': catalog.view_util.get_new_reduction_url(instrument, r, ipts)})
+                                 'webmon_url': catalog.view_util.get_webmon_url(instrument, r, ipts),
+                                 'reduce_url': catalog.view_util.get_new_reduction_url(instrument, r, ipts)})
             except:
                 logging.error("Problem generating run list: %s" % sys.exc_value)
 
