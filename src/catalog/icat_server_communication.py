@@ -14,6 +14,7 @@ else:
     ICAT_DOMAIN = 'icat.sns.gov'
     ICAT_PORT = 2080
 
+ICAT_DOMAIN = 'icat-testing.sns.gov'
 def get_text_from_xml(nodelist):
     rc = []
     for node in nodelist:
@@ -110,18 +111,31 @@ def get_instruments():
 
 def get_experiments(instrument):
     """
-    http://icat-testing.sns.gov:2080/icat-rest-ws/experiment/SNS
+    http://icat-testing.sns.gov:2080/icat-rest-ws/experiment/SNS/NOM/all
+
+    <proposal id="IPTS-8109">
+      <collection>0</collection>
+      <title>dummy</title>
+      <createTime>2013-12-02T17:28:01.874-05:00</createTime>
+      <runRange>12712-12718, 12720-12792</runRange>
+    </proposal>
+
     """
     experiments = []
     try:
         conn = httplib.HTTPConnection(ICAT_DOMAIN, 
                                       ICAT_PORT, timeout=0.5)
-        conn.request('GET', '/icat-rest-ws/experiment/SNS/%s/' % instrument.upper())
+        conn.request('GET', '/icat-rest-ws/experiment/SNS/%s/all' % instrument.upper())
         r = conn.getresponse()
         dom = xml.dom.minidom.parseString(r.read())
-        elements = dom.getElementsByTagName('proposal')
-        for element in elements:
-            expt = get_text_from_xml(element.childNodes)
+        for e in  dom.getElementsByTagName('proposal'):
+            expt = {'id': e.attributes['id'].value}
+            for n in e.childNodes:
+                if n.hasChildNodes():
+                    if n.nodeName in ['title']:
+                        expt[n.nodeName] = get_text_from_xml(n.childNodes)
+                    elif n.nodeName == 'runRange':
+                        expt[n.nodeName] = get_text_from_xml(n.childNodes)
             experiments.append(expt)
     except:
         logging.error("Could not get list of instruments from ICAT: %s" % sys.exc_value)
