@@ -1,4 +1,5 @@
 import httplib
+import urllib
 import xml.dom.minidom
 import logging
 import sys
@@ -57,7 +58,7 @@ def get_ipts_info(instrument, ipts):
             for n in metadata[0].childNodes:
                 # Run title
                 if n.nodeName=='title' and n.hasChildNodes():
-                    run_info['title'] = get_text_from_xml(n.childNodes)
+                    run_info['title'] = urllib.unquote(get_text_from_xml(n.childNodes))
                 # IPTS
                 if n.nodeName=='proposal' and n.hasChildNodes():
                     run_info['proposal'] = get_text_from_xml(n.childNodes)
@@ -136,7 +137,7 @@ def get_experiments(instrument):
             for n in e.childNodes:
                 if n.hasChildNodes():
                     if n.nodeName in ['title']:
-                        expt[n.nodeName] = get_text_from_xml(n.childNodes)
+                        expt[n.nodeName] = urllib.unquote(get_text_from_xml(n.childNodes))
                     elif n.nodeName == 'runRange':
                         expt[n.nodeName] = get_text_from_xml(n.childNodes)
             experiments.append(expt)
@@ -178,7 +179,7 @@ def get_ipts_runs(instrument, ipts):
             for n in r.childNodes:
                 if n.hasChildNodes():
                     if n.nodeName in ['title']:
-                        run_info[n.nodeName] = get_text_from_xml(n.childNodes)
+                        run_info[n.nodeName] = urllib.unquote(get_text_from_xml(n.childNodes))
                     elif n.nodeName in ['duration', 'protonCharge', 'totalCounts']:
                         text_value = get_text_from_xml(n.childNodes)
                         try:
