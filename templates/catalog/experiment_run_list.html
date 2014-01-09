@@ -11,7 +11,7 @@
 <table class="reduction_table">
   <thead>
     <tr>
-      <th>Run</th><th>Reduce</th><th>Title</th><th>Duration [sec]</th><th>Proton charge</th><th>Total counts</th>
+      <th>Run</th><th>Reduce</th><th>Title</th><th>Duration [sec]</th><th>Total counts</th>
     </tr>
   </thead>
   <tbody>
@@ -21,13 +21,10 @@
     <td>{{ r.title }}
        {% if r.endTime and r.startTime %}<div class='subtitle'>{{ r.startTime|timeperiod:r.endTime}}</div>{% endif %}
     </td>
-    <td>{{ r.duration }}</td><td>{{ r.protonCharge }}</td><td>{{ r.totalCounts }}</td></tr>
+    <td>{{ r.duration }}</td><td>{{ r.totalCounts }}</td></tr>
   {% endfor %}
   </tbody>
 </table>
-
-
-
 
 {% endif %}
 <p>

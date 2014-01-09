@@ -2,6 +2,7 @@ import httplib
 import xml.dom.minidom
 import logging
 import sys
+import time
 import datetime
 from django.conf import settings
 import catalog.view_util
@@ -14,7 +15,6 @@ else:
     ICAT_DOMAIN = 'icat.sns.gov'
     ICAT_PORT = 2080
 
-ICAT_DOMAIN = 'icat-testing.sns.gov'
 def get_text_from_xml(nodelist):
     rc = []
     for node in nodelist:
@@ -123,10 +123,13 @@ def get_experiments(instrument):
     """
     experiments = []
     try:
+        t0 = time.time()
+        url = '/icat-rest-ws/experiment/SNS/%s/all' % instrument.upper()
         conn = httplib.HTTPConnection(ICAT_DOMAIN, 
-                                      ICAT_PORT, timeout=0.5)
-        conn.request('GET', '/icat-rest-ws/experiment/SNS/%s/all' % instrument.upper())
+                                      ICAT_PORT, timeout=20)
+        conn.request('GET', url)
         r = conn.getresponse()
+        logging.debug("Catalog request %s:%s%s took %g sec" % (ICAT_DOMAIN, ICAT_PORT, url, (time.time()-t0)))
         dom = xml.dom.minidom.parseString(r.read())
         for e in  dom.getElementsByTagName('proposal'):
             expt = {'id': e.attributes['id'].value}
@@ -160,15 +163,18 @@ def get_ipts_runs(instrument, ipts):
     """
     run_data = []
     try:
+        t0 = time.time()
+        url = '/icat-rest-ws/experiment/SNS/%s/%s/all' % (instrument.upper(), ipts.upper())
         conn = httplib.HTTPConnection(ICAT_DOMAIN, 
-                                      ICAT_PORT, timeout=1.5)
-        conn.request('GET', '/icat-rest-ws/experiment/SNS/%s/%s/all/' % (instrument.upper(),
-                                                                     ipts.upper()))
+                                      ICAT_PORT, timeout=10)
+        conn.request('GET', url)
         r = conn.getresponse()
+        logging.debug("Catalog request %s:%s%s took %g sec" % (ICAT_DOMAIN, ICAT_PORT, url, (time.time()-t0)))
         dom = xml.dom.minidom.parseString(r.read())
         for r in dom.getElementsByTagName('run'):
             run_info = {'id': r.attributes['id'].value,
-                        'url': catalog.view_util.get_new_reduction_url(instrument, r.attributes['id'].value, ipts)}
+                        'webmon_url': catalog.view_util.get_webmon_url(instrument, r.attributes['id'].value, ipts),
+                        'reduce_url': catalog.view_util.get_new_reduction_url(instrument, r.attributes['id'].value, ipts)}
             for n in r.childNodes:
                 if n.hasChildNodes():
                     if n.nodeName in ['title']:
