@@ -8,9 +8,9 @@ def fill_template_values(request, **template_args):
     """
     if 'instrument' in template_args:
         instrument = template_args['instrument']
-        template_args['new_reduction_url'] = get_new_reduction_url(instrument),
-        template_args['reduction_url'] = get_reduction_url(instrument),
-        template_args['remote_url'] = get_remote_jobs_url(instrument),
+        template_args['new_reduction_url'] = get_new_reduction_url(instrument)
+        template_args['reduction_url'] = get_reduction_url(instrument)
+        template_args['remote_url'] = get_remote_jobs_url(instrument)
     return template_args
 
 def get_new_reduction_url(instrument, run=None, ipts=None):
