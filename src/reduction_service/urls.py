@@ -4,7 +4,7 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    url(r'^$', 'catalog.views.instrument_list', name='home'),
+    url(r'^$', 'reduction_service.views.home', name='home'),
     url(r'^eqsans/', include('eqsans.urls')),
     url(r'^remote/', include('remote.urls')),
     url(r'^catalog/', include('catalog.urls')),

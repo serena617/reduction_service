@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load catalog_tags %}
+
+{% block page_specific_tools %}
+    {% if reduction_url %}
+    <div class="tool_area">
+      <b>Reduction</b><br>
+      <ul>
+        <li><a href="{{ reduction_url }}" title="Go to reduction home for this instrument">reduction home</a></li>
+        <li><a href="{{ new_reduction_url }}" title="Start a new reduction">new reduction</a></li>
+      </ul>
+    </div>
+    {% endif %}
+    {% if remote_url %}
+    <div class="tool_area">
+      <b>Remote jobs</b><br>
+      <ul>
+        <li><a href="{{ remote_url }}" title="See remote jobs">see all jobs</a></li>
+      </ul>
+    </div>
+    {% endif %}
+{% endblock %}

@@ -124,7 +124,11 @@ def reduction_options(request, reduction_id=None):
                     experiment_obj = Experiment(name=request.GET['expt_name'])
                     experiment_obj.save()
                 initial_values['expt_id'] = experiment_obj.id
-                instrument_obj = Instrument.objects.get(name='eqsans')
+                try:
+                    instrument_obj = Instrument.objects.get(name='eqsans')
+                except:
+                    instrument_obj = Instrument(name='eqsans')
+                    instrument_obj.save()
                 if not instrument_obj in experiment_obj.instruments.all():
                     experiment_obj.instruments.add(instrument_obj)
                     experiment_obj.save()

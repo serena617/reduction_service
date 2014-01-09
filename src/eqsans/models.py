@@ -1,3 +1,9 @@
+"""
+    Reduction task models.
+    TODO: Some of the models here are meant to be common to all instruments and are
+    not specific to EQSANS. Those should be pulled out as we start building the common
+    reduction framework.
+"""
 from django.db import models
 from django.contrib.auth.models import User
 from remote.models import Transaction
