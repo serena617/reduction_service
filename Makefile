@@ -17,6 +17,7 @@ all:
 	
 clean: 
 	rm -rf $(prefix)
+	rm -f /etc/apache2/other/reduction_service_wsgi.conf
 	
 check:
 	# Check dependencies

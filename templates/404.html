@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block content %}
-    <header>
-        <div class="banner_title">404</div>
-    </header>
+{% block breadcrumb %}
+  <a href="{% url 'home' %}">home</a>
+{% endblock %}
 
-    <p>This is not the data you are looking for.</p>
+{% block content %}
+    <h3>The data you are looking for could not be found.</h3>
 {% endblock %}
