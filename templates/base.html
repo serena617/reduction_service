@@ -64,7 +64,7 @@
 
 <div class="breadcrumbs">
   {% block breadcrumb %}
-  {% if breadcrumbs %}{{ breadcrumbs|safe }}{% else %}<a href="/">home</a>{% endif %}
+  {% if breadcrumbs %}{{ breadcrumbs|safe }}{% else %}<a href="{% url 'home' %}">home</a>{% endif %}
   {% block right_side_links %}{% endblock %}
   {% endblock %}
 </div>
@@ -78,7 +78,7 @@
           {% else %}
           <div class='red'>Not authenticated</div>
           {% endif %}
-          <form action="/remote/authenticate/" method="post">{% csrf_token %}
+          <form action="{% url 'remote_authenticate'%}" method="post">{% csrf_token %}
             <input class="form_text" type="text" name="username" placeholder="username"><br>
             <input class="form_text" type="password" name="password" placeholder="password"><br>
             <input type="submit" value="log in">
