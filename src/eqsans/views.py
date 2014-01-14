@@ -238,12 +238,32 @@ def job_details(request, job_id):
     #TODO download files
     remote_job = get_object_or_404(RemoteJob, remote_id=job_id)
 
+    # TEST
+    import os
+    fd = open(os.path.join(os.path.split(__file__)[0],'EQSANS_1466_event_Iq.txt'))
+    data = []
+    for l in fd.readlines():
+        toks = l.split()
+        if len(toks)>=3:
+            try:
+                q = float(toks[0])
+                iq = float(toks[1])
+                diq = float(toks[2])
+                data.append({'x':q, 'y':iq, 'dy':diq})
+            except:
+                pass
+    
+
+
+
+
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
     breadcrumbs += " &rsaquo; <a href='%s'>eqsans reduction</a>" % reverse('eqsans.views.reduction_home')
     breadcrumbs += " &rsaquo; <a href='%s'>jobs</a>" % reverse('eqsans.views.reduction_jobs')
     breadcrumbs += " &rsaquo; %s" % job_id
 
     template_values = {'remote_job': remote_job,
+                       'data': data,
                        'parameters': remote_job.reduction.get_data_dict(),
                        'reduction_id': remote_job.reduction.id,
                        'breadcrumbs': breadcrumbs}

@@ -112,3 +112,12 @@ table .errorlist {
 
 .subtitle { font-size:10px; color:silver; }
 .subtitle_black { font-size:10px; }
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges; }
+.x.axis path { fill: none; }
+circle { fill: #0077cc; }
+line { stroke: #0077cc; stroke-width: 1px;}
