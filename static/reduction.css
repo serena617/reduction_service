@@ -119,5 +119,6 @@ table .errorlist {
   stroke: #000;
   shape-rendering: crispEdges; }
 .x.axis path { fill: none; }
-circle { fill: #0077cc; }
-line { stroke: #0077cc; stroke-width: 1px;}
+
+.default_1d circle { fill: #0077cc; } */
+.default_1d line { stroke: #0077cc; stroke-width: 1px;}

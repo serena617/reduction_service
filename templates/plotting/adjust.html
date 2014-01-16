@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block content %}
+    <plot_anchor>
+    <plot_anchor_2d>
+    <script type="text/javascript" src="{% static 'thirdparty/d3.v3/d3.v3.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/plotting.js' %}"></script>
+	<link rel="stylesheet" href="{% static 'css/colorbrewer.css' %}" type="text/css" title="no title" charset="utf-8">
+    <script>
+    var data = {{ data|safe }};
+    var data2d = {{ data2d|safe }};
+    var qx = {{ qx|safe }};
+    var qy = {{ qy|safe }};
+    var max_iq = {{ max_iq }};
+    plot_1d(data);
+    plot_2d(data2d, qx, qy, max_iq);
+    </script>
+
+
+{% endblock %}
