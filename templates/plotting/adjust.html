@@ -27,6 +27,13 @@
       plot_1d(data, options); 
     }
     $(function() { $( "#radio" ).buttonset();});
+    $(function() {
+        $( "#refresh_button" )
+          .button()
+          .click(function( event ) {
+        	  update_plot();
+          });
+      });
   </script>  
 {% endblock %}
 
@@ -57,10 +64,7 @@
         </tr>
       </tbody>
     </table>
-    <div class='plot_refresh'>
-      <a href='javascript:void(0);' onClick='update_plot();'>refresh</a>
-      <!-- a href='?print_layout'>print</a -->
-    </div>
+    <button id='refresh_button' class='plot_refresh' >apply</button>
   </div>
   <plot_anchor></plot_anchor>
   <plot_anchor_2d></plot_anchor_2d>

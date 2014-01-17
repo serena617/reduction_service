@@ -1,3 +1,11 @@
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges; }
+.x.axis path { fill: none; }
+
+.default_1d { margin: 5px 5px 5px 5px; }
 
 .analysis_tools { border: 0; }
 .tool_area {
@@ -6,6 +14,7 @@
     margin: 5px 5px;
     padding: 5px 5px;
     position: relative;
+    background-color: cornsilk;
 }
 .tool_area table {
 	cellspacing='1px';
@@ -21,7 +30,8 @@ padding: 3px 3px;
 }
 
 .plot_refresh { 
-	padding: 15px 0;
+	padding: 1px 0;
 	position: absolute;
 	right: 10px;
+	bottom: 10px;
 }

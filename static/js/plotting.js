@@ -23,20 +23,24 @@ function plot_1d(raw_data, options) {
     x.domain(d3.extent(data, function(d) { return d.x; }));
     y.domain(d3.extent(data, function(d) { return d.y; }));
 
-    var xAxis = d3.svg.axis().scale(x).orient("bottom").tickFormat(d3.format("g"));
-    var yAxis = d3.svg.axis().scale(y).orient("left").tickFormat(d3.format("g"));    
+    var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5).tickFormat(d3.format("g"));
+    var xAxisMinor = d3.svg.axis().scale(x).orient("bottom").ticks(5).tickSize(3,3).tickSubdivide(5).tickFormat('');
+    var yAxis = d3.svg.axis().scale(y).orient("left").ticks(5).tickFormat(d3.format("g"));    
+    var yAxisMinor = d3.svg.axis().scale(y).orient("left").ticks(5).tickSize(3,3).tickSubdivide(5).tickFormat('');    
     
     // Remove old plot
     d3.select("plot_anchor").select("svg").remove();
     
     var svg = d3.select("plot_anchor").append("svg")
-      //.attr("class", "default_1d")
+      .attr("class", "default_1d")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     svg.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(xAxis);
+    svg.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(xAxisMinor);
     svg.append("g").attr("class", "y axis").call(yAxis)
+    svg.append("g").attr("class", "y axis").call(yAxisMinor)
     
     // Create X axis label   
     svg.append("text")
@@ -73,12 +77,9 @@ function plot_1d(raw_data, options) {
     .attr("x1", function(d) { return x(d.x); })
     .attr("y1", function(d) { return y(d.y-d.dy); })
     .attr("x2", function(d) { return x(d.x); })
-    .attr("y2", function(d) { return y(d.y+d.dy); });
-
-    svg.append("a")
-    .attr("href", 'javascript:void(0);')
-    .attr("onClick", 'plot_1d(\"data\");')
-    .text("log"); 
+    .attr("y2", function(d) { return y(d.y+d.dy); })
+    .style('stroke', color)
+    .style('stroke-width', marker_size);
 
 }
 
