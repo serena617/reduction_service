@@ -1,5 +1,12 @@
-function plot_1d(raw_data, log_scale) {
-	log_scale = (typeof log_scale === "undefined") ? false : log_scale;
+function plot_1d(raw_data, options) {
+	options = (typeof options === "undefined") ? {} : options;
+    color = (typeof options.color === "undefined") ? '#0077cc' : options.color;
+    marker_size = (typeof options.marker_size === "undefined") ? 2 : options.marker_size;
+    height = (typeof options.height === "undefined") ? 250 : options.height;
+    width = (typeof options.width === "undefined") ? 500 : options.width;
+	log_scale = (typeof options.log_scale === "undefined") ? false : options.log_scale;
+	x_label = (typeof options.x_label === "undefined") ? "Q [1/\u00C5]" : options.x_label;
+	y_label = (typeof options.y_label === "undefined") ? "Intensity" : options.y_label;
 	
 	var data = [];
 	for (var i=0; i<raw_data.length; i++) {
@@ -8,19 +15,22 @@ function plot_1d(raw_data, log_scale) {
 	}
 	
     var margin = {top: 20, right: 20, bottom: 40, left: 60},
-    width = 500 - margin.left - margin.right,
-    height = 300 - margin.top - margin.bottom;
+    width = width - margin.left - margin.right,
+    height = height - margin.top - margin.bottom;
 
     var x = d3.scale.linear().range([0, width]);
     var y = log_scale ? d3.scale.log().range([height, 0]) : d3.scale.linear().range([height, 0]);
     x.domain(d3.extent(data, function(d) { return d.x; }));
     y.domain(d3.extent(data, function(d) { return d.y; }));
 
-    var xAxis = d3.svg.axis().scale(x).orient("bottom");
-    var yAxis = d3.svg.axis().scale(y).orient("left");    
+    var xAxis = d3.svg.axis().scale(x).orient("bottom").tickFormat(d3.format("g"));
+    var yAxis = d3.svg.axis().scale(y).orient("left").tickFormat(d3.format("g"));    
+    
+    // Remove old plot
+    d3.select("plot_anchor").select("svg").remove();
     
     var svg = d3.select("plot_anchor").append("svg")
-      .attr("class", "default_1d")
+      //.attr("class", "default_1d")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
       .append("g")
@@ -34,7 +44,7 @@ function plot_1d(raw_data, log_scale) {
     .attr("y",  height+margin.top+15)
     .attr("font-size", "12px")
     .style("text-anchor", "end")
-    .text("Q [1/\u00C5]");
+    .text(x_label);
 
     // Create Y axis label
     svg.append("text")
@@ -43,7 +53,7 @@ function plot_1d(raw_data, log_scale) {
     .attr("x", 0-margin.top)
     .attr("dy", "1em")
     .style("text-anchor", "end")
-    .text("Intensity");
+    .text(y_label);
     
     // Plot the points
     svg.selectAll('circle')
@@ -52,7 +62,8 @@ function plot_1d(raw_data, log_scale) {
       .append('circle')
       .attr("cx", function(d) { return x(d.x); })
       .attr("cy", function(d) { return y(d.y); })
-      .attr("r", 2);
+      .attr("r", marker_size)
+      .style('fill', color);
 
     // Error bars
     svg.selectAll('line')

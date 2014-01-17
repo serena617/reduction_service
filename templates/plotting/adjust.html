@@ -1,21 +1,74 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 
-{% block content %}
-    <plot_anchor>
-    <plot_anchor_2d>
-    <script type="text/javascript" src="{% static 'thirdparty/d3.v3/d3.v3.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/plotting.js' %}"></script>
-	<link rel="stylesheet" href="{% static 'css/colorbrewer.css' %}" type="text/css" title="no title" charset="utf-8">
-    <script>
-    var data = {{ data|safe }};
+{% block header %}
+  <link rel="stylesheet" href="{% static 'css/colorbrewer.css' %}" type="text/css" title="no title" charset="utf-8">
+  <link rel="stylesheet" href="{% static 'css/plotting.css' %}" type="text/css" title="no title" charset="utf-8">
+  <link rel="stylesheet" href="{% static 'css/plotting_print.css' %}" type="text/css" media="print" title="no title" charset="utf-8">
+  <script type="text/javascript" src="{% static 'thirdparty/d3.v3/d3.v3.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'js/plotting.js' %}"></script>
+  <script src="{% static 'thirdparty/spectrum.js' %}"></script><!--  http://bgrins.github.io/spectrum/  -->
+  <link rel='stylesheet' href="{% static 'css/spectrum.css' %}" type="text/css" />
+   
+  <script type="text/javascript">
+	var data = {{ data|safe }};
     var data2d = {{ data2d|safe }};
     var qx = {{ qx|safe }};
     var qy = {{ qy|safe }};
-    var max_iq = {{ max_iq }};
-    plot_1d(data);
-    plot_2d(data2d, qx, qy, max_iq);
-    </script>
+    var max_iq = {{ max_iq }};    
+    function update_plot() {
+      var options = {'color': $("#picker").spectrum("get"),
+    		  		 'marker_size': $("#marker_size").val(),
+					 'width': $('#plot_width').val(),
+					 'height': $('#plot_height').val(),
+					 'x_label': $('#x_label').val(),
+					 'y_label': $('#y_label').val(),
+           			 'log_scale': $('#scale_log').is(':checked')}
+      plot_1d(data, options); 
+    }
+    $(function() { $( "#radio" ).buttonset();});
+  </script>  
+{% endblock %}
 
+{% block top_tool_area %} {% endblock %}
 
+{% block content %}
+  <div class='tool_area'>
+    <table>
+      <tbody>
+        <tr>
+          <td>width:</td><td><input type='number' name='plot_width' id='plot_width' value='500' min='50' max='2000'></td>
+          <td>height:</td><td><input type='number' name='plot_height' id='plot_height' value='250' min='50' max='2000'></td>
+        </tr>
+        <tr>
+          <td>scale:</td>
+          <td><div id="radio">
+            <input type="radio" id="scale_log" name="radio"><label for="scale_log">log</label>
+            <input type="radio" id="scale_lin" name="radio" checked="checked"><label for="scale_lin">linear</label>
+          </div></td>
+        </tr>
+        <tr>
+          <td>marker color:</td><td><input type='text' id="picker" /></td>
+          <td>marker size:</td><td><input type='number' name='marker_size' id='marker_size' value='2' min='1' max='12'></td>
+        </tr>
+        <tr>
+          <td>x-axis label:</td><td><input type='text' id='x_label' value='Q [1/&Aring;]'/></td>
+          <td>y-axis label:</td><td><input type='text' id='y_label' value='Intensity'/></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class='plot_refresh'>
+      <a href='javascript:void(0);' onClick='update_plot();'>refresh</a>
+      <!-- a href='?print_layout'>print</a -->
+    </div>
+  </div>
+  <plot_anchor></plot_anchor>
+  <plot_anchor_2d></plot_anchor_2d>
+  <script>
+	//plot_2d(data2d, qx, qy, max_iq);
+  	$("#picker").spectrum({
+      color: "#0077cc"
+  	});
+  	update_plot();
+  </script>
 {% endblock %}
