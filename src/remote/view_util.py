@@ -32,7 +32,7 @@ def get_authentication_status(request):
         return None
     try:
         conn = httplib.HTTPSConnection(FERMI_HOST, timeout=0.5)
-        conn.request('GET', FERMI_BASE_URL+'authenticate', headers={'Cookie':sessionid})
+        conn.request('GET', FERMI_BASE_URL+'info', headers={'Cookie':sessionid})
         r = conn.getresponse()  
         info = json.loads(r.read())
         if "Authenticated_As" in info:
@@ -66,10 +66,14 @@ def authenticate(request):
         headers = { 'Authorization' : 'Basic %s' %  userAndPass }
         conn.request('GET', FERMI_BASE_URL+'authenticate', headers=headers)
         r = conn.getresponse()
-        info = json.loads(r.read())
-        if "Err_Msg" in info:
-            logging.error("MantidRemote: %s" % info["Err_Msg"])
-            reason = info["Err_Msg"]
+        if not r.status == 200:
+            try:
+                info = json.loads(r.read())
+                if "Err_Msg" in info:
+                    logging.error("MantidRemote: %s" % info["Err_Msg"])
+                    reason = info["Err_Msg"]
+            except:
+                logging.error("MantidRemote: %s" % sys.exc_value)
         sessionid = r.getheader('set-cookie', '')
         if len(sessionid)>0:
             request.session['fermi']=sessionid
