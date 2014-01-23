@@ -29,16 +29,5 @@
       {% endfor %}
       </ul>
     </div>
-    
-    
-  {% if data %}
-    <plot_anchor>
-    <script type="text/javascript" src="{% static 'thirdparty/d3.v3/d3.v3.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/plotting.js' %}"></script>
-    <script>
-    var data = {{ data|safe }};
-    plot_1d(data);
-    </script>
-  {% endif %}
 
 {% endblock %}
