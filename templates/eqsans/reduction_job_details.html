@@ -27,9 +27,9 @@
       {% for file in job_files %}
         {% url 'remote_download' trans_id file as download_url %}
         {% if download_url %}
-        <li>{{ file }}</li>
-        {% else %}
         <li><a href="{{ download_url }}">{{ file }}</a></li>
+        {% else %}
+        <li>{{ file }}</li>
         {% endif %}
       {% endfor %}
       </ul>
