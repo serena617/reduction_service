@@ -35,7 +35,7 @@
         <li><a href="{% url 'eqsans_submit_job' reduction_id %}" title="Submit this reduction job">submit this job</a></li>
 {% if existing_jobs and existing_jobs|length > 0 %}
     {% for job in existing_jobs %}
-        <li><a href="/eqsans/query/{{ job.remote_id }}/" title="See job details">job {{ job.remote_id }}</a></li>
+        <li><a href="{% url 'eqsans_job_details' job.remote_id %}" title="See job details">job {{ job.remote_id }}</a></li>
     {% endfor %}
 {% endif %}
 {% endif %}

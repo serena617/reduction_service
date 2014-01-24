@@ -11,18 +11,18 @@ class ReductionOptions(forms.Form):
     expt_id = forms.IntegerField(required=False, widget=forms.HiddenInput)
     # General options
     absolute_scale_factor = forms.FloatField(required=False, initial=1.0)
-    dark_current_run = forms.CharField(required=False)
+    dark_current_run = forms.CharField(required=False, initial='')
     sample_aperture_diameter = forms.FloatField(required=False, initial=10.0)
     
     # Beam center
-    beam_center_x = forms.FloatField(required=False)
-    beam_center_y = forms.FloatField(required=False)
-    fit_direct_beam = forms.BooleanField(required=False, initial=True,
+    beam_center_x = forms.FloatField(required=False, initial=96.0)
+    beam_center_y = forms.FloatField(required=False, initial=128.0)
+    fit_direct_beam = forms.BooleanField(required=False, initial=False,
                                          help_text='Select to fit the beam center')
     direct_beam_run = forms.CharField(required=False)
     
     # Sensitivity
-    perform_sensitivity = forms.BooleanField(required=False, initial=True,
+    perform_sensitivity = forms.BooleanField(required=False, initial=False,
                                              label='Perform sensitivity correction',
                                              help_text='Select to enable sensitivity correction')
     sensitivity_file = forms.CharField(required=False)
@@ -53,7 +53,8 @@ class ReductionOptions(forms.Form):
         xml  = "<Instrument>\n"
         xml += "  <name>EQSANS</name>\n"
         xml += "  <solid_angle_corr>True</solid_angle_corr>\n"
-        xml += "  <dark_current_corr>%s</dark_current_corr>\n" % str(len(data['dark_current_run'])>0)
+        dark_corr = data['dark_current_run'] and str(len(data['dark_current_run'])>0)
+        xml += "  <dark_current_corr>%s</dark_current_corr>\n" % dark_corr
         xml += "  <dark_current_data>%s</dark_current_data>\n" % data['dark_current_run']
 
         xml += "  <n_q_bins>100</n_q_bins>\n" # TODO
@@ -234,7 +235,7 @@ class ReductionOptions(forms.Form):
         script += "Resolution(sample_aperture_diameter=%s)\n" % data['sample_aperture_diameter']
         script += "PerformFlightPathCorrection(True)\n"
         
-        if len(data['dark_current_run'])>0:
+        if data['dark_current_run'] and len(data['dark_current_run'])>0:
             script += "\tDarkCurrentFile='%s',\n" % data['dark_current_run']
         
         if data['fit_direct_beam']:
