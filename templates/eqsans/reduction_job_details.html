@@ -15,7 +15,7 @@
     <div>Reduction</div>
     <div class='tool_area'>
       <ul>
-        <li><a href=' {% url 'eqsans_reduction' remote_job.reduction.id %}'>Job details</a>: {{ remote_job.reduction }}</li>
+        <li><a href="{% url 'eqsans_reduction' remote_job.reduction.id %}">Job details</a>: {{ remote_job.reduction }}</li>
         <li>Data: {{ parameters.data_file }}</li>
       </ul>
     </div>
@@ -25,7 +25,7 @@
     <div class='tool_area'>
       <ul>
       {% for file in job_files %}
-        <li><a href='/remote/download/{{ trans_id }}/{{ file }}'>{{ file }}</a></li>
+        <li><a href="{% url 'remote_download' trans_id file %}">{{ file }}</a></li>
       {% endfor %}
       </ul>
     </div>
