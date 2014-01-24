@@ -25,7 +25,12 @@
     <div class='tool_area'>
       <ul>
       {% for file in job_files %}
-        <li><a href="{% url 'remote_download' trans_id file %}">{{ file }}</a></li>
+        {% url 'remote_download' trans_id file as download_url %}
+        {% if download_url %}
+        <li>{{ file }}</li>
+        {% else %}
+        <li><a href="{{ download_url }}">{{ file }}</a></li>
+        {% endif %}
       {% endfor %}
       </ul>
     </div>
