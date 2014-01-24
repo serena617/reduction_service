@@ -1,6 +1,18 @@
 {% extends "eqsans/eqsans_base.html" %}
 {% load staticfiles %}
 
+{% block header %}
+  <link rel="stylesheet" href="{% static 'css/colorbrewer.css' %}" type="text/css" title="no title" charset="utf-8">
+  <link rel="stylesheet" href="{% static 'css/plotting.css' %}" type="text/css" title="no title" charset="utf-8">
+  <link rel="stylesheet" href="{% static 'css/plotting_print.css' %}" type="text/css" media="print" title="no title" charset="utf-8">
+  <script type="text/javascript" src="{% static 'thirdparty/d3.v3/d3.v3.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'js/plotting.js' %}"></script>
+   
+  <script type="text/javascript">
+    var data = {{ data|safe }};
+  </script>  
+{% endblock %}
+
 {% block content %}
     <div>Job {{ job_id }}: <b>{{ job_info.JobName }}</b></div>
     <div class='tool_area'>
@@ -34,5 +46,10 @@
       {% endfor %}
       </ul>
     </div>
-
+    
+    <plot_anchor></plot_anchor>
+    <script>
+  		//plot_2d(data2d, qx, qy, max_iq);
+    	plot_1d(data, {}); 
+  	</script>
 {% endblock %}

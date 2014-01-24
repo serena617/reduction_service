@@ -20,10 +20,11 @@ def experiment(request, ipts):
         #TODO create new reduction using a pre-existing one as a template
     """
     # Get experiment object
+    uncategorized = Experiment.objects.get_uncategorized('eqsans')
     try:
         experiment_obj = Experiment.objects.get(name=ipts)
     except:
-        experiment_obj = Experiment.objects.get_uncategorized('eqsans')
+        experiment_obj = uncategorized
     
     IS_UNCATEGORIZED = experiment_obj.is_uncategorized()
 
@@ -58,12 +59,13 @@ def experiment(request, ipts):
     else:
         for item in run_list:
             partial_list = ReductionProcess.objects.filter(owner=request.user,
+                                                           experiments=uncategorized,
                                                            data_file__contains=str(item['run']))
             red_list.extend(partial_list)
-        red_list.extend(ReductionProcess.objects.filter(owner=request.user,
-                                                        experiments=experiment_obj))
-        # Remove duplicates
-        red_list = list(red_list)
+        for item in ReductionProcess.objects.filter(owner=request.user,
+                                                        experiments=experiment_obj):
+            if not item in red_list:
+                red_list.append(item)
 
     reductions = []
     for r in red_list:
@@ -250,6 +252,26 @@ def job_details(request, job_id):
     template_values = remote.view_util.fill_job_dictionary(request, job_id, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = remote.view_util.fill_template_values(request, **template_values)
+    
+    # Go through the files and find data to plot
+    if 'job_files' in template_values and 'trans_id' in template_values:
+        for f in template_values['job_files']:
+            if f.endswith('_Iq.txt'):
+                file_content = remote.view_util.download_file(request, template_values['trans_id'], f)
+                data = []
+                for l in file_content.split('\n'):
+                    toks = l.split()
+                    if len(toks)>=3:
+                        try:
+                            q = float(toks[0])
+                            iq = float(toks[1])
+                            diq = float(toks[2])
+                            data.append({'x':q, 'y':iq, 'dy':diq})
+                        except:
+                            pass
+                template_values['plot_1d'] = data
+                break
+                
     return render_to_response('eqsans/reduction_job_details.html',
                               template_values)
 
