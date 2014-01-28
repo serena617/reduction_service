@@ -7,6 +7,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from remote.models import Transaction
+from plotting.models import Plot1D
 
 UNCATEGORIZED = 'uncategorized'
 
@@ -105,4 +106,5 @@ class RemoteJob(models.Model):
     reduction = models.ForeignKey(ReductionProcess)
     remote_id = models.CharField(max_length = 30, unique=True)
     transaction = models.ForeignKey(Transaction)
+    plots = models.ManyToManyField(Plot1D, null=True, blank=True, related_name='_remote_job_plot+')
     

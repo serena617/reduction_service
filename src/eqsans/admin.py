@@ -1,5 +1,7 @@
 from models import ReductionProcess, Instrument, Experiment, BoolReductionProperty, FloatReductionProperty, CharReductionProperty, RemoteJob
 from django.contrib import admin
+import logging
+import sys
 
 class ReductionProcessAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'owner', 'timestamp', 'properties', 'get_experiments')
@@ -44,7 +46,20 @@ class ExperimentAdmin(admin.ModelAdmin):
     get_instruments.short_description = "Instruments"    
 
 class RemoteJobAdmin(admin.ModelAdmin):
-    list_display = ('id', 'reduction', 'remote_id')
+    list_display = ('id', 'reduction', 'remote_id', 'get_plots')
+    
+    def get_plots(self, obj):
+        plots_str = ''
+        try:
+            plot_list = obj.plots.all()
+            if len(plot_list)>0:
+                plots_str = str(plot_list[0])
+                if len(plot_list)>1:
+                    plots_str += '+'
+        except:
+            logging.error("RemoteJobAdmin: %s" % sys.exc_value)
+        return ''
+    get_plots.short_description = "Plots"
     
 class InstrumentAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')

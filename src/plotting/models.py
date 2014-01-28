@@ -11,13 +11,16 @@ class PlotLayout(models.Model):
         related to the data points.
     """
     owner = models.ForeignKey(User)
-    title = models.TextField()
-    width = models.IntegerField()
-    height = models.IntegerField()
+    title = models.TextField(default='')
+    width = models.IntegerField(default=550)
+    height = models.IntegerField(default=250)
     is_x_log = models.BooleanField(default=False)
     is_y_log = models.BooleanField(default=False)
-    x_label = models.TextField()
-    y_label = models.TextField()
+    x_label = models.TextField(default='Q [1/&Aring;]')
+    y_label = models.TextField(default='Intensity')
+    
+    def __str__(self):
+        return "%s-%s" % (self.owner, self.id)
 
 class DataSet(models.Model):
     """
@@ -25,21 +28,35 @@ class DataSet(models.Model):
     """
     owner = models.ForeignKey(User)
     data  = models.TextField()
+    #filename = models.TextField()
+    
+    def __str__(self):
+        return str(self.owner)
     
 class DataLayout(models.Model):
     """
         Options related to the plotted data.
     """
     owner = models.ForeignKey(User)
-    color = models.CharField(max_length=12)
+    color = models.CharField(max_length=12, default='#0077cc')
     size  = models.IntegerField(default=2)
     dataset = models.ForeignKey(DataSet)
+    
+    def __str__(self):
+        return "%s-%s" % (self.owner, self.id)
     
 class Plot1D(models.Model):
     """
         Put together a plot
     """
     owner = models.ForeignKey(User)
+    filename = models.TextField()
     data = models.ManyToManyField(DataLayout)
-    layout = models.ForeignKey(PlotLayout)
+    layout = models.ForeignKey(PlotLayout, null=True, blank=True)
+    
+    def __str__(self):
+        return self.filename
+    
+    def first_data_layout(self):
+        return self.data.all()[0]
     

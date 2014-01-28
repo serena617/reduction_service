@@ -1,18 +1,58 @@
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.conf import settings
+from django.http import HttpResponse
 import users.view_util
 import remote.view_util
 import h5py
 import numpy
 import os
-    
+from plotting.models import Plot1D, PlotLayout
+
 import logging
 logger = logging.getLogger('plotting')
 
 @login_required
-def adjust(request):
+def adjust_1d(request, plot_id):
+    plot_1d = get_object_or_404(Plot1D, pk=plot_id, owner=request.user)
+    data_str = plot_1d.data.all()[0].dataset.data
+    
+    # Get layout options
+    if plot_1d.layout is None:
+        layout = PlotLayout(owner=request.user)
+        layout.save()
+        plot_1d.layout = layout
+        plot_1d.save()
+    
+    
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; plotting" % reverse(settings.LANDING_VIEW)
+    template_values = {'next':request.path,
+                       'data': data_str,
+                       'plot1d': plot_1d,
+                       'breadcrumbs': breadcrumbs}
+    if 'back' in request.GET:
+        template_values['back_url'] = request.GET['back']
+    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = remote.view_util.fill_template_values(request, **template_values)
+    return render_to_response('plotting/adjust_1d.html',
+                              template_values)
+    
+@login_required
+def updated_parameters_1d(request, plot_id):
+    plot_1d = get_object_or_404(Plot1D, pk=plot_id, owner=request.user)
+    # Get layout options
+    if plot_1d.layout is None:
+        layout = PlotLayout(owner=request.user)
+        layout.save()
+        plot_1d.layout = layout
+        plot_1d.save()
+    
+    return HttpResponse()
+
+    
+@login_required
+def adjust_2d(request, plot_id=None):
     """
         
     """
@@ -25,7 +65,7 @@ def adjust(request):
                 q = float(toks[0])
                 iq = float(toks[1])
                 diq = float(toks[2])
-                data.append({'x':q, 'y':iq, 'dy':diq})
+                data.append([q, iq, diq])
             except:
                 pass
 

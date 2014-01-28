@@ -23,6 +23,7 @@ check:
 	# Check dependencies
 	# NEEDS django_auth_ldap
 	@python -c "import django" || echo "\nERROR: Django is not installed: www.djangoproject.com\n"
+	@python -c "import h5py" || echo "\nERROR: h5py is not installed: www.h5py.org\n"
 	
 install: webapp
        

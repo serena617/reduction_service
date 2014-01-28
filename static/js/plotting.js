@@ -11,7 +11,7 @@ function plot_1d(raw_data, options) {
 	var data = [];
 	for (var i=0; i<raw_data.length; i++) {
 		
-		if (raw_data[i].y>0 && raw_data[i].dy<raw_data[i].y) {  data.push(raw_data[i]); };
+		if (raw_data[i][1]>0 && raw_data[i][2]<raw_data[i][1]) {  data.push(raw_data[i]); };
 	}
 	
     var margin = {top: 20, right: 20, bottom: 40, left: 60},
@@ -20,8 +20,8 @@ function plot_1d(raw_data, options) {
 
     var x = d3.scale.linear().range([0, width]);
     var y = log_scale ? d3.scale.log().range([height, 0]) : d3.scale.linear().range([height, 0]);
-    x.domain(d3.extent(data, function(d) { return d.x; }));
-    y.domain(d3.extent(data, function(d) { return d.y; }));
+    x.domain(d3.extent(data, function(d) { return d[0]; }));
+    y.domain(d3.extent(data, function(d) { return d[1]; }));
 
     var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5).tickFormat(d3.format("g"));
     var xAxisMinor = d3.svg.axis().scale(x).orient("bottom").ticks(5).tickSize(3,3).tickSubdivide(5).tickFormat('');
@@ -64,8 +64,8 @@ function plot_1d(raw_data, options) {
       .data(data)
       .enter()
       .append('circle')
-      .attr("cx", function(d) { return x(d.x); })
-      .attr("cy", function(d) { return y(d.y); })
+      .attr("cx", function(d) { return x(d[0]); })
+      .attr("cy", function(d) { return y(d[1]); })
       .attr("r", marker_size)
       .style('fill', color);
 
@@ -74,13 +74,12 @@ function plot_1d(raw_data, options) {
       .data(data)
       .enter()
       .append('line')
-    .attr("x1", function(d) { return x(d.x); })
-    .attr("y1", function(d) { return y(d.y-d.dy); })
-    .attr("x2", function(d) { return x(d.x); })
-    .attr("y2", function(d) { return y(d.y+d.dy); })
+    .attr("x1", function(d) { return x(d[0]); })
+    .attr("y1", function(d) { return y(d[1]-d[2]); })
+    .attr("x2", function(d) { return x(d[0]); })
+    .attr("y2", function(d) { return y(d[1]+d[2]); })
     .style('stroke', color)
     .style('stroke-width', marker_size);
-
 }
 
 function plot_2d(data, qx, qy, max_iq) {

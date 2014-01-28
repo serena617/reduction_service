@@ -9,7 +9,7 @@
   <script type="text/javascript" src="{% static 'js/plotting.js' %}"></script>
    
   <script type="text/javascript">
-    var data = {{ data|safe }};
+    var data = {{ plot_1d|safe }};
   </script>  
 {% endblock %}
 
@@ -48,8 +48,16 @@
     </div>
     
     <plot_anchor></plot_anchor>
+    <a href="{% url 'plotting_adjust_1d' plot_1d_id %}/?back={{ back_url }}">adjust plot</a>
     <script>
-  		//plot_2d(data2d, qx, qy, max_iq);
-    	plot_1d(data, {}); 
+      //plot_2d(data2d, qx, qy, max_iq);
+      var options = {'color': '{{ plot_object.first_data_layout.color|safe }}',
+                     'marker_size': '{{ plot_object.first_data_layout.size }}',
+                     'width': '{{ plot_object.layout.width }}',
+                     'height': '{{ plot_object.layout.height }}',
+                     'x_label': "{{ plot_object.layout.x_label|safe }}",
+                     'y_label': '{{ plot_object.layout.y_label|safe }}',
+                     'log_scale': '{{ plot_object.layout.is_y_log }}'};
+    	plot_1d(data, options); 
   	</script>
 {% endblock %}

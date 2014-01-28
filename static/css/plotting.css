@@ -8,6 +8,7 @@
 .default_1d { margin: 5px 5px 5px 5px; }
 
 .analysis_tools { border: 0; }
+
 .tool_area {
     border: 1px solid #aaaaaa;
     border-radius:5px;
@@ -34,4 +35,11 @@ padding: 3px 3px;
 	position: absolute;
 	right: 10px;
 	bottom: 10px;
+}
+
+.upper_right_link { 
+    padding: 1px 5px;
+    position: absolute;
+    right: 10px;
+    top: 10px;
 }
