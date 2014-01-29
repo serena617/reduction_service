@@ -6,6 +6,7 @@ from django.conf import settings
 
 from models import ReductionProcess, Experiment, RemoteJob, Instrument
 from plotting.models import Plot1D, DataSet, DataLayout, PlotLayout
+from remote.models import Transaction
 import users.view_util
 import remote.view_util
 from catalog.icat_server_communication import get_ipts_info
@@ -308,6 +309,16 @@ def job_details(request, job_id):
     return render_to_response('eqsans/reduction_job_details.html',
                               template_values)
 
+@login_required
+def test_result(request, job_id='-1'):
+    """
+        Dummy job for development when ORNL resources are not available
+    """
+    from test_util import get_dummy_data
+    template_values = get_dummy_data(request, job_id)
+    return render_to_response('eqsans/reduction_job_details.html',
+                              template_values)
+    
 @login_required
 def reduction_jobs(request):
     """

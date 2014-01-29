@@ -60,7 +60,7 @@ class ReductionProcess(models.Model):
     timestamp = models.DateTimeField('timestamp', auto_now=True)
     
     def __str__(self):
-        return self.name
+        return "%s - %s" % (self.id, self.name)
     
     def get_data_dict(self):
         """

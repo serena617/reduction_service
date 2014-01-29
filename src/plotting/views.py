@@ -41,12 +41,25 @@ def adjust_1d(request, plot_id):
 @login_required
 def updated_parameters_1d(request, plot_id):
     plot_1d = get_object_or_404(Plot1D, pk=plot_id, owner=request.user)
-    # Get layout options
-    if plot_1d.layout is None:
-        layout = PlotLayout(owner=request.user)
-        layout.save()
-        plot_1d.layout = layout
-        plot_1d.save()
+    if 'width' in request.GET:
+        plot_1d.layout.width = request.GET['width']
+    if 'height' in request.GET:
+        plot_1d.layout.height = request.GET['height']
+    if 'log_scale' in request.GET:
+        plot_1d.layout.is_y_log = request.GET['log_scale']=='true'
+    if 'x_label' in request.GET:
+        plot_1d.layout.x_label = request.GET['x_label']
+    if 'y_label' in request.GET:
+        plot_1d.layout.y_label = request.GET['y_label']
+        
+    data_layout = plot_1d.first_data_layout()
+    if 'color' in request.GET:
+        data_layout.color = request.GET['color']
+    if 'marker_size' in request.GET:
+        data_layout.size = request.GET['marker_size']
+        
+    data_layout.save()
+    plot_1d.layout.save()
     
     return HttpResponse()
 
