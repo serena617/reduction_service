@@ -58,5 +58,10 @@ class Plot1D(models.Model):
         return self.filename
     
     def first_data_layout(self):
-        return self.data.all()[0]
+        """
+            Return the first data set to be plotted
+        """
+        if len(self.data.all())>0:
+            return self.data.all()[0]
+        return None
     

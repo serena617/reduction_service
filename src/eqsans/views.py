@@ -238,8 +238,6 @@ def job_details(request, job_id):
     """
         Show status of a given remote job
     """
-    #TODO plot I(q)
-    #TODO download files
     remote_job = get_object_or_404(RemoteJob, remote_id=job_id)
 
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
@@ -260,19 +258,16 @@ def job_details(request, job_id):
     if 'job_files' in template_values and 'trans_id' in template_values:
         for f in template_values['job_files']:
             if f.endswith('_Iq.txt'):
-                
                 # Do we read this data already?
                 data_str = None
                 data_id = None
                 plot_object = None
                 plots = remote_job.plots.all().filter(filename=f, owner=request.user)
-                if len(plots)>0:
-                    if len(plots[0].data.all())>0:
-                        data_str = plots[0].data.all()[0].dataset.data
-                        data_id = plots[0].id
-                        plot_object = plots[0]
-                    if len(plots)>1:
-                        logging.warning("Plotting.models.Plot1D should not have more than 1 entry per data file per user.")
+                plot1d = plots[0].first_data_layout()
+                if plot1d is not None:
+                    data_str = plot1d.dataset.data
+                    data_id = plots[0].id
+                    plot_object = plots[0]
                 
                 # If we don't have data stored, read it from file
                 if data_str is None:
@@ -305,7 +300,15 @@ def job_details(request, job_id):
                 template_values['plot_object'] = plot_object
                 template_values['plot_1d_id'] = data_id
                 break
-                
+    else:
+        plots = remote_job.plots.all()
+        if len(plots)>0:
+            plot1d = plots[0].first_data_layout()
+            if plot1d is not None:
+                template_values['plot_1d'] = plot1d.dataset.data
+                template_values['plot_object'] = plots[0]
+                template_values['plot_1d_id'] = plots[0].id
+    
     return render_to_response('eqsans/reduction_job_details.html',
                               template_values)
 
