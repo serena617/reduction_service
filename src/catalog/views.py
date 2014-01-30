@@ -21,7 +21,7 @@ def instrument_list(request):
     if len(instruments)==0:
         if settings.DEBUG:
             instruments=['eqsans']
-        template_values['user_alert'] = ['No instruments were found in the catalog']
+        template_values['user_alert'] = ['Could not get instrument list from the catalog']
     template_values['instruments'] = instruments
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = remote.view_util.fill_template_values(request, **template_values)
@@ -40,7 +40,7 @@ def experiment_list(request, instrument):
                        'title': '%s experiments' % instrument.upper(),
                        'breadcrumbs': breadcrumbs}
     if len(experiments)==0:
-        template_values['user_alert'] = ['No experiments were found for instrument %s' % instrument]
+        template_values['user_alert'] = ['Could not get experiment list from the catalog']
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = remote.view_util.fill_template_values(request, **template_values)
     template_values = catalog.view_util.fill_template_values(request, **template_values)

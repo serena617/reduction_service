@@ -142,7 +142,7 @@ def get_experiments(instrument):
                         expt[n.nodeName] = get_text_from_xml(n.childNodes)
             experiments.append(expt)
     except:
-        logging.error("Could not get list of instruments from ICAT: %s" % sys.exc_value)
+        logging.error("Could not get list of experiments from ICAT: %s" % sys.exc_value)
     return experiments
     
     
