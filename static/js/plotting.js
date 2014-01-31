@@ -23,10 +23,10 @@ function plot_1d(raw_data, options) {
     x.domain(d3.extent(data, function(d) { return d[0]; }));
     y.domain(d3.extent(data, function(d) { return d[1]; }));
 
-    var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5).tickFormat(d3.format("g"));
+    var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5).tickFormat(d3.format("5.2g"));
     var xAxisMinor = d3.svg.axis().scale(x).orient("bottom").ticks(5).tickSize(3,3).tickSubdivide(5).tickFormat('');
-    var yAxis = d3.svg.axis().scale(y).orient("left").ticks(5).tickFormat(d3.format("g"));    
-    var yAxisMinor = d3.svg.axis().scale(y).orient("left").ticks(5).tickSize(3,3).tickSubdivide(5).tickFormat('');    
+    var yAxis = d3.svg.axis().scale(y).orient("left").ticks(5).tickFormat(d3.format("5.2g"));    
+    var yAxisMinor = d3.svg.axis().scale(y).orient("left").ticks(5).tickSize(3,3).tickSubdivide(5).tickFormat('');
     
     // Remove old plot
     d3.select("plot_anchor").select("svg").remove();

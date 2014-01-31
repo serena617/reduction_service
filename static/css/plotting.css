@@ -9,7 +9,7 @@
 
 .analysis_tools { border: 0; }
 
-.tool_area {
+.box_area {
     border: 1px solid #aaaaaa;
     border-radius:5px;
     margin: 5px 5px;
@@ -17,16 +17,16 @@
     position: relative;
     background-color: cornsilk;
 }
-.tool_area table {
+.box_area table {
 	cellspacing='1px';
 }
 
-.tool_area .ui-button-text-only .ui-button-text {
+.box_area .ui-button-text-only .ui-button-text {
 padding: 3px 3px;
 }
 
-.tool_area input { margin: 0 0 0 0; }
-.tool_area .ui-widget {
+.box_area input { margin: 0 0 0 0; }
+.box_area .ui-widget {
 	font-size:1em;
 }
 

@@ -263,11 +263,12 @@ def job_details(request, job_id):
                 data_id = None
                 plot_object = None
                 plots = remote_job.plots.all().filter(filename=f, owner=request.user)
-                plot1d = plots[0].first_data_layout()
-                if plot1d is not None:
-                    data_str = plot1d.dataset.data
-                    data_id = plots[0].id
-                    plot_object = plots[0]
+                if len(plots)>0:
+                    plot1d = plots[0].first_data_layout()
+                    if plot1d is not None:
+                        data_str = plot1d.dataset.data
+                        data_id = plots[0].id
+                        plot_object = plots[0]
                 
                 # If we don't have data stored, read it from file
                 if data_str is None:
@@ -289,7 +290,9 @@ def job_details(request, job_id):
                     dataset.save()
                     datalayout = DataLayout(owner=request.user, dataset=dataset)
                     datalayout.save()
-                    plot1d = Plot1D(owner=request.user, filename=f)
+                    plotlayout = PlotLayout(owner=request.user)
+                    plotlayout.save()
+                    plot1d = Plot1D(owner=request.user, filename=f, layout=plotlayout)
                     plot1d.save()
                     plot1d.data.add(datalayout)
                     remote_job.plots.add(plot1d)
@@ -356,7 +359,11 @@ def reduction_jobs(request):
 
 @login_required
 def reduction_home(request):
-    eqsans = get_object_or_404(Instrument, name='eqsans')
+    try:
+        eqsans = Instrument.objects.get(name='eqsans')
+    except:
+        eqsans = Instrument(name='eqsans')
+        eqsans.save()
     experiments = Experiment.objects.experiments_for_instrument(eqsans)
 
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; eqsans reduction" % reverse(settings.LANDING_VIEW)

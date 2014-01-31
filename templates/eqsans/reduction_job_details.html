@@ -59,7 +59,7 @@
                      'height': '{{ plot_object.layout.height }}',
                      'x_label': x_label,
                      'y_label': y_label,
-                     'log_scale': {{ plot_object.layout.is_y_log|lower }}};
+                     'log_scale': {% if plot_object.layout %}{{ plot_object.layout.is_y_log|lower }}{% else %}true{% endif %}};
     	plot_1d(data, options); 
   	</script>
 {% endblock %}

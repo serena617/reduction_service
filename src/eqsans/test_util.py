@@ -90,6 +90,7 @@ def get_dummy_data(request, job_id):
         datalayout = DataLayout(owner=request.user, dataset=dataset)
         datalayout.save()
         plotlayout = PlotLayout(owner=request.user)
+        plotlayout.save()
         plot1d = Plot1D(owner=request.user, filename=f, layout=plotlayout)
         plot1d.save()
         plot1d.data.add(datalayout)
