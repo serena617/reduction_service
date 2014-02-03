@@ -7,40 +7,39 @@
   <link rel="stylesheet" href="{% static 'css/plotting_print.css' %}" type="text/css" media="print" title="no title" charset="utf-8">
   <script type="text/javascript" src="{% static 'thirdparty/d3.v3/d3.v3.min.js' %}"></script>
   <script type="text/javascript" src="{% static 'js/plotting.js' %}"></script>
-  <script src="{% static 'thirdparty/spectrum.js' %}"></script><!--  http://bgrins.github.io/spectrum/  -->
-  <link rel='stylesheet' href="{% static 'css/spectrum.css' %}" type="text/css" />
    
   <script type="text/javascript">
-    var data = {{ data|safe }};
+    var data = {{ data2d|safe }};
+    var qx = {{ qx|safe }};
+    var qy = {{ qy|safe }};
+    var max_iq = {{ max_iq }};
     function update_plot(send_to_server) {
       send_to_server = (typeof send_to_server === "undefined") ? true : send_to_server;
-      var options = {'color': $("#picker").spectrum("get").toHexString(),
-                     'marker_size': $("#marker_size").val(),
-                     'width': $('#plot_width').val(),
+      var options = {'width': $('#plot_width').val(),
                      'height': $('#plot_height').val(),
                      'x_label': $('#x_label').val(),
                      'y_label': $('#y_label').val(),
                      'log_scale': $('#scale_log').is(':checked')};
-      plot_1d(data, options); 
+      plot_2d(data, qx, qy, max_iq, options)
+      //TODO: send the new options to the server
       if (send_to_server) {
    
-      $.ajax({ url: "{% url 'updated_parameters_1d' plot1d.id %}",
-               type: "GET",
-               data: options,
-                dataType: 'json'
-            });
+      //$.ajax({ url: "{ % url 'updated_parameters_1d' plot1d.id % }",
+      //         type: "GET",
+      //         data: options,
+      //          dataType: 'json'
+      //      });
       };
-
     }
     $(function() { $( "#radio" ).buttonset();});
     $(function() {
         $( "#refresh_button" )
           .button()
           .click(function( event ) {
-        	  update_plot();
+             update_plot();
           });
       });
-  </script>  
+  </script>
 {% endblock %}
 
 {% block top_tool_area %} {% endblock %}
@@ -50,8 +49,8 @@
     <table>
       <tbody>
         <tr>
-          <td>width:</td><td><input type='number' name='plot_width' id='plot_width' value='{{ plot1d.layout.width }}' min='50' max='2000'></td>
-          <td>height:</td><td><input type='number' name='plot_height' id='plot_height' value='{{ plot1d.layout.height }}' min='50' max='2000'></td>
+          <td>width:</td><td><input type='number' name='plot_width' id='plot_width' value='{{ plot1d.layout.width|default:400 }}' min='50' max='2000'></td>
+          <td>height:</td><td><input type='number' name='plot_height' id='plot_height' value='{{ plot1d.layout.height|default:400 }}' min='50' max='2000'></td>
         </tr>
         <tr>
           <td>scale:</td>
@@ -59,10 +58,6 @@
             <input type="radio" id="scale_log" name="radio"><label for="scale_log">log</label>
             <input type="radio" id="scale_lin" name="radio" checked="checked"><label for="scale_lin">linear</label>
           </div></td>
-        </tr>
-        <tr>
-          <td>marker color:</td><td><input type='text' id="picker" /></td>
-          <td>marker size:</td><td><input type='number' name='marker_size' id='marker_size' value='{{ plot1d.first_data_layout.size }}' min='1' max='12'></td>
         </tr>
         <tr>
           <td>x-axis label:</td><td><input type='text' id='x_label' value='{{ plot1d.layout.x_label|safe }}'/></td>
@@ -77,11 +72,8 @@
   <div class='upper_right_link' ><a href='{{ back_url }}'>go back to previous page</a></div>
   {% endif %}
   
-  <plot_anchor></plot_anchor>
+  <plot_anchor_2d></plot_anchor_2d>
   <script>
-    $("#picker").spectrum({
-      color: "{{ plot1d.first_data_layout.color|safe }}"
-     });
     {% if plot1d.layout.is_y_log %}
     $('#scale_log').prop('checked', true);
     $('#scale_lin').prop('checked', false);

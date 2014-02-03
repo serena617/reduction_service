@@ -1,19 +1,18 @@
 function plot_1d(raw_data, options) {
-	options = (typeof options === "undefined") ? {} : options;
+    options = (typeof options === "undefined") ? {} : options;
     color = (typeof options.color === "undefined") ? '#0077cc' : options.color;
     marker_size = (typeof options.marker_size === "undefined") ? 2 : options.marker_size;
     height = (typeof options.height === "undefined") ? 250 : options.height;
     width = (typeof options.width === "undefined") ? 500 : options.width;
-	log_scale = (typeof options.log_scale === "undefined") ? false : options.log_scale;
-	x_label = (typeof options.x_label === "undefined") ? "Q [1/\u00C5]" : options.x_label;
-	y_label = (typeof options.y_label === "undefined") ? "Intensity" : options.y_label;
-	
-	var data = [];
-	for (var i=0; i<raw_data.length; i++) {
-		
-		if (raw_data[i][1]>0 && raw_data[i][2]<raw_data[i][1]) {  data.push(raw_data[i]); };
-	}
-	
+    log_scale = (typeof options.log_scale === "undefined") ? false : options.log_scale;
+    x_label = (typeof options.x_label === "undefined") ? "Q [1/\u00C5]" : options.x_label;
+    y_label = (typeof options.y_label === "undefined") ? "Intensity" : options.y_label;
+
+    var data = [];
+    for (var i=0; i<raw_data.length; i++) {
+        if (raw_data[i][1]>0 && raw_data[i][2]<raw_data[i][1]) {  data.push(raw_data[i]); };
+    }
+
     var margin = {top: 20, right: 20, bottom: 40, left: 60},
     width = width - margin.left - margin.right,
     height = height - margin.top - margin.bottom;
@@ -58,7 +57,7 @@ function plot_1d(raw_data, options) {
     .attr("dy", "1em")
     .style("text-anchor", "end")
     .text(y_label);
-    
+
     // Plot the points
     svg.selectAll('circle')
       .data(data)
@@ -82,10 +81,17 @@ function plot_1d(raw_data, options) {
     .style('stroke-width', marker_size);
 }
 
-function plot_2d(data, qx, qy, max_iq) {
-    var margin = {top: 20, right: 20, bottom: 40, left: 60},
-    width = 300 + margin.left + margin.right,
-    height = 300 + margin.top + margin.bottom;
+function plot_2d(data, qx, qy, max_iq, options) {
+    options = (typeof options === "undefined") ? {} : options;
+    height = (typeof options.height === "undefined") ? 400 : options.height;
+    width = (typeof options.width === "undefined") ? 400 : options.width;
+    log_scale = (typeof options.log_scale === "undefined") ? false : options.log_scale;
+    x_label = (typeof options.x_label === "undefined") ? "Qx [1/\u00C5]" : options.x_label;
+    y_label = (typeof options.y_label === "undefined") ? "Qy [1/\u00C5]" : options.y_label;
+
+    var margin = {top: 20, right: 20, bottom: 60, left: 60},
+    width = width - margin.left - margin.right,
+    height = height - margin.top - margin.bottom;
 
     var x = d3.scale.linear().range([0, width]);
     var y = d3.scale.linear().range([height, 0]);
@@ -93,27 +99,52 @@ function plot_2d(data, qx, qy, max_iq) {
     y.domain(d3.extent(qy, function(d) { return d; }));
 
     var xAxis = d3.svg.axis().scale(x).orient("bottom");
-    var yAxis = d3.svg.axis().scale(y).orient("left");    
-    
+    var yAxis = d3.svg.axis().scale(y).orient("left");
+
+    // Remove old plot
+    d3.select("plot_anchor_2d").select("svg").remove();
     var svg = d3.select("plot_anchor_2d").append("svg")
       .attr("class", "Spectral")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-    
+
     var pixel_h = y(qy[0])-y(qy[1]);
     var pixel_w = x(qx[1])-x(qx[0]);
-    
-    var quantize = d3.scale.quantize()
-    .domain([0.,max_iq])
-    .range(d3.range(11).map(function(i) { return "q" + i + "-11"; }));
-    
-    var color = d3.scale.linear()
-    .domain([0, max_iq])
-    .range(["white", "steelblue"])
-    .interpolate(d3.interpolateLab);
-    
+
+    var quantize;
+    if (log_scale) {
+      var step = Math.log(max_iq+1.0)/10;
+      bins = [0, Math.exp(step)-1.0, Math.exp(2.0*step)-1.0, Math.exp(3.0*step)-1.0,
+              Math.exp(4.0*step)-1.0, Math.exp(5.0*step)-1.0, Math.exp(6.0*step)-1.0,
+              Math.exp(7.0*step)-1.0, Math.exp(8.0*step)-1.0, Math.exp(9.0*step)-1.0];
+      quantize = d3.scale.threshold()
+      .domain(bins)
+      .range(d3.range(11).map(function(i) { return "q" + i + "-11"; }));
+    } else {
+        var quantize = d3.scale.quantize()
+        .domain([0.,max_iq])
+        .range(d3.range(11).map(function(i) { return "q" + i + "-11"; }));
+    };
+
+    // Create X axis label   
+    svg.append("text")
+    .attr("x", width )
+    .attr("y", height+margin.top+15)
+    .attr("font-size", "12px")
+    .style("text-anchor", "end")
+    .text(x_label);
+
+    // Create Y axis label
+    svg.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 0-margin.left)
+    .attr("x", 0-margin.top)
+    .attr("dy", "1em")
+    .style("text-anchor", "end")
+    .text(y_label);
+
     svg.selectAll('g')
     .data(data)
     .enter()
@@ -128,7 +159,6 @@ function plot_2d(data, qx, qy, max_iq) {
     .attr('width', function(d,i) { return pixel_w; })
     .attr('height', function(d,i) { return pixel_h; })
     .attr("class", function(d) { return quantize(d); })
-    //.style("fill", function(d) { return color(d); });
     svg.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(xAxis);
     svg.append("g").attr("class", "y axis").call(yAxis)
 
