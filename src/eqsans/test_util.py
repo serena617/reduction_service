@@ -85,18 +85,11 @@ def get_dummy_data(request, job_id):
                 except:
                     pass
         data_str = str(data)
-        dataset = DataSet(owner=request.user, data=data_str)
-        dataset.save()
-        datalayout = DataLayout(owner=request.user, dataset=dataset)
-        datalayout.save()
-        plotlayout = PlotLayout(owner=request.user)
-        plotlayout.save()
-        plot1d = Plot1D(owner=request.user, filename=f, layout=plotlayout)
-        plot1d.save()
-        plot1d.data.add(datalayout)
-        remote_job.plots.add(plot1d)
-        data_id = plot1d.id
-        plot_object = plot1d
+        plot_object = Plot1D.objects.create_plot(request.user,
+                                                 data=data_str,
+                                                 filename='4065_Iq.txt')
+        remote_job.plots.add(plot_object)
+        data_id = plot_object.id
     
     template_values['plot_1d'] = data_str
     template_values['plot_object'] = plot_object

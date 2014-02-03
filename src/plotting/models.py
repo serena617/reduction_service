@@ -45,6 +45,22 @@ class DataLayout(models.Model):
     def __str__(self):
         return "%s-%s" % (self.owner, self.id)
     
+class Plot1DManager(models.Manager):
+    def create_plot(self, user, data, filename):
+        """
+            Create a default plot, with all associated DB entries
+        """
+        dataset = DataSet(owner=user, data=data)
+        dataset.save()
+        datalayout = DataLayout(owner=user, dataset=dataset)
+        datalayout.save()
+        plotlayout = PlotLayout(owner=user)
+        plotlayout.save()
+        plot1d = Plot1D(owner=user, filename=filename, layout=plotlayout)
+        plot1d.save()
+        plot1d.data.add(datalayout)
+        return plot1d
+
 class Plot1D(models.Model):
     """
         Put together a plot
@@ -53,7 +69,7 @@ class Plot1D(models.Model):
     filename = models.TextField()
     data = models.ManyToManyField(DataLayout)
     layout = models.ForeignKey(PlotLayout, null=True, blank=True)
-    
+    objects = Plot1DManager()
     def __str__(self):
         return self.filename
     
@@ -64,4 +80,15 @@ class Plot1D(models.Model):
         if len(self.data.all())>0:
             return self.data.all()[0]
         return None
+    
+class Plot2D(models.Model):
+    """
+        Put together a 2D plot
+    """
+    owner = models.ForeignKey(User)
+    filename = models.TextField()
+    data = models.ForeignKey(DataSet)
+    layout = models.ForeignKey(PlotLayout, null=True, blank=True)
+    def __str__(self):
+        return self.filename
     

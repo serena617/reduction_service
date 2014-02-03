@@ -27,7 +27,7 @@
     <div>Reduction</div>
     <div class='tool_area'>
       <ul>
-        <li><a href="{% url 'eqsans_reduction' remote_job.reduction.id %}">Job details</a>: {{ remote_job.reduction }}</li>
+        {% if remote_job.reduction %}<li><a href="{% url 'eqsans_reduction' remote_job.reduction.id %}">Job details</a>: {{ remote_job.reduction }}</li>{% endif %}
         <li>Data: {{ parameters.data_file }}</li>
       </ul>
     </div>
@@ -47,6 +47,7 @@
       </ul>
     </div>
     
+    {% if plot_1d_id %}
     <plot_anchor></plot_anchor>
     <a href="{% url 'plotting_adjust_1d' plot_1d_id %}/?back={{ back_url }}">adjust plot</a>
     <script>
@@ -62,4 +63,5 @@
                      'log_scale': {% if plot_object.layout %}{{ plot_object.layout.is_y_log|lower }}{% else %}true{% endif %}};
     	plot_1d(data, options); 
   	</script>
+    {% endif %}
 {% endblock %}

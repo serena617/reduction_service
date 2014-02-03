@@ -5,14 +5,14 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 
 from models import ReductionProcess, Experiment, RemoteJob, Instrument
-from plotting.models import Plot1D, DataSet, DataLayout, PlotLayout
-from remote.models import Transaction
 import users.view_util
 import remote.view_util
+import view_util
 from catalog.icat_server_communication import get_ipts_info
 from . import forms
 import logging
 import copy
+import sys
 
 @login_required
 def experiment(request, ipts):
@@ -258,59 +258,12 @@ def job_details(request, job_id):
     if 'job_files' in template_values and 'trans_id' in template_values:
         for f in template_values['job_files']:
             if f.endswith('_Iq.txt'):
-                # Do we read this data already?
-                data_str = None
-                data_id = None
-                plot_object = None
-                plots = remote_job.plots.all().filter(filename=f, owner=request.user)
-                if len(plots)>0:
-                    plot1d = plots[0].first_data_layout()
-                    if plot1d is not None:
-                        data_str = plot1d.dataset.data
-                        data_id = plots[0].id
-                        plot_object = plots[0]
-                
-                # If we don't have data stored, read it from file
-                if data_str is None:
-                    logging.warning("Retrieving %s from compute resource" % f)
-                    file_content = remote.view_util.download_file(request, template_values['trans_id'], f)
-                    data = []
-                    for l in file_content.split('\n'):
-                        toks = l.split()
-                        if len(toks)>=3:
-                            try:
-                                q = float(toks[0])
-                                iq = float(toks[1])
-                                diq = float(toks[2])
-                                data.append([q, iq, diq])
-                            except:
-                                pass
-                    data_str = str(data)
-                    dataset = DataSet(owner=request.user, data=data_str)
-                    dataset.save()
-                    datalayout = DataLayout(owner=request.user, dataset=dataset)
-                    datalayout.save()
-                    plotlayout = PlotLayout(owner=request.user)
-                    plotlayout.save()
-                    plot1d = Plot1D(owner=request.user, filename=f, layout=plotlayout)
-                    plot1d.save()
-                    plot1d.data.add(datalayout)
-                    remote_job.plots.add(plot1d)
-                    data_id = plot1d.id
-                    plot_object = plot1d
-                
-                template_values['plot_1d'] = data_str
-                template_values['plot_object'] = plot_object
-                template_values['plot_1d_id'] = data_id
-                break
-    else:
-        plots = remote_job.plots.all()
-        if len(plots)>0:
-            plot1d = plots[0].first_data_layout()
-            if plot1d is not None:
-                template_values['plot_1d'] = plot1d.dataset.data
-                template_values['plot_object'] = plots[0]
-                template_values['plot_1d_id'] = plots[0].id
+                plot_info = view_util.process_iq_output(request, remote_job, 
+                                                        template_values['trans_id'], f)
+                template_values.update(plot_info)
+            elif f.endswith('_Iqxy.nxs'):
+                plot_info = view_util.process_iqxy_output(request, remote_job, f)
+                template_values.update(plot_info)
     
     return render_to_response('eqsans/reduction_job_details.html',
                               template_values)

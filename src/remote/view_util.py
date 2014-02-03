@@ -7,6 +7,7 @@ from base64 import b64encode
 import json
 import logging
 import sys
+import os
 from models import Transaction
 
 # The following should be in settings
@@ -198,6 +199,17 @@ def download_file(request, trans_id, filename):
     return None
 
 def fill_job_dictionary(request, remote_job_id, **template_values):
+    """
+        Fill in a dictionary with job information
+        @param request: request object
+        @param remote_job_id: remote job id string
+        @param template_values: dictionary to fill
+    """
+    # Verify whether we are dealing with a test job.
+    # There is only one allowed test job and it has '-1' as its ID.
+    if remote_job_id == '-1':
+        template_values['trans_id'] = -1
+        template_values['job_files'] = ['4065_Iq.txt']
 
     template_values['title'] = 'Job %s' % remote_job_id
     template_values['job_id'] = remote_job_id
