@@ -91,7 +91,7 @@ def process_Iq_data(file_content, return_raw=False):
         return data
     return str(data)
 
-def process_Iqxy_data(file_content, file_name):
+def process_Iqxy_data(file_content):
     """
         Process the content of an I(qx,qy) file and return a string representation
         of the data that we can ship to the client for plotting.
