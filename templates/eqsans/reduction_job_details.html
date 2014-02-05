@@ -2,14 +2,18 @@
 {% load staticfiles %}
 
 {% block header %}
-  <link rel="stylesheet" href="{% static 'css/colorbrewer.css' %}" type="text/css" title="no title" charset="utf-8">
   <link rel="stylesheet" href="{% static 'css/plotting.css' %}" type="text/css" title="no title" charset="utf-8">
   <link rel="stylesheet" href="{% static 'css/plotting_print.css' %}" type="text/css" media="print" title="no title" charset="utf-8">
   <script type="text/javascript" src="{% static 'thirdparty/d3.v3/d3.v3.min.js' %}"></script>
   <script type="text/javascript" src="{% static 'js/plotting.js' %}"></script>
    
+  <!-- Ref. 1D={{ plot_1d_id }} 2D={{ plot_2d.id }} -->
   <script type="text/javascript">
     var data = {{ plot_1d|safe }};
+    var max_iq = {{ plot_2d_zmax }};
+    var qx = {{ plot_2d_x }};
+    var qy = {{ plot_2d_y }};
+    var data2d = {{ plot_2d_data|safe }};
   </script>  
 {% endblock %}
 
@@ -51,7 +55,6 @@
     <plot_anchor></plot_anchor>
     <a href="{% url 'plotting_adjust_1d' plot_1d_id %}/?back={{ back_url }}">adjust plot</a>
     <script>
-      //plot_2d(data2d, qx, qy, max_iq);
       var x_label = $('<div />').html("{{ plot_object.layout.x_label|safe }}").text();
       var y_label = $('<div />').html("{{ plot_object.layout.y_label|safe }}").text();
       var options = {'color': '{{ plot_object.first_data_layout.color|safe }}',
@@ -61,7 +64,22 @@
                      'x_label': x_label,
                      'y_label': y_label,
                      'log_scale': {% if plot_object.layout %}{{ plot_object.layout.is_y_log|lower }}{% else %}true{% endif %}};
-    	plot_1d(data, options); 
-  	</script>
+      plot_1d(data, options); 
+    </script>
+    {% endif %}
+    {% if plot_2d %}
+    <plot_anchor_2d></plot_anchor_2d>
+    <a href="{% url 'plotting_adjust_2d' plot_2d.id %}/?back={{ back_url }}">adjust plot</a>
+    <script>
+      var x_label2d = $('<div />').html("{{ plot_2d.layout.x_label|safe }}").text();
+      var y_label2d = $('<div />').html("{{ plot_2d.layout.y_label|safe }}").text();
+      var options2d = {'width': '{{ plot_2d.layout.width }}',
+                     'height': '{{ plot_2d.layout.height }}',
+                     'x_label': x_label2d,
+                     'y_label': y_label2d,
+                     'log_scale': {% if plot_2d.layout %}{{ plot_2d.layout.is_y_log|lower }}{% else %}true{% endif %}};
+      plot_2d(data2d, qx, qy, max_iq, options2d);
+    </script>
+
     {% endif %}
 {% endblock %}

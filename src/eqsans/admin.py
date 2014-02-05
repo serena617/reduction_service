@@ -46,20 +46,29 @@ class ExperimentAdmin(admin.ModelAdmin):
     get_instruments.short_description = "Instruments"    
 
 class RemoteJobAdmin(admin.ModelAdmin):
-    list_display = ('id', 'reduction', 'remote_id', 'get_plots')
+    list_display = ('id', 'reduction', 'remote_id', 'get_plots', 'get_plots2d')
     
     def get_plots(self, obj):
-        plots_str = ''
+        plots = []
         try:
             plot_list = obj.plots.all()
             if len(plot_list)>0:
-                plots_str = str(plot_list[0])
-                if len(plot_list)>1:
-                    plots_str += '+'
+                plots.append(str(plot_list[0]))
         except:
             logging.error("RemoteJobAdmin: %s" % sys.exc_value)
-        return ''
+        return ', '.join(plots)
     get_plots.short_description = "Plots"
+    
+    def get_plots2d(self, obj):
+        plots = []
+        try:
+            plot_list = obj.plots2d.all()
+            if len(plot_list)>0:
+                plots.append(str(plot_list[0]))
+        except:
+            logging.error("RemoteJobAdmin: %s" % sys.exc_value)
+        return ', '.join(plots)
+    get_plots2d.short_description = "Plots2D"
     
 class InstrumentAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')

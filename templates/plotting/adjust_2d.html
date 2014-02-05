@@ -2,17 +2,16 @@
 {% load staticfiles %}
 
 {% block header %}
-  <link rel="stylesheet" href="{% static 'css/colorbrewer.css' %}" type="text/css" title="no title" charset="utf-8">
   <link rel="stylesheet" href="{% static 'css/plotting.css' %}" type="text/css" title="no title" charset="utf-8">
   <link rel="stylesheet" href="{% static 'css/plotting_print.css' %}" type="text/css" media="print" title="no title" charset="utf-8">
   <script type="text/javascript" src="{% static 'thirdparty/d3.v3/d3.v3.min.js' %}"></script>
   <script type="text/javascript" src="{% static 'js/plotting.js' %}"></script>
    
   <script type="text/javascript">
-    var data = {{ data2d|safe }};
-    var qx = {{ qx|safe }};
-    var qy = {{ qy|safe }};
-    var max_iq = {{ max_iq }};
+    var data = {{ plot_2d.data|safe }};
+    var qx = {{ plot_2d.x_axis|safe }};
+    var qy = {{ plot_2d.y_axis|safe }};
+    var max_iq = {{ plot_2d.z_max }};
     function update_plot(send_to_server) {
       send_to_server = (typeof send_to_server === "undefined") ? true : send_to_server;
       var options = {'width': $('#plot_width').val(),
@@ -21,14 +20,12 @@
                      'y_label': $('#y_label').val(),
                      'log_scale': $('#scale_log').is(':checked')};
       plot_2d(data, qx, qy, max_iq, options)
-      //TODO: send the new options to the server
       if (send_to_server) {
-   
-      //$.ajax({ url: "{ % url 'updated_parameters_1d' plot1d.id % }",
-      //         type: "GET",
-      //         data: options,
-      //          dataType: 'json'
-      //      });
+        $.ajax({ url: "{% url 'updated_parameters_2d' plot_2d.id %}",
+               type: "GET",
+               data: options,
+               dataType: 'json'
+               });
       };
     }
     $(function() { $( "#radio" ).buttonset();});
@@ -49,8 +46,8 @@
     <table>
       <tbody>
         <tr>
-          <td>width:</td><td><input type='number' name='plot_width' id='plot_width' value='{{ plot1d.layout.width|default:400 }}' min='50' max='2000'></td>
-          <td>height:</td><td><input type='number' name='plot_height' id='plot_height' value='{{ plot1d.layout.height|default:400 }}' min='50' max='2000'></td>
+          <td>width:</td><td><input type='number' name='plot_width' id='plot_width' value='{{ plot_2d.layout.width|default:500 }}' min='50' max='2000'></td>
+          <td>height:</td><td><input type='number' name='plot_height' id='plot_height' value='{{ plot_2d.layout.height|default:500 }}' min='50' max='2000'></td>
         </tr>
         <tr>
           <td>scale:</td>
@@ -60,8 +57,8 @@
           </div></td>
         </tr>
         <tr>
-          <td>x-axis label:</td><td><input type='text' id='x_label' value='{{ plot1d.layout.x_label|safe }}'/></td>
-          <td>y-axis label:</td><td><input type='text' id='y_label' value='{{ plot1d.layout.y_label|safe }}'/></td>
+          <td>x-axis label:</td><td><input type='text' id='x_label' value='{{ plot_2d.layout.x_label|safe }}'/></td>
+          <td>y-axis label:</td><td><input type='text' id='y_label' value='{{ plot_2d.layout.y_label|safe }}'/></td>
         </tr>
       </tbody>
     </table>
@@ -74,7 +71,7 @@
   
   <plot_anchor_2d></plot_anchor_2d>
   <script>
-    {% if plot1d.layout.is_y_log %}
+    {% if plot_2d.layout.is_y_log %}
     $('#scale_log').prop('checked', true);
     $('#scale_lin').prop('checked', false);
     {% endif %}

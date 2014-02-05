@@ -6,11 +6,13 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 
 from models import ReductionProcess, RemoteJob, Instrument
-from plotting.models import Plot1D, DataSet, DataLayout, PlotLayout
+from plotting.models import Plot1D, Plot2D
 from remote.models import Transaction
 import users.view_util
 import remote.view_util
-import logging
+import view_util
+import numpy
+import h5py
 import os
 
 def get_dummy_data(request, job_id):
@@ -58,41 +60,53 @@ def get_dummy_data(request, job_id):
     f = os.path.join(os.path.split(__file__)[0],'..','plotting','data','4065_Iq.txt')
                 
     # Do we read this data already?
-    data_str = None
-    data_id = None
-    plot_object = None
-    plots = remote_job.plots.all().filter(filename=f, owner=request.user)
-    if len(plots)>0:
-        if len(plots[0].data.all())>0:
-            data_str = plots[0].data.all()[0].dataset.data
-            data_id = plots[0].id
-            plot_object = plots[0]
-        if len(plots)>1:
-            logging.warning("Plotting.models.Plot1D should not have more than 1 entry per data file per user.")
-    
-    # If we don't have data stored, read it from file
-    if data_str is None:
+    plot_object = remote_job.get_first_plot(filename='4065_Iq.txt', owner=request.user)
+    if plot_object is not None and plot_object.first_data_layout() is not None:
+        data_str = plot_object.first_data_layout().dataset.data
+    else:
+        # If we don't have data stored, read it from file
         file_content = open(f,'r').read()
-        data = []
-        for l in file_content.split('\n'):
-            toks = l.split()
-            if len(toks)>=3:
-                try:
-                    q = float(toks[0])
-                    iq = float(toks[1])
-                    diq = float(toks[2])
-                    data.append([q, iq, diq])
-                except:
-                    pass
-        data_str = str(data)
+        data_str = view_util.process_Iq_data(file_content)
         plot_object = Plot1D.objects.create_plot(request.user,
                                                  data=data_str,
                                                  filename='4065_Iq.txt')
         remote_job.plots.add(plot_object)
-        data_id = plot_object.id
     
     template_values['plot_1d'] = data_str
     template_values['plot_object'] = plot_object
-    template_values['plot_1d_id'] = data_id
+    template_values['plot_1d_id'] = plot_object.id if plot_object is not None else None
     
+    # Now the 2D data
+    f = os.path.join(os.path.split(__file__)[0],'..','plotting','data','4065_Iqxy.nxs')
+    plot_object2d = remote_job.get_plot_2d(filename='4065_Iqxy.nxs', owner=request.user)
+    if plot_object2d is not None:
+        data_str_2d = plot_object2d.data
+        x_str = plot_object2d.x_axis
+        y_str = plot_object2d.y_axis
+        z_max = plot_object2d.z_max
+    else:
+        numpy.set_printoptions(threshold='nan', nanstr='0', infstr='0')
+        fd = h5py.File(f, 'r')
+        g = fd['mantid_workspace_1']
+        y = g['workspace']['axis1']
+        x = g['workspace']['axis2']
+        values = g['workspace']['values']
+        z_max = numpy.amax(values)
+        numpy.set_string_function( lambda x: '['+','.join(map(lambda y:'['+','.join(map(lambda z: "%.4g" % z,y))+']',x))+']' )
+        data_str_2d = values[:].__repr__()
+        numpy.set_string_function( lambda x: '['+','.join(map(lambda z: "%.4g" % z,x))+']' )
+
+        y_str = y[:].__repr__()
+        x_str = x[:].__repr__()
+        plot_object2d = Plot2D.objects.create_plot(user=request.user, data=data_str_2d,
+                                                   x_axis=x_str, y_axis=y_str,
+                                                   z_min=0.0, z_max=z_max, filename='4065_Iqxy.nxs')
+        remote_job.plots2d.add(plot_object2d)
+
+    template_values['plot_2d_data'] = data_str_2d
+    template_values['plot_2d_x'] = x_str
+    template_values['plot_2d_y'] = y_str
+    template_values['plot_2d_zmax'] = z_max
+    template_values['plot_2d'] = plot_object2d
+
     return template_values

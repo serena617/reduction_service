@@ -8,7 +8,7 @@ import remote.view_util
 import h5py
 import numpy
 import os
-from plotting.models import Plot1D, PlotLayout
+from plotting.models import Plot1D, Plot2D, PlotLayout
 
 import logging
 logger = logging.getLogger('plotting')
@@ -26,8 +26,7 @@ def adjust_1d(request, plot_id):
         plot_1d.save()
     
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; plotting" % reverse(settings.LANDING_VIEW)
-    template_values = {'next':request.path,
-                       'data': data_str,
+    template_values = {'data': data_str,
                        'plot1d': plot_1d,
                        'breadcrumbs': breadcrumbs}
     if 'back' in request.GET:
@@ -62,31 +61,45 @@ def updated_parameters_1d(request, plot_id):
     
     return HttpResponse()
 
-    
 @login_required
-def adjust_2d(request, plot_id=None):
+def adjust_2d(request, plot_id):
     """
+        Update the layout parameters for a given 1D plot
+        
+        @param request: http request object
+        @param plot_id: pk of the Plot1D entry
         
     """
-    numpy.set_printoptions(threshold='nan', nanstr='0', infstr='0')
-    f = h5py.File(os.path.join(os.path.split(__file__)[0],'data','4065_Iqxy.nxs'), 'r')
-    g = f['mantid_workspace_1']
-    y = g['workspace']['axis1']
-    x = g['workspace']['axis2']
-    values = g['workspace']['values']
-
-    numpy.set_string_function( lambda x: '['+','.join(map(lambda y:'['+','.join(map(lambda z: "%.4g" % z,y))+']',x))+']' )
-    data2d = values[:].__repr__()
-    numpy.set_string_function( lambda x: '['+','.join(map(lambda z: "%.4g" % z,x))+']' )
-
+    plot_2d = get_object_or_404(Plot2D, pk=plot_id, owner=request.user)
     breadcrumbs = "<a href='%s'>home</a>  &rsaquo; plotting" % reverse(settings.LANDING_VIEW)
-
-    template_values = {'data2d': data2d,
-                       'max_iq': numpy.amax(values),
-                       'qx': x[:].__repr__(), 'qy': y[:].__repr__(),
+    template_values = {'plot_2d': plot_2d,
                        'breadcrumbs': breadcrumbs}
+    if 'back' in request.GET:
+        template_values['back_url'] = request.GET['back']
+        
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = remote.view_util.fill_template_values(request, **template_values)
     return render_to_response('plotting/adjust_2d.html',
                               template_values)
 
+@login_required
+def updated_parameters_2d(request, plot_id):
+    """
+        Update the layout parameters for a given 2D plot
+        
+        @param request: http request object
+        @param plot_id: pk of the Plot2D entry
+    """
+    plot_2d = get_object_or_404(Plot2D, pk=plot_id, owner=request.user)
+    if 'width' in request.GET:
+        plot_2d.layout.width = request.GET['width']
+    if 'height' in request.GET:
+        plot_2d.layout.height = request.GET['height']
+    if 'log_scale' in request.GET:
+        plot_2d.layout.is_y_log = request.GET['log_scale']=='true'
+    if 'x_label' in request.GET:
+        plot_2d.layout.x_label = request.GET['x_label']
+    if 'y_label' in request.GET:
+        plot_2d.layout.y_label = request.GET['y_label']
+    plot_2d.layout.save()
+    return HttpResponse()

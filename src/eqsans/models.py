@@ -7,7 +7,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from remote.models import Transaction
-from plotting.models import Plot1D
+from plotting.models import Plot1D, Plot2D
 
 UNCATEGORIZED = 'uncategorized'
 
@@ -107,4 +107,29 @@ class RemoteJob(models.Model):
     remote_id = models.CharField(max_length = 30, unique=True)
     transaction = models.ForeignKey(Transaction)
     plots = models.ManyToManyField(Plot1D, null=True, blank=True, related_name='_remote_job_plot+')
+    plots2d = models.ManyToManyField(Plot2D, null=True, blank=True, related_name='_remote_job_plot2d+')
     
+    def get_first_plot(self, filename, owner):
+        """
+            Return the first plot object associated with this remote job, or None
+            @param filename: filename we are looking for
+            @param owner: job owner
+        """
+        plots = self.plots.all().filter(filename=filename, owner=owner)
+        if len(plots)>0:
+            # The plot has to have at least one data set
+            plot1d = plots[0].first_data_layout()
+            if plot1d is not None:
+                return plots[0]
+        return None
+    
+    def get_plot_2d(self, filename, owner):
+        """
+            Return the first 2D plot object associated with this remote job, or None
+            @param filename: filename we are looking for
+            @param owner: job owner
+        """
+        plots = self.plots2d.all().filter(filename=filename, owner=owner)
+        if len(plots)>0:
+            return plots[0]
+        return None

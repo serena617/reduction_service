@@ -81,6 +81,32 @@ function plot_1d(raw_data, options) {
     .style('stroke-width', marker_size);
 }
 
+function get_color(i, n_max) {
+    var n_divs = 4.0;
+    var phase = 1.0*i/n_max;
+    var max_i = 210;
+    if (phase<1.0/n_divs) {
+        r = max_i;
+        b = 0;
+        g = Math.round(max_i*Math.abs(Math.sin(Math.PI/2.0*i/n_max*n_divs)));
+    } else if (phase<2.0/n_divs) {
+        r = Math.round(max_i*Math.abs(Math.cos(Math.PI/2.0*i/n_max*n_divs)));
+        b = 0;
+        g = max_i;
+    } else if (phase<3.0/n_divs) {
+        r = 0;
+        b = Math.round(max_i*Math.abs(Math.sin(Math.PI/2.0*i/n_max*n_divs)));
+        g = max_i;
+    } else if (phase<4.0/n_divs) {
+        r = 0;
+        b = max_i;
+        g = Math.round(max_i*Math.abs(Math.cos(Math.PI/2.0*i/n_max*n_divs)));
+    }
+    r = r + 30;
+    g = g + 30;
+    return 'rgb('+r+','+g+','+b+')';
+}
+
 function plot_2d(data, qx, qy, max_iq, options) {
     options = (typeof options === "undefined") ? {} : options;
     height = (typeof options.height === "undefined") ? 400 : options.height;
@@ -110,22 +136,25 @@ function plot_2d(data, qx, qy, max_iq, options) {
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    var pixel_h = y(qy[0])-y(qy[1]);
-    var pixel_w = x(qx[1])-x(qx[0]);
+    // Scale up the calculated pixel width so that we don't produce visual artifacts
+    var pixel_h = 1.5*(y(qy[0])-y(qy[1]));
+    var pixel_w = 1.5*(x(qx[1])-x(qx[0]));
 
+    var n_colors = 64;
     var quantize;
     if (log_scale) {
-      var step = Math.log(max_iq+1.0)/10;
-      bins = [0, Math.exp(step)-1.0, Math.exp(2.0*step)-1.0, Math.exp(3.0*step)-1.0,
-              Math.exp(4.0*step)-1.0, Math.exp(5.0*step)-1.0, Math.exp(6.0*step)-1.0,
-              Math.exp(7.0*step)-1.0, Math.exp(8.0*step)-1.0, Math.exp(9.0*step)-1.0];
+      var bins = [];
+      var step = Math.log(max_iq+1.0)/(n_colors-1);
+      for (i=0; i<n_colors-1; i++) {
+        bins.push(Math.exp(step*i)-1.0);
+      }
       quantize = d3.scale.threshold()
       .domain(bins)
-      .range(d3.range(11).map(function(i) { return "q" + i + "-11"; }));
+      .range(d3.range(n_colors).map(function(i) { return get_color(i, n_colors); }));
     } else {
         var quantize = d3.scale.quantize()
         .domain([0.,max_iq])
-        .range(d3.range(11).map(function(i) { return "q" + i + "-11"; }));
+        .range(d3.range(n_colors).map(function(i) { return get_color(i, n_colors); }));
     };
 
     // Create X axis label   
@@ -158,7 +187,7 @@ function plot_2d(data, qx, qy, max_iq, options) {
     .attr('y', function(d,i) { return 0; })
     .attr('width', function(d,i) { return pixel_w; })
     .attr('height', function(d,i) { return pixel_h; })
-    .attr("class", function(d) { return quantize(d); })
+    .style('fill', function(d) { return quantize(d); })
     svg.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(xAxis);
     svg.append("g").attr("class", "y axis").call(yAxis)
 

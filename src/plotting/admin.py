@@ -1,7 +1,10 @@
-from models import PlotLayout, DataSet, DataLayout, Plot1D
+from models import PlotLayout, DataSet, DataLayout, Plot1D, Plot2D
 from django.contrib import admin
 
 class Plot1DAdmin(admin.ModelAdmin):
+    list_display = ('id', 'owner', 'filename')
+    
+class Plot2DAdmin(admin.ModelAdmin):
     list_display = ('id', 'owner', 'filename')
     
 class DataSetAdmin(admin.ModelAdmin):
@@ -17,3 +20,4 @@ admin.site.register(PlotLayout, PlotLayoutAdmin)
 admin.site.register(DataSet, DataSetAdmin)
 admin.site.register(DataLayout, DataLayoutAdmin)
 admin.site.register(Plot1D, Plot1DAdmin)
+admin.site.register(Plot2D, Plot2DAdmin)
