@@ -19,8 +19,21 @@ class Instrument(models.Model):
 
 class ExperimentManager(models.Manager):
     
-    def experiments_for_instrument(self, instrument_id):
-        return super(ExperimentManager, self).get_query_set().filter(instruments=instrument_id)
+    def experiments_for_instrument(self, instrument, owner):
+        """
+            Return a list of experiments for a given instrument,
+            for which there is at least one reduction process owned by 'owner'.
+            
+            @param instrument: Instrument object
+            @param owner: owner of the reduction processes
+        """
+        reductions = ReductionProcess.objects.filter(instrument=instrument, owner=owner).prefetch_related('experiments')
+        experiments = []
+        for r in reductions:
+            for e in r.experiments.all():
+                if e not in experiments:
+                    experiments.append(e)
+        return experiments
 
     def get_uncategorized(self, instrument):
         expt_list = super(ExperimentManager, self).get_query_set().filter(name=UNCATEGORIZED)

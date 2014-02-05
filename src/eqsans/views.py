@@ -318,7 +318,7 @@ def reduction_home(request):
     except:
         eqsans = Instrument(name='eqsans')
         eqsans.save()
-    experiments = Experiment.objects.experiments_for_instrument(eqsans)
+    experiments = Experiment.objects.experiments_for_instrument(eqsans, owner=request.user)
 
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; eqsans reduction" % reverse(settings.LANDING_VIEW)
     template_values = {'title': 'EQSANS Reduction',
