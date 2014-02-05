@@ -9,11 +9,15 @@
    
   <!-- Ref. 1D={{ plot_1d_id }} 2D={{ plot_2d.id }} -->
   <script type="text/javascript">
+    {% if plot_1d_id %}
     var data = {{ plot_1d|safe }};
+    {% endif %}
+    {% if plot_2d %}
     var max_iq = {{ plot_2d_zmax }};
     var qx = {{ plot_2d_x }};
     var qy = {{ plot_2d_y }};
     var data2d = {{ plot_2d_data|safe }};
+    {% endif %}
   </script>  
 {% endblock %}
 
