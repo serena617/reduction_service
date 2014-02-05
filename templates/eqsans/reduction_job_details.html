@@ -13,10 +13,10 @@
     var data = {{ plot_1d|safe }};
     {% endif %}
     {% if plot_2d %}
-    var max_iq = {{ plot_2d_zmax }};
-    var qx = {{ plot_2d_x }};
-    var qy = {{ plot_2d_y }};
-    var data2d = {{ plot_2d_data|safe }};
+    var max_iq = {{ plot_2d.z_max }};
+    var qx = {{ plot_2d.x_axis }};
+    var qy = {{ plot_2d.y_axis }};
+    var data2d = {{ plot_2d.data|safe }};
     {% endif %}
   </script>  
 {% endblock %}

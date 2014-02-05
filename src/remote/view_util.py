@@ -209,7 +209,7 @@ def fill_job_dictionary(request, remote_job_id, **template_values):
     # There is only one allowed test job and it has '-1' as its ID.
     if remote_job_id == '-1':
         template_values['trans_id'] = -1
-        template_values['job_files'] = ['4065_Iq.txt']
+        template_values['job_files'] = ['4065_Iq.txt', '4065_Iqxy.nxs']
 
     template_values['title'] = 'Job %s' % remote_job_id
     template_values['job_id'] = remote_job_id
@@ -223,7 +223,6 @@ def fill_job_dictionary(request, remote_job_id, **template_values):
     # Get list of files for this transaction
     transaction = get_object_or_404(Transaction, trans_id=job_info['TransID'])
     files = query_files(request, transaction.trans_id)
-
 
     template_values['trans_id'] = transaction.trans_id
     template_values['job_info'] = job_info

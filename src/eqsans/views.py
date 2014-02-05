@@ -262,7 +262,8 @@ def job_details(request, job_id):
                                                         template_values['trans_id'], f)
                 template_values.update(plot_info)
             elif f.endswith('_Iqxy.nxs'):
-                plot_info = view_util.process_iqxy_output(request, remote_job, f)
+                plot_info = view_util.process_iqxy_output(request, remote_job, 
+                                                          template_values['trans_id'], f)
                 template_values.update(plot_info)
     
     return render_to_response('eqsans/reduction_job_details.html',

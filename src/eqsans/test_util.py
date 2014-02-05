@@ -79,12 +79,7 @@ def get_dummy_data(request, job_id):
     # Now the 2D data
     f = os.path.join(os.path.split(__file__)[0],'..','plotting','data','4065_Iqxy.nxs')
     plot_object2d = remote_job.get_plot_2d(filename='4065_Iqxy.nxs', owner=request.user)
-    if plot_object2d is not None:
-        data_str_2d = plot_object2d.data
-        x_str = plot_object2d.x_axis
-        y_str = plot_object2d.y_axis
-        z_max = plot_object2d.z_max
-    else:
+    if plot_object2d is None:
         numpy.set_printoptions(threshold='nan', nanstr='0', infstr='0')
         fd = h5py.File(f, 'r')
         g = fd['mantid_workspace_1']
@@ -103,10 +98,6 @@ def get_dummy_data(request, job_id):
                                                    z_min=0.0, z_max=z_max, filename='4065_Iqxy.nxs')
         remote_job.plots2d.add(plot_object2d)
 
-    template_values['plot_2d_data'] = data_str_2d
-    template_values['plot_2d_x'] = x_str
-    template_values['plot_2d_y'] = y_str
-    template_values['plot_2d_zmax'] = z_max
     template_values['plot_2d'] = plot_object2d
 
     return template_values
