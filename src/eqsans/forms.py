@@ -1,6 +1,7 @@
 from django import forms
 from django.shortcuts import get_object_or_404
 from models import ReductionProcess, Instrument, Experiment, BoolReductionProperty, FloatReductionProperty, CharReductionProperty
+import time
 
 class ReductionOptions(forms.Form):
     """
@@ -50,7 +51,10 @@ class ReductionOptions(forms.Form):
         """
             Create XML from the current data.
         """
-        xml  = "<Instrument>\n"
+        xml  = "<Reduction>\n"
+        xml += "<instrument_name>EQSANS</instrument_name>\n"
+        xml += "<timestamp>%s</timestamp>\n" % time.ctime()
+        xml += "<Instrument>\n"
         xml += "  <name>EQSANS</name>\n"
         xml += "  <solid_angle_corr>True</solid_angle_corr>\n"
         dark_corr = data['dark_current_run'] and str(len(data['dark_current_run'])>0)
@@ -138,6 +142,7 @@ class ReductionOptions(forms.Form):
         xml += "  </DirectBeam>\n"
         xml += "  <combine_transmission_frames>%s</combine_transmission_frames>\n" % data['fit_frames_together']
         xml += "</Background>\n"
+        xml += "</Reduction>"
 
         return xml
 
