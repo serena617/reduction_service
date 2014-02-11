@@ -86,20 +86,20 @@ function get_color(i, n_max) {
     var phase = 1.0*i/n_max;
     var max_i = 210;
     if (phase<1.0/n_divs) {
-        r = max_i;
-        b = 0;
+        b = max_i;
+        r = 0;
         g = Math.round(max_i*Math.abs(Math.sin(Math.PI/2.0*i/n_max*n_divs)));
     } else if (phase<2.0/n_divs) {
-        r = Math.round(max_i*Math.abs(Math.cos(Math.PI/2.0*i/n_max*n_divs)));
-        b = 0;
+        b = Math.round(max_i*Math.abs(Math.cos(Math.PI/2.0*i/n_max*n_divs)));
+        r = 0;
         g = max_i;
     } else if (phase<3.0/n_divs) {
-        r = 0;
-        b = Math.round(max_i*Math.abs(Math.sin(Math.PI/2.0*i/n_max*n_divs)));
+        b = 0;
+        r = Math.round(max_i*Math.abs(Math.sin(Math.PI/2.0*i/n_max*n_divs)));
         g = max_i;
     } else if (phase<4.0/n_divs) {
-        r = 0;
-        b = max_i;
+        b = 0;
+        r = max_i;
         g = Math.round(max_i*Math.abs(Math.cos(Math.PI/2.0*i/n_max*n_divs)));
     }
     r = r + 30;
