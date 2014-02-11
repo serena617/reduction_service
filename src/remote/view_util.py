@@ -1,13 +1,10 @@
 from django import forms
 from django.utils.dateparse import parse_datetime
-from django.http import Http404
-from django.shortcuts import get_object_or_404
 import httplib, urllib
 from base64 import b64encode
 import json
 import logging
 import sys
-import os
 from models import Transaction
 
 # The following should be in settings
@@ -219,14 +216,14 @@ def fill_job_dictionary(request, remote_job_id, **template_values):
     if job_info is None:
         template_values['user_alert'] = ["Could not connect to Fermi"]
         return template_values
+    template_values['job_info'] = job_info
     
     # Get list of files for this transaction
-    transaction = get_object_or_404(Transaction, trans_id=job_info['TransID'])
-    files = query_files(request, transaction.trans_id)
-
-    template_values['trans_id'] = transaction.trans_id
-    template_values['job_info'] = job_info
-    template_values['job_directory'] = transaction.directory
-    template_values['job_files'] = files
+    transactions = Transaction.objects.filter(trans_id=job_info['TransID'])
+    if len(transactions)>0:
+        transaction = transactions[0]
+        template_values['job_files'] = query_files(request, transaction.trans_id)
+        template_values['trans_id'] = transaction.trans_id
+        template_values['job_directory'] = transaction.directory
     return template_values
 
