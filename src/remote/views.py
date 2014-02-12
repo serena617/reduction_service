@@ -115,10 +115,17 @@ def job_details(request, job_id):
 def download_file(request, trans_id, filename):
     """
         Get a file from the compute node
-        
     """
     file_content = remote.view_util.download_file(request, trans_id, filename)
     response = HttpResponse(file_content)
     response['Content-Disposition'] = 'attachment; filename="%s"' % filename
     return response
  
+@login_required
+def stop_transaction(request, trans_id):
+    """
+        Stop an existing remote transaction
+        @param trans_id: remote transaction ID
+    """
+    remote.view_util.stop_transaction(request, trans_id)
+    return HttpResponse()

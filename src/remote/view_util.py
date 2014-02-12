@@ -103,15 +103,52 @@ def transaction(request, start=False):
             logging.error("MantidRemote: %s" % info["Err_Msg"])
 
         request.session['fermi_transID'] = info["TransID"]
-        transaction = Transaction(trans_id = info["TransID"],
+        transaction_obj = Transaction(trans_id = info["TransID"],
                                   directory = info["Directory"],
                                   owner = request.user)
-        transaction.save()
-        return transaction
+        transaction_obj.save()
+        return transaction_obj
     except:
         logging.error("Could not get new transaction ID: %s" % sys.exc_value)
     return None
 
+def stop_transaction(request, trans_id):
+    """
+    
+        Stop an existing transaction
+        
+        <base_url>/transaction?Action=Stop&TransID=<ID>
+        
+        @param trans_id: remote transaction ID
+    """
+    transaction_obj = transaction(request)
+    if transaction_obj is None:
+        logging.error("Transaction %s does not exist" % trans_id)
+    elif not transaction_obj.owner == request.user:
+        logging.error("User %s trying to stop transaction %s belonging to %s" % (request.user,
+                                                                                 trans_id,
+                                                                                 transaction_obj.owner))
+    else:
+        try:
+            
+            conn = httplib.HTTPSConnection(FERMI_HOST, timeout=0.5)
+            conn.request('GET', FERMI_BASE_URL+'transaction?Action=Stop&TransID=%s' % trans_id,
+                                headers={'Cookie':request.session.get('fermi', '')})
+            r = conn.getresponse()
+            if not r.status == 200:
+                logging.error("Could not close Fermi transaction: %s" % r.status)
+            info = json.loads(r.read())
+            if "Err_Msg" in info:
+                logging.error("MantidRemote: %s" % info["Err_Msg"])
+    
+            request.session['fermi_transID'] = None
+            
+            # Here we can delete the existing DB entry for this transaction
+            #transaction_obj.delete()
+        except:
+            logging.error("Could not close Fermi transaction: %s" % sys.exc_value)
+
+    
 def submit_job(request, transaction, script_code, script_name='web_submission.py'):
     """
     """
