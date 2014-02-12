@@ -124,7 +124,6 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'django.contrib.admindocs',
-    'django_auth_ldap',
     'eqsans',
     'users',
     'remote',
@@ -144,6 +143,8 @@ AUTHENTICATION_BACKENDS = (
 AUTH_LDAP_SERVER_URI = ""
 AUTH_LDAP_USER_DN_TEMPLATE = ""
 
+# Wb monitor url
+WEBMON_URL = 'https://monitor.sns.gov/report/'
 # Set the following to the local domain name
 ALLOWED_DOMAIN = ''
 LOGIN_URL = 'users.views.perform_login'
@@ -151,26 +152,49 @@ LANDING_VIEW = 'catalog.views.instrument_list'
 ALTERNATE_LANDING_VIEW = 'eqsans.views.reduction_home'
 
 LOGGING = {
-    'version': 1,
+   'version': 1,
     'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
+    'formatters': {
+        'standard': {
+            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt' : "%d/%b/%Y %H:%M:%S"
+        },
     },
     'handlers': {
-        'mail_admins': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler'
-        }
+        'null': {
+            'level':'DEBUG',
+            'class':'django.utils.log.NullHandler',
+        },
+        'console':{
+            'level':'INFO',
+            'class':'logging.StreamHandler',
+            'formatter': 'standard'
+        },
     },
     'loggers': {
-        'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
+        'django': {
+            'handlers':['console'],
             'propagate': True,
+            'level':'WARN',
         },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'eqsans': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+        'remote': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+        'django_auth_ldap': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+
     }
 }
 
