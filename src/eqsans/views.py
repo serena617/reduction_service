@@ -294,10 +294,13 @@ def reduction_jobs(request):
     jobs = RemoteJob.objects.filter(transaction__owner=request.user)
     status_data = []
     for job in jobs:
+        if not job.transaction.is_active:
+            continue
         j_data = {'ID': job.remote_id,
                   'JobName': job.reduction.name,
                   'StartDate': job.transaction.start_time,
                   'Data': job.reduction.data_file,
+                  'TransID': job.transaction.trans_id,
                  }
         status_data.append(j_data)
     

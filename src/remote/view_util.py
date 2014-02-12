@@ -121,32 +121,37 @@ def stop_transaction(request, trans_id):
         
         @param trans_id: remote transaction ID
     """
-    transaction_obj = transaction(request)
+    # First, let's see if we know about this transaction
+    transaction_obj = None
+    transactions = Transaction.objects.filter(trans_id=trans_id)
+    if len(transactions)>0:
+        transaction_obj = transactions[0]
     if transaction_obj is None:
-        logging.error("Transaction %s does not exist" % trans_id)
+        logging.error("Local transaction %s does not exist" % trans_id)
     elif not transaction_obj.owner == request.user:
         logging.error("User %s trying to stop transaction %s belonging to %s" % (request.user,
                                                                                  trans_id,
                                                                                  transaction_obj.owner))
     else:
-        try:
-            
-            conn = httplib.HTTPSConnection(FERMI_HOST, timeout=0.5)
-            conn.request('GET', FERMI_BASE_URL+'transaction?Action=Stop&TransID=%s' % trans_id,
-                                headers={'Cookie':request.session.get('fermi', '')})
-            r = conn.getresponse()
-            if not r.status == 200:
-                logging.error("Could not close Fermi transaction: %s" % r.status)
-            info = json.loads(r.read())
-            if "Err_Msg" in info:
-                logging.error("MantidRemote: %s" % info["Err_Msg"])
-    
-            request.session['fermi_transID'] = None
-            
-            # Here we can delete the existing DB entry for this transaction
-            #transaction_obj.delete()
-        except:
-            logging.error("Could not close Fermi transaction: %s" % sys.exc_value)
+        # Here we can delete the existing DB entry for this transaction
+        transaction_obj.is_active = False
+        transaction_obj.save()
+        
+    request.session['fermi_transID'] = None
+    # Regardless of whether we have a local transaction with that ID,
+    # try to stop the remote transaction
+    try:
+        conn = httplib.HTTPSConnection(FERMI_HOST, timeout=0.5)
+        conn.request('GET', FERMI_BASE_URL+'transaction?Action=Stop&TransID=%s' % trans_id,
+                            headers={'Cookie':request.session.get('fermi', '')})
+        r = conn.getresponse()
+        if not r.status == 200:
+            logging.error("Could not close Fermi transaction: %s" % r.status)
+        info = json.loads(r.read())
+        if "Err_Msg" in info:
+            logging.error("MantidRemote: %s" % info["Err_Msg"])
+    except:
+        logging.error("Could not close Fermi transaction: %s" % sys.exc_value)
 
     
 def submit_job(request, transaction, script_code, script_name='web_submission.py'):

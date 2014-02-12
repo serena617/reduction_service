@@ -1,18 +1,14 @@
-from django.http import HttpResponse, Http404
-from django.shortcuts import render_to_response, get_object_or_404, redirect
+from django.http import HttpResponse
+from django.shortcuts import render_to_response, redirect
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
-from django.core.context_processors import csrf
 from django.utils.dateparse import parse_datetime
 from django.conf import settings
-
-from models import ReductionJob, Transaction
 
 import users.view_util
 import remote.view_util
 
 import httplib
-from base64 import b64encode
 import json
 import logging
 import sys
