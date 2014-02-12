@@ -147,9 +147,9 @@ def stop_transaction(request, trans_id):
         r = conn.getresponse()
         if not r.status == 200:
             logging.error("Could not close Fermi transaction: %s" % r.status)
-        info = json.loads(r.read())
-        if "Err_Msg" in info:
-            logging.error("MantidRemote: %s" % info["Err_Msg"])
+            info = json.loads(r.read())
+            if "Err_Msg" in info:
+                logging.error("MantidRemote: %s" % info["Err_Msg"])
     except:
         logging.error("Could not close Fermi transaction: %s" % sys.exc_value)
 

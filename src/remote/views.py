@@ -38,7 +38,6 @@ def query_remote_jobs(request):
         conn = httplib.HTTPSConnection(FERMI_HOST, timeout=30)
         conn.request('GET', FERMI_QUERY, headers={'Cookie': sessionid})
         r = conn.getresponse()
-        logging.error(r.status)
         # Check to see whether we need authentication
         jobs = json.loads(r.read())
         need_authentication = True
