@@ -25,6 +25,7 @@ class Transaction(models.Model):
     trans_id = models.IntegerField(unique=True)   
     owner = models.ForeignKey(User)
     directory = models.TextField()
+    is_active = models.BooleanField(default=True)
     start_time = models.DateTimeField(auto_now = False, auto_now_add = True)
 
     def __str__(self):
