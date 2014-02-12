@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils.dateparse import parse_datetime
 from django.conf import settings
 
-import users.view_util
+import reduction_service.view_util
 import remote.view_util
 
 import httplib
@@ -63,8 +63,7 @@ def query_remote_jobs(request):
         logging.error("Could not connect to status page: %s" % sys.exc_value)
         template_values['errors'] = "Could not connect to Fermi: %s" % sys.exc_value
     
-    template_values = users.view_util.fill_template_values(request, **template_values)   
-    template_values = remote.view_util.fill_template_values(request, **template_values)
+    template_values = reduction_service.view_util.fill_template_values(request, **template_values)
     return render_to_response('remote/query_remote_jobs.html',
                               template_values)
 
@@ -88,8 +87,7 @@ def authenticate(request):
                 template_values = {'message': message,
                                    'back_url': redirect_url,
                                    'breadcrumbs': breadcrumbs,}
-                template_values = users.view_util.fill_template_values(request, **template_values)
-                template_values = remote.view_util.fill_template_values(request, **template_values)
+                template_values = reduction_service.view_util.fill_template_values(request, **template_values)
                 return render_to_response('remote/failed_connection.html',
                                           template_values)
     return redirect(redirect_url)
@@ -102,8 +100,7 @@ def job_details(request, job_id):
         https://fermi.ornl.gov/MantidRemote/files?TransID=75
     """
     template_values = remote.view_util.fill_job_dictionary(request, job_id)
-    template_values = users.view_util.fill_template_values(request, **template_values)   
-    template_values = remote.view_util.fill_template_values(request, **template_values)
+    template_values = reduction_service.view_util.fill_template_values(request, **template_values)
     return render_to_response('remote/job_details.html',
                               template_values)
     

@@ -3,11 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.http import HttpResponse
-import users.view_util
-import remote.view_util
-import h5py
-import numpy
-import os
+import reduction_service.view_util
 from plotting.models import Plot1D, Plot2D, PlotLayout
 
 import logging
@@ -31,8 +27,7 @@ def adjust_1d(request, plot_id):
                        'breadcrumbs': breadcrumbs}
     if 'back' in request.GET:
         template_values['back_url'] = request.GET['back']
-    template_values = users.view_util.fill_template_values(request, **template_values)
-    template_values = remote.view_util.fill_template_values(request, **template_values)
+    template_values = reduction_service.view_util.fill_template_values(request, **template_values)
     return render_to_response('plotting/adjust_1d.html',
                               template_values)
     
@@ -77,8 +72,7 @@ def adjust_2d(request, plot_id):
     if 'back' in request.GET:
         template_values['back_url'] = request.GET['back']
         
-    template_values = users.view_util.fill_template_values(request, **template_values)
-    template_values = remote.view_util.fill_template_values(request, **template_values)
+    template_values = reduction_service.view_util.fill_template_values(request, **template_values)
     return render_to_response('plotting/adjust_2d.html',
                               template_values)
 

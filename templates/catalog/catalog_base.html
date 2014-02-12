@@ -19,4 +19,12 @@
       </ul>
     </div>
     {% endif %}
+    {% if reduction_apps %}
+    <div class="tool_area">
+      <b>Reduction</b><br>
+    {% for app in reduction_apps %}
+      <ul><a href='{{ app.url }}'>{{ app.name }} reduction</a></ul>
+    {% endfor %}
+    </div>
+    {% endif %}
 {% endblock %}

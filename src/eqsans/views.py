@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 
 from models import ReductionProcess, Experiment, RemoteJob, Instrument
-import users.view_util
+import reduction_service.view_util
 import remote.view_util
 import view_util
 from catalog.icat_server_communication import get_ipts_info
@@ -93,8 +93,7 @@ def experiment(request, ipts):
                        'is_categorized': not IS_UNCATEGORIZED}
     if 'icat_error' in icat_ipts:
         template_values['user_alert'] = [icat_ipts['icat_error']]
-    template_values = users.view_util.fill_template_values(request, **template_values)
-    template_values = remote.view_util.fill_template_values(request, **template_values)
+    template_values = reduction_service.view_util.fill_template_values(request, **template_values)
     return render_to_response('eqsans/experiment.html',
                               template_values)
 
@@ -159,8 +158,7 @@ def reduction_options(request, reduction_id=None):
         template_values['expt_list'] = reduction_proc.experiments.all()
     elif experiment_obj is not None:
         template_values['expt_list'] = [experiment_obj]
-    template_values = users.view_util.fill_template_values(request, **template_values)
-    template_values = remote.view_util.fill_template_values(request, **template_values)
+    template_values = reduction_service.view_util.fill_template_values(request, **template_values)
     return render_to_response('eqsans/reduction_options.html',
                               template_values)
 
@@ -175,7 +173,7 @@ def reduction_script(request, reduction_id):
     template_values = {'reduction_name': data['reduction_name'],
                        'breadcrumbs': breadcrumbs,
                        'code': forms.ReductionOptions.as_mantid_script(data) }
-    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = reduction_service.view_util.fill_template_values(request, **template_values)
     return render_to_response('eqsans/reduction_script.html',
                               template_values)
 
@@ -217,9 +215,7 @@ def submit_job(request, reduction_id):
         template_values = {'message':"Could not connect to Fermi and establish transaction",
                            'back_url': reverse('eqsans.views.reduction_options', args=[reduction_id]),
                            'breadcrumbs': breadcrumbs,}
-        template_values = users.view_util.fill_template_values(request, **template_values)
-        template_values = remote.view_util.fill_template_values(request, **template_values)
-
+        template_values = reduction_service.view_util.fill_template_values(request, **template_values)
         return render_to_response('remote/failed_connection.html',
                                   template_values)        
 
@@ -251,8 +247,7 @@ def job_details(request, job_id):
                        'breadcrumbs': breadcrumbs,
                        'back_url': request.path}
     template_values = remote.view_util.fill_job_dictionary(request, job_id, **template_values)
-    template_values = users.view_util.fill_template_values(request, **template_values)
-    template_values = remote.view_util.fill_template_values(request, **template_values)
+    template_values = reduction_service.view_util.fill_template_values(request, **template_values)
     
     # Go through the files and find data to plot
     if 'job_files' in template_values and 'trans_id' in template_values:
@@ -310,8 +305,7 @@ def reduction_jobs(request):
     template_values = {'status_data': status_data,
                        'back_url': request.path,
                        'breadcrumbs': breadcrumbs}
-    template_values = users.view_util.fill_template_values(request, **template_values)   
-    template_values = remote.view_util.fill_template_values(request, **template_values)
+    template_values = reduction_service.view_util.fill_template_values(request, **template_values)   
     return render_to_response('eqsans/reduction_jobs.html',
                               template_values)
 
@@ -328,7 +322,6 @@ def reduction_home(request):
     template_values = {'title': 'EQSANS Reduction',
                        'experiments':experiments,
                        'breadcrumbs': breadcrumbs}
-    template_values = users.view_util.fill_template_values(request, **template_values)
-    template_values = remote.view_util.fill_template_values(request, **template_values)
+    template_values = reduction_service.view_util.fill_template_values(request, **template_values)
     return render_to_response('eqsans/reduction_home.html',
                               template_values)

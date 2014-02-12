@@ -1,12 +1,11 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import render_to_response
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
 from icat_server_communication import get_ipts_runs, get_instruments, get_experiments, get_ipts_info
-import users.view_util
-import remote.view_util
 import catalog.view_util
+import reduction_service.view_util
 import logging
 import sys
 
@@ -23,8 +22,7 @@ def instrument_list(request):
             instruments=['eqsans']
         template_values['user_alert'] = ['Could not get instrument list from the catalog']
     template_values['instruments'] = instruments
-    template_values = users.view_util.fill_template_values(request, **template_values)
-    template_values = remote.view_util.fill_template_values(request, **template_values)
+    template_values = reduction_service.view_util.fill_template_values(request, **template_values)
     return render_to_response('catalog/instrument_list.html',
                               template_values)
     
@@ -41,8 +39,7 @@ def experiment_list(request, instrument):
                        'breadcrumbs': breadcrumbs}
     if len(experiments)==0:
         template_values['user_alert'] = ['Could not get experiment list from the catalog']
-    template_values = users.view_util.fill_template_values(request, **template_values)
-    template_values = remote.view_util.fill_template_values(request, **template_values)
+    template_values = reduction_service.view_util.fill_template_values(request, **template_values)
     template_values = catalog.view_util.fill_template_values(request, **template_values)
     return render_to_response('catalog/experiment_list.html',
                               template_values)
@@ -78,8 +75,7 @@ def experiment_run_list(request, instrument, ipts='IPTS-8340'):
                        'breadcrumbs': breadcrumbs}
     if len(runs)==0:
         template_values['user_alert'] = ['No runs were found for instrument %s experiment %s' % (instrument, ipts)]
-    template_values = users.view_util.fill_template_values(request, **template_values)
-    template_values = remote.view_util.fill_template_values(request, **template_values)
+    template_values = reduction_service.view_util.fill_template_values(request, **template_values)
     template_values = catalog.view_util.fill_template_values(request, **template_values)
     return render_to_response('catalog/experiment_run_list.html',
                               template_values)
