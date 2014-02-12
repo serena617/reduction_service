@@ -308,6 +308,7 @@ def reduction_jobs(request):
     breadcrumbs += " &rsaquo; <a href='%s'>eqsans reduction</a>" % reverse('eqsans.views.reduction_home')
     breadcrumbs += " &rsaquo; jobs"
     template_values = {'status_data': status_data,
+                       'back_url': request.path,
                        'breadcrumbs': breadcrumbs}
     template_values = users.view_util.fill_template_values(request, **template_values)   
     template_values = remote.view_util.fill_template_values(request, **template_values)

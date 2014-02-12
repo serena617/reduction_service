@@ -4,9 +4,6 @@
 {% endblock %}
 
 {% block content %}
-<script type="text/javascript">
-function stop_transaction(url) { $.ajax({ url: url, type: "GET" }); };
-</script>
 {% if need_authentication %}
 <div class="fermi_notification">
 You need to authenticate with the Fermi remote submission service.
@@ -23,7 +20,7 @@ Please use the form on this page.
   {% for job in status_data|dictsort:"ID" %}
     <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
       <td><a href="{% url 'remote_job_details' job.ID%}">{{ job.ID }}</a>
-          (<a href='javascript:void(0);' onClick="stop_transaction('{% url 'remote_stop_transaction' job.TransID %}');">delete</a>)</td>
+          (<a href="{% url 'remote_stop_transaction' job.TransID %}?back_url={{ back_url }}">delete</a>)</td>
       <td>{{ job.JobName }}</td>
       <td>{{ job.StartDate|date:"n/d H:i" }}</td><td>{{ job.CompletionDate|date:"n/d H:i" }}</td></tr>
   {% endfor %}

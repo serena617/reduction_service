@@ -57,6 +57,7 @@ def query_remote_jobs(request):
                 jobs[key]['SubmitDate'] = parse_datetime(jobs[key]['SubmitDate'])
                 status_data.append(jobs[key])
             template_values['status_data'] = status_data
+            template_values['back_url'] = request.path
         template_values['need_authentication'] = need_authentication
 
     except:
@@ -124,4 +125,7 @@ def stop_transaction(request, trans_id):
         @param trans_id: remote transaction ID
     """
     remote.view_util.stop_transaction(request, trans_id)
-    return HttpResponse()
+    redirect_url = reverse('remote.views.query_remote_jobs')
+    if 'back_url' in request.GET:
+        redirect_url = request.GET['back_url']
+    return redirect(redirect_url)
