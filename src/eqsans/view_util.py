@@ -21,7 +21,6 @@ def process_iq_output(request, remote_job, trans_id, filename):
     plot_object = remote_job.get_first_plot(filename=filename, owner=request.user)
     if plot_object is not None and plot_object.first_data_layout() is not None:
         data_str = plot_object.first_data_layout().dataset.data
-        logger.warning("Found data for %s" % filename)
     else:
         # If we don't have data stored, read it from file
         logger.warning("Retrieving %s from compute resource" % filename)
