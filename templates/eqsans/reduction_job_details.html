@@ -37,12 +37,12 @@
       <ul>
         {% if remote_job.reduction %}<li><a href="{% url 'eqsans_reduction' remote_job.reduction.id %}">Job details</a>: {{ remote_job.reduction.name }}</li>{% endif %}
         <li>Sample data: {{ parameters.data_file }}</li>
-        <li>Beam center data: {{ r.direct_beam_run }}</li>
-        <li>Sample transmission: {{ r.transmission_sample }}</li>
-        <li>Empty transmission: {{ r.transmission_empty }}</li>
-        <li>Background: {{ r.background_file }}</li>
-        <li>Background transmission: {{ r.background_transmission_sample }}</li>
-        <li>Background empty transmission: {{ r.background_transmission_empty }}</li>
+        <li>Beam center data: {{ parameters.direct_beam_run }}</li>
+        <li>Sample transmission: {{ parameters.transmission_sample }}</li>
+        <li>Empty transmission: {{ parameters.transmission_empty }}</li>
+        <li>Background: {{ parameters.background_file }}</li>
+        <li>Background transmission: {{ parameters.background_transmission_sample }}</li>
+        <li>Background empty transmission: {{ parameters.background_transmission_empty }}</li>
       </ul>
     </div>
   
