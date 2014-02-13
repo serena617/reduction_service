@@ -22,7 +22,7 @@
 {% endblock %}
 
 {% block content %}
-    <div>Job {{ job_id }}: <b>{{ job_info.JobName }}</b></div>
+    <div>Job {{ job_id }}</div>
     <div class='tool_area'>
       <ul>
         <li>Status: {{ job_info.JobStatus }}</li>
@@ -35,8 +35,14 @@
     <div>Reduction</div>
     <div class='tool_area'>
       <ul>
-        {% if remote_job.reduction %}<li><a href="{% url 'eqsans_reduction' remote_job.reduction.id %}">Job details</a>: {{ remote_job.reduction }}</li>{% endif %}
-        <li>Data: {{ parameters.data_file }}</li>
+        {% if remote_job.reduction %}<li><a href="{% url 'eqsans_reduction' remote_job.reduction.id %}">Job details</a>: {{ remote_job.reduction.name }}</li>{% endif %}
+        <li>Sample data: {{ parameters.data_file }}</li>
+        <li>Beam center data: {{ r.direct_beam_run }}</li>
+        <li>Sample transmission: {{ r.transmission_sample }}</li>
+        <li>Empty transmission: {{ r.transmission_empty }}</li>
+        <li>Background: {{ r.background_file }}</li>
+        <li>Background transmission: {{ r.background_transmission_sample }}</li>
+        <li>Background empty transmission: {{ r.background_transmission_empty }}</li>
       </ul>
     </div>
   
