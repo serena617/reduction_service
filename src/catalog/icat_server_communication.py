@@ -33,7 +33,6 @@ def decode_time(timestamp):
             tz_location = timestamp.rfind('-')
         if tz_location>0:
             date_time_str = timestamp[:tz_location]
-            tz_str = timestamp[tz_location:]
             try:
                 return datetime.datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M:%S.%f")
             except:
@@ -193,3 +192,29 @@ def get_ipts_runs(instrument, ipts):
     except:
         logging.error("Communication with ICAT server failed: %s" % sys.exc_value)
     return run_data
+
+def get_run_info(instrument, run_number):
+    """
+        Get ICAT info for the specified run
+        @param instrument: instrument name
+        @param run_number: run_number
+    """
+    run_info = {}
+    try:
+        conn = httplib.HTTPConnection(ICAT_DOMAIN,
+                                      ICAT_PORT, timeout=1.0)
+        url = '/icat-rest-ws/dataset/SNS/%s/%s' % (instrument.upper(), run_number)
+        conn.request('GET', url)
+        r = conn.getresponse()
+        dom = xml.dom.minidom.parseString(r.read())
+        metadata = dom.getElementsByTagName('metadata')
+        if len(metadata)>0:
+            for n in metadata[0].childNodes:
+                for tag in ['title', 'duration', 'protonCharge', 'totalCounts']:
+                    if n.nodeName==tag and n.hasChildNodes():
+                        run_info[tag] = urllib.unquote(get_text_from_xml(n.childNodes))
+    except:
+        run_info['icat_error'] = 'Could not communicate with catalog server'
+        logging.error("Communication with ICAT server failed: %s" % sys.exc_value)
+        
+    return run_info
