@@ -2,6 +2,9 @@ from django import forms
 from django.shortcuts import get_object_or_404
 from models import ReductionProcess, Instrument, Experiment, BoolReductionProperty, FloatReductionProperty, CharReductionProperty
 import time
+import sys
+import logging
+logger = logging.getLogger('eqsans.forms')
 
 class ReductionOptions(forms.Form):
     """
@@ -171,14 +174,18 @@ class ReductionOptions(forms.Form):
         reduction_proc.save()
         
         # Find experiment
-        
+        uncategorized_expt = Experiment.objects.get_uncategorized('eqsans')
         if self.cleaned_data['expt_id'] is not None:
             expt = get_object_or_404(Experiment, id=self.cleaned_data['expt_id'])
             if expt not in reduction_proc.experiments.all():
                 reduction_proc.experiments.add(expt)
+                if uncategorized_expt in reduction_proc.experiments.all():
+                    try:
+                        reduction_proc.experiments.remove(uncategorized_expt)
+                    except:
+                        logger.error("Could not remote uncategorized expt: %s" % sys.exc_value)
         else:
-            expt = Experiment.objects.get_uncategorized('eqsans')
-            reduction_proc.experiments.add(expt)
+            reduction_proc.experiments.add(uncategorized_expt)
         reduction_proc.save()
                 
         # Clean up the old values
