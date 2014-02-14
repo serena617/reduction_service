@@ -145,11 +145,15 @@ def reduction_options(request, reduction_id=None):
     else:
         breadcrumbs += " &rsaquo; new reduction"
 
+    # ICAT info url
+    icat_url = reverse('catalog.views.run_info', args=['EQSANS', '0000'])
+    icat_url = icat_url.replace('/0000','')
     #TODO: add New an Save-As functionality
     template_values = {'options_form': options_form,
                        'title': 'EQSANS Reduction',
                        'breadcrumbs': breadcrumbs,
                        'reduction_id': reduction_id,
+                       'icat_url': icat_url,
                        'errors': len(options_form.errors) }
     # Get existing jobs for this reduction
     if reduction_id is not None:

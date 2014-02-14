@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response
 from django.core.urlresolvers import reverse
+from django.views.decorators.cache import cache_page
 from django.conf import settings
 from django.http import HttpResponse
 
@@ -83,7 +84,7 @@ def experiment_run_list(request, instrument, ipts='IPTS-8340'):
                               template_values)
     
 @login_required
-#@cache_page(120)
+@cache_page(120)
 def run_info(request, instrument, run_number):
     """
          Ajax call to get run information (retrieved from ICAT)

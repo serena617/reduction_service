@@ -106,6 +106,13 @@ MIDDLEWARE_CLASSES = (
 if DEBUG:
     MIDDLEWARE_CLASSES = ('debug_toolbar.middleware.DebugToolbarMiddleware',) + MIDDLEWARE_CLASSES
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'webcache',
+    }
+}
+
 ROOT_URLCONF = 'reduction_service.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
