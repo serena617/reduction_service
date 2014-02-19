@@ -73,6 +73,9 @@ def adjust_2d(request, plot_id):
         template_values['back_url'] = request.GET['back']
         
     template_values = reduction_service.view_util.fill_template_values(request, **template_values)
+    if 'print' in request.GET and request.GET['print']=='1':
+        return render_to_response('plotting/adjust_2d_print.html',
+                                  template_values)
     return render_to_response('plotting/adjust_2d.html',
                               template_values)
 

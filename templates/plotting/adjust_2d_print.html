@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block header %}
+  <link rel="stylesheet" href="{% static 'css/plotting.css' %}" type="text/css" title="no title" charset="utf-8">
+  <link rel="stylesheet" href="{% static 'css/plotting_print.css' %}" type="text/css" title="no title" charset="utf-8">
+  <script type="text/javascript" src="{% static 'thirdparty/d3.v3/d3.v3.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'js/plotting.js' %}"></script>
+   
+  <script type="text/javascript">
+    var data = {{ plot_2d.data|safe }};
+    var qx = {{ plot_2d.x_axis|safe }};
+    var qy = {{ plot_2d.y_axis|safe }};
+    var max_iq = {{ plot_2d.z_max }};
+    function update_plot(send_to_server) {
+        var options = {'width': '{{ plot_2d.layout.width|default:500 }}',
+                       'height': '{{ plot_2d.layout.height|default:500 }}',
+                       'x_label': '{{ plot_2d.layout.x_label|safe }}',
+                       'y_label': '{{ plot_2d.layout.y_label|safe }}',
+                       'log_scale': {{ plot_2d.layout.is_y_log|lower }}};
+        plot_2d(data, qx, qy, max_iq, options)
+      }
+  </script>
+{% endblock %}
+
+{% block top_tool_area %} {% endblock %}
+
+{% block content %}
+  <plot_anchor_2d></plot_anchor_2d>
+  <script>
+    update_plot(false);
+  </script>
+{% endblock %}
