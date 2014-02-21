@@ -28,7 +28,9 @@
 .fermi_notification {padding:40px 40px 40px 40px; border: 1px solid silver; background: #FFEA7D; font-size:14px; -moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius: 5px;}
 .main_content {position:relative; min-height:400px;padding-left:5px;}
 .center_area {
-    width:695px;
+    margin-right: 150px;
+    width:auto;
+    min-width:695px;
     position:relative;
 }
 
