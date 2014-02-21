@@ -52,37 +52,19 @@ def get_ipts_info(instrument, ipts):
                                                                          ipts.upper()))
         r = conn.getresponse()
         dom = xml.dom.minidom.parseString(r.read())
-        metadata = dom.getElementsByTagName('metadata')
+        metadata = dom.getElementsByTagName('proposal')
         if len(metadata)>0:
             for n in metadata[0].childNodes:
                 # Run title
                 if n.nodeName=='title' and n.hasChildNodes():
                     run_info['title'] = urllib.unquote(get_text_from_xml(n.childNodes))
-                # IPTS
-                if n.nodeName=='proposal' and n.hasChildNodes():
-                    run_info['proposal'] = get_text_from_xml(n.childNodes)
+                # Run range
+                if n.nodeName=='runRange' and n.hasChildNodes():
+                    run_info['run_range'] = get_text_from_xml(n.childNodes)
                 # Time
                 if n.nodeName=='createTime' and n.hasChildNodes():
                     timestr = get_text_from_xml(n.childNodes)
                     run_info['createTime'] = decode_time(timestr)
-    except:
-        run_info['icat_error'] = 'Could not communicate with catalog server'
-        logging.error("Communication with ICAT server failed: %s" % sys.exc_value)
-    
-    # Get the range of runs
-    try:
-        conn = httplib.HTTPConnection(ICAT_DOMAIN, 
-                                      ICAT_PORT, timeout=0.5)
-        conn.request('GET', '/icat-rest-ws/experiment/SNS/%s/%s/' % (instrument.upper(),
-                                                                     ipts.upper()))
-        r = conn.getresponse()
-        dom = xml.dom.minidom.parseString(r.read())
-        runs = dom.getElementsByTagName('runs')
-        if len(runs)>0:
-            for n in runs[0].childNodes:
-                # Run title
-                if n.nodeName=='runRange' and n.hasChildNodes():
-                    run_info['run_range'] = get_text_from_xml(n.childNodes)
     except:
         run_info['icat_error'] = 'Could not communicate with catalog server'
         logging.error("Communication with ICAT server failed: %s" % sys.exc_value)
