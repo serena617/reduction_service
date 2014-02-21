@@ -8,6 +8,10 @@ from django.db import models
 from django.contrib.auth.models import User
 from remote.models import Transaction
 from plotting.models import Plot1D, Plot2D
+import logging
+logger = logging.getLogger("eqsans")
+import json
+import sys
 
 UNCATEGORIZED = 'uncategorized'
 
@@ -64,12 +68,14 @@ class Experiment(models.Model):
     
 class ReductionProcess(models.Model):
     """
+        Reduction process definition
     """
     instrument = models.ForeignKey(Instrument)
     experiments = models.ManyToManyField(Experiment, related_name='_reduction_experiment+')
-    name = models.CharField(max_length=128)
+    name = models.TextField()
     owner = models.ForeignKey(User)
-    data_file = models.CharField(max_length=128)
+    data_file = models.TextField()
+    properties = models.TextField()
     timestamp = models.DateTimeField('timestamp', auto_now=True)
     
     def __str__(self):
@@ -79,20 +85,11 @@ class ReductionProcess(models.Model):
         """
             Return a dictionary of properties for this entry
         """
-        data = {}
-        data['reduction_name'] = self.name
-        
-        # Go through the list of reduction parameters
-        params = FloatReductionProperty.objects.filter(reduction=self)
-        for p in params:
-            data[p.name] = p.value
-        params = CharReductionProperty.objects.filter(reduction=self)
-        for p in params:
-            data[p.name] = p.value
-        params = BoolReductionProperty.objects.filter(reduction=self)
-        for p in params:
-            data[p.name] = p.value
-            
+        data = {'reduction_name': self.name}
+        try:
+            data = json.loads(self.properties)
+        except:
+            logger.error("Could not retrieve properties: %s" % sys.exc_value)
         return data
     
 class ReductionProperty(models.Model):
@@ -105,15 +102,6 @@ class ReductionProperty(models.Model):
 
     class Meta:
         abstract = True
-    
-class BoolReductionProperty(ReductionProperty):
-    value = models.BooleanField(default=True)
-    
-class FloatReductionProperty(ReductionProperty):
-    value = models.FloatField()
-    
-class CharReductionProperty(ReductionProperty):
-    value = models.CharField(max_length=128)
     
 class RemoteJob(models.Model):
     reduction = models.ForeignKey(ReductionProcess)

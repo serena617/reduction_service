@@ -88,6 +88,7 @@ def experiment(request, ipts):
                        'breadcrumbs': breadcrumbs,
                        'ipts_number': ipts,
                        'run_list': run_list,
+                       'back_url': reverse('eqsans.views.experiment', args=[ipts]),
                        'icat_info': icat_ipts,
                        'form': reduction_start_form,
                        'is_categorized': not IS_UNCATEGORIZED}
@@ -96,6 +97,18 @@ def experiment(request, ipts):
     template_values = reduction_service.view_util.fill_template_values(request, **template_values)
     return render_to_response('eqsans/experiment.html',
                               template_values)
+
+@login_required
+def delete_reduction(request, reduction_id):
+    """
+        Delete a reduction process entry
+        @param reduction_id: primary key of reduction object
+    """
+    reduction_proc = get_object_or_404(ReductionProcess, pk=reduction_id, owner=request.user)
+    reduction_proc.delete()
+    if 'back_url' in request.GET:
+        return redirect(request.GET['back_url'])
+    return redirect(reverse('eqsans.views.reduction_home'))
 
 @login_required
 def reduction_options(request, reduction_id=None):

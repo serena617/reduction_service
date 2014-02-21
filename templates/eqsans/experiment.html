@@ -19,7 +19,7 @@ Search or create reductions for run: {{ form.run_number.errors }}{{ form.run_num
 <table class="reduction_table">
   <thead>
     <tr>
-      <th>Run</th><th>Beam center run</th><th>Transmission</th><th>Background</th><th>Dark current</th><th>Sensitivity</th><th>Sample aperture</th>
+      <th>Run</th><th>Beam center run</th><th>Transmission</th><th>Background</th><th>Dark current</th><th>Sensitivity</th><th>Sample aperture</th><th></th>
     </tr>
   </thead>
   <tbody>
@@ -34,6 +34,7 @@ Search or create reductions for run: {{ form.run_number.errors }}{{ form.run_num
         <td>{% if r.dark_current_run %}<div class='subtitle_black'>{{ r.dark_current_run }}</div>{% endif %}</td>
         <td>{% if r.sensitivity_file %}<div class='subtitle_black'>{{ r.sensitivity_file }}</div>{% endif %}</td>
         <td>{% if r.sample_aperture_diameter %}<div class='subtitle_black'>{{ r.sample_aperture_diameter }} mm</div>{% endif %}</td>
+        <td title='Click to delete this reduction'><a href="{% url 'eqsans_delete_reduction' r.id %}?back_url={{ back_url }}"><span class="ui-icon ui-icon-trash"></span></a></td>
     </tr>
   {% endfor %}
   </tbody>

@@ -1,8 +1,9 @@
 from django import forms
 from django.shortcuts import get_object_or_404
-from models import ReductionProcess, Instrument, Experiment, BoolReductionProperty, FloatReductionProperty, CharReductionProperty
+from models import ReductionProcess, Instrument, Experiment
 import time
 import sys
+import json
 import logging
 logger = logging.getLogger('eqsans.forms')
 
@@ -158,7 +159,12 @@ class ReductionOptions(forms.Form):
         # Find or create a reduction process entry and update it
         if reduction_id is not None:
             reduction_proc = get_object_or_404(ReductionProcess, pk=reduction_id, owner=user)
+            # If the user changed the data to be reduced, create a new reduction process entry
+            new_reduction = not reduction_proc.data_file==self.cleaned_data['data_file']
         else:
+            new_reduction = True
+            
+        if new_reduction:
             # Make sure we don't try to store a string that's longer than allowed
             try:
                 eqsans = Instrument.objects.get(name='eqsans')
@@ -168,8 +174,8 @@ class ReductionOptions(forms.Form):
             
             reduction_proc = ReductionProcess(owner=user,
                                               instrument=eqsans)
-        reduction_proc.name = self.cleaned_data['reduction_name'][:128]
-        reduction_proc.data_file = self.cleaned_data['data_file'][:128]
+        reduction_proc.name = self.cleaned_data['reduction_name']
+        reduction_proc.data_file = self.cleaned_data['data_file']
         
         reduction_proc.save()
         
@@ -188,25 +194,14 @@ class ReductionOptions(forms.Form):
             reduction_proc.experiments.add(uncategorized_expt)
         reduction_proc.save()
                 
-        # Clean up the old values
-        FloatReductionProperty.objects.filter(reduction=reduction_proc).delete()
-        BoolReductionProperty.objects.filter(reduction=reduction_proc).delete()
-        CharReductionProperty.objects.filter(reduction=reduction_proc).delete()
-
         # Set the parameters associated with the reduction process entry
-        for name, field in self.fields.items():
-            if name == 'reduction_name': continue
-            property_cls = None
-            if isinstance(field, forms.FloatField):
-                property_cls = FloatReductionProperty
-            elif isinstance(field, forms.CharField):
-                property_cls = CharReductionProperty
-            elif isinstance(field, forms.BooleanField):
-                property_cls = BoolReductionProperty
-            if property_cls is not None and self.cleaned_data[name] is not None:
-                property_cls(reduction=reduction_proc,
-                             name=name,
-                             value=self.cleaned_data[name]).save()
+        try:
+            properties = json.dumps(self.cleaned_data)
+            reduction_proc.properties = properties
+            reduction_proc.save()
+        except:
+            logger.error("Could not process reduction properties: %s" % sys.exc_value)
+        
         return reduction_proc.pk
     
     @classmethod

@@ -1,12 +1,12 @@
-from models import ReductionProcess, Instrument, Experiment, BoolReductionProperty, FloatReductionProperty, CharReductionProperty, RemoteJob
+from models import ReductionProcess, Instrument, Experiment, RemoteJob
 from django.contrib import admin
 import logging
 import sys
 
 class ReductionProcessAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'owner', 'timestamp', 'properties', 'get_experiments')
+    list_display = ('id', 'name', 'owner', 'timestamp', 'get_properties', 'get_experiments')
     
-    def properties(self, obj):
+    def get_properties(self, obj):
         try:
             data = obj.get_data_dict()
             props = ''
@@ -18,7 +18,7 @@ class ReductionProcessAdmin(admin.ModelAdmin):
         except:
             return ''
         return props
-    properties.short_description = "Properties"
+    get_properties.short_description = "Properties"
     
     def get_experiments(self, obj):
         try:
@@ -76,7 +76,4 @@ class InstrumentAdmin(admin.ModelAdmin):
 admin.site.register(Experiment, ExperimentAdmin)
 admin.site.register(Instrument, InstrumentAdmin)
 admin.site.register(ReductionProcess, ReductionProcessAdmin)
-admin.site.register(BoolReductionProperty, ReductionPropertyAdmin)
-admin.site.register(FloatReductionProperty, ReductionPropertyAdmin)
-admin.site.register(CharReductionProperty, ReductionPropertyAdmin)
 admin.site.register(RemoteJob, RemoteJobAdmin)
