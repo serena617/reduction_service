@@ -13,7 +13,7 @@ Please use the form on this page.
 <table class="reduction_table">
   <thead>
     <tr>
-      <th>Job</th><th>Name</th><th>Start</th><th>Completion</th>
+      <th>Job</th><th>Name</th><th>Start</th><th>Completion</th><th>Delete</th>
     </tr>
   </thead>
   <tbody>
@@ -22,7 +22,10 @@ Please use the form on this page.
       <td><a href="{% url 'remote_job_details' job.ID%}">{{ job.ID }}</a>
           (<a href="{% url 'remote_stop_transaction' job.TransID %}?back_url={{ back_url }}">delete</a>)</td>
       <td>{{ job.JobName }}</td>
-      <td>{{ job.StartDate|date:"n/d H:i" }}</td><td>{{ job.CompletionDate|date:"n/d H:i" }}</td></tr>
+      <td>{{ job.StartDate|date:"n/d H:i" }}</td>
+      <td>{{ job.CompletionDate|date:"n/d H:i" }}</td>
+      <td title='Click to remove this reduction job'><a href="{% url 'remote_stop_transaction' job.TransID %}?back_url={{ back_url }}"><span class="ui-icon ui-icon-trash"></span></a></td>
+      </tr>
   {% endfor %}
   </tbody>
 </table>
