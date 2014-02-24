@@ -1,3 +1,7 @@
+.instrument_button {
+    width:100px;
+    margin:5px;
+}
 .analysis_tools {
     width:130px;
     position:absolute;

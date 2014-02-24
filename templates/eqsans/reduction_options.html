@@ -74,7 +74,8 @@
     }
     
     $(function() {
-      $( "#tabs" ).tabs({ active: 2 });
+      $("#tabs").tabs({ active: 2 });
+      $("#submit_reduction_button").button();
     });
 </script>
 {% endblock %}
@@ -147,7 +148,7 @@
       </table>
     </div>
   </div>
-  <p><input type="submit" value="update"/></p>
+  <p><input id="submit_reduction_button" type="submit" value="update"/></p>
 </form>
 
 {% if errors > 0 %}

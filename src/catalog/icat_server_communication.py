@@ -85,7 +85,8 @@ def get_instruments():
         for element in elements:
             instr = get_text_from_xml(element.childNodes)
             if not instr.upper().endswith('A'):
-                instruments.append(instr)
+                if not instr.upper() in ['NSE', 'FNPB']:
+                    instruments.append(instr)
     except:
         logging.error("Could not get list of instruments from ICAT: %s" % sys.exc_value)
     return instruments
@@ -93,20 +94,19 @@ def get_instruments():
 
 def get_experiments(instrument):
     """
-    http://icat-testing.sns.gov:2080/icat-rest-ws/experiment/SNS/NOM/all
+    http://icat-testing.sns.gov:2080/icat-rest-ws/experiment/SNS/NOM/meta
 
     <proposal id="IPTS-8109">
       <collection>0</collection>
       <title>dummy</title>
       <createTime>2013-12-02T17:28:01.874-05:00</createTime>
-      <runRange>12712-12718, 12720-12792</runRange>
     </proposal>
 
     """
     experiments = []
     try:
         t0 = time.time()
-        url = '/icat-rest-ws/experiment/SNS/%s/all' % instrument.upper()
+        url = '/icat-rest-ws/experiment/SNS/%s/meta' % instrument.upper()
         conn = httplib.HTTPConnection(ICAT_DOMAIN, 
                                       ICAT_PORT, timeout=20)
         conn.request('GET', url)
@@ -117,11 +117,14 @@ def get_experiments(instrument):
             expt = {'id': e.attributes['id'].value}
             for n in e.childNodes:
                 if n.hasChildNodes():
-                    if n.nodeName in ['title']:
+                    if n.nodeName == 'title':
                         expt[n.nodeName] = urllib.unquote(get_text_from_xml(n.childNodes))
-                    elif n.nodeName == 'runRange':
-                        expt[n.nodeName] = get_text_from_xml(n.childNodes)
+                    elif n.nodeName == 'createTime':
+                        timestr = get_text_from_xml(n.childNodes)
+                        expt[n.nodeName] = decode_time(timestr)
+                        
             experiments.append(expt)
+        logging.debug("ICAT %s: %s" % (url, str(time.time()-t0)))
     except:
         logging.error("Could not get list of experiments from ICAT: %s" % sys.exc_value)
     return experiments

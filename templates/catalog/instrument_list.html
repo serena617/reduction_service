@@ -1,22 +1,19 @@
 {% extends "catalog/catalog_base.html" %}
 {% load catalog_tags %}
 
+{% block header %}
+<script>
+    $(function() {
+      {% for instr in instruments %} $('#{{ instr }}_button').button();{% endfor %}
+    });
+</script>
+{% endblock %}
+
 {% block content %}
-<p>
-{% if instruments %}
-<p>
-<ul>
-    {% for instr in instruments %}
-    <li><a href='{{ instr|lower }}'>{{ instr }}</a></li>
-    {% endfor %}
-</ul>
-{% endif %}
-<p>
-{% if errors %}
-<div class="error_section">
-  The submitted parameters are not valid because of the following reasons:<br>
-  {{ errors }}
-</div>
-{% endif %}
+<p>Choose an instrument to browse its data catalog:</p>
+
+{% for instr in instruments %}
+<span><a class='instrument_button' href='{{ instr|lower }}' id='{{ instr }}_button'>{{ instr }}</a></span>
+{% endfor %}
 {% endblock %}
 

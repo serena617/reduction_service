@@ -7,12 +7,12 @@
 <table class="reduction_table">
   <thead>
     <tr>
-      <th style='min-width:80px;'>ID</th><th style='min-width:380px;'>Title</th><th>Run range</th>
+      <th style='min-width:80px;'>ID</th><th style='min-width:380px;'>Title</th><th>Creation time</th>
     </tr>
   </thead>
   <tbody>
-  {% for r in experiments %}
-    <tr><td><a href="{% url 'catalog_runs' instrument r.id %}" >{{ r.id }}</a></td><td>{{ r.title|safe }}</td><td>{{ r.runRange }}</td></tr>
+  {% for r in experiments|dictsortreversed:"createTime" %}
+    <tr><td><a href="{% url 'catalog_runs' instrument r.id %}" >{{ r.id }}</a></td><td>{{ r.title|safe }}</td><td>{{ r.createTime }}</td></tr>
 
   {% endfor %}
   </tbody>
