@@ -30,12 +30,12 @@
         <li>End time: {{ job_info.CompletionDate }}</li>
       </ul>
     </div>
-	
-	<p>
+    <p>
     <div>Reduction</div>
     <div class='tool_area'>
       <ul>
-        {% if remote_job.reduction %}<li><a href="{% url 'eqsans_reduction' remote_job.reduction.id %}">Job details</a>: {{ remote_job.reduction.name }}</li>{% endif %}
+        <li><b>{{ remote_job.reduction.name }}</b> (<a href="{% url 'eqsans_reduction' remote_job.reduction.id %}" title='Edit latest version of this reduction'>edit <span style="padding-bottom:3px" class="ui-button ui-icon ui-icon-pencil"></span></a>)</li>
+        <br>
         <li>Sample data: {{ parameters.data_file }}</li>
         <li>Beam center data: {{ parameters.direct_beam_run }}</li>
         <li>Sample transmission: {{ parameters.transmission_sample }}</li>
@@ -46,7 +46,7 @@
       </ul>
     </div>
   
-  	<p>
+    <p>
     Job directory: <b>{{ job_directory }}</b>
     <div class='tool_area'>
       <ul>

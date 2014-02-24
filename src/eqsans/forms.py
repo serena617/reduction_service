@@ -24,13 +24,13 @@ class ReductionOptions(forms.Form):
     beam_center_y = forms.FloatField(required=False, initial=128.0)
     fit_direct_beam = forms.BooleanField(required=False, initial=False,
                                          help_text='Select to fit the beam center')
-    direct_beam_run = forms.CharField(required=False)
+    direct_beam_run = forms.CharField(required=False, initial='')
     
     # Sensitivity
     perform_sensitivity = forms.BooleanField(required=False, initial=False,
                                              label='Perform sensitivity correction',
                                              help_text='Select to enable sensitivity correction')
-    sensitivity_file = forms.CharField(required=False)
+    sensitivity_file = forms.CharField(required=False, initial='')
     sensitivity_min = forms.FloatField(required=False, initial=0.4)
     sensitivity_max = forms.FloatField(required=False, initial=2.0)
     
@@ -46,9 +46,9 @@ class ReductionOptions(forms.Form):
     # Background
     subtract_background = forms.BooleanField(required=False, initial=False,
                                              help_text='Select to enable background subtraction')
-    background_file = forms.CharField(required=False)
-    background_transmission_sample = forms.CharField(label='Transmission sample', required=False)
-    background_transmission_empty = forms.CharField(label='Transmission empty', required=False)
+    background_file = forms.CharField(required=False, initial='')
+    background_transmission_sample = forms.CharField(label='Transmission sample', required=False, initial='')
+    background_transmission_empty = forms.CharField(label='Transmission empty', required=False, initial='')
     
     @classmethod
     def as_xml(cls, data):

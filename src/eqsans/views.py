@@ -242,6 +242,7 @@ def submit_job(request, reduction_id):
     if jobID is not None:
         job = RemoteJob(reduction=reduction_proc,
                         remote_id=jobID,
+                        properties=reduction_proc.properties,
                         transaction=transaction)
         job.save()
     return redirect(reverse('eqsans.views.reduction_options', args=[reduction_id]))
@@ -259,7 +260,7 @@ def job_details(request, job_id):
     breadcrumbs += " &rsaquo; %s" % job_id
 
     template_values = {'remote_job': remote_job,
-                       'parameters': remote_job.reduction.get_data_dict(),
+                       'parameters': remote_job.get_data_dict(),
                        'reduction_id': remote_job.reduction.id,
                        'breadcrumbs': breadcrumbs,
                        'back_url': request.path}

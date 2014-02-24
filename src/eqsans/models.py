@@ -107,9 +107,21 @@ class RemoteJob(models.Model):
     reduction = models.ForeignKey(ReductionProcess)
     remote_id = models.CharField(max_length = 30, unique=True)
     transaction = models.ForeignKey(Transaction)
+    properties = models.TextField()
     plots = models.ManyToManyField(Plot1D, null=True, blank=True, related_name='_remote_job_plot+')
     plots2d = models.ManyToManyField(Plot2D, null=True, blank=True, related_name='_remote_job_plot2d+')
     
+    def get_data_dict(self):
+        """
+            Return a dictionary of properties for this entry
+        """
+        data = {'reduction_name': self.reduction.name}
+        try:
+            data = json.loads(self.properties)
+        except:
+            logger.error("Could not retrieve properties: %s" % sys.exc_value)
+        return data
+
     def get_first_plot(self, filename, owner):
         """
             Return the first plot object associated with this remote job, or None
