@@ -1,3 +1,9 @@
+"""
+    Catalog views for the SNS analysis/reduction web application.
+    
+    @author: M. Doucet, Oak Ridge National Laboratory
+    @copyright: 2014 Oak Ridge National Laboratory
+"""
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response
 from django.core.urlresolvers import reverse
@@ -5,17 +11,16 @@ from django.views.decorators.cache import cache_page
 from django.conf import settings
 from django.http import HttpResponse
 
-from icat_server_communication import get_ipts_runs, get_instruments, get_experiments, get_ipts_info, get_run_info
+from icat_server_communication import get_ipts_runs, get_instruments, get_experiments, get_run_info
 import catalog.view_util
 import reduction_service.view_util
-import logging
-import sys
 import json
 
 @login_required
 def instrument_list(request):
     """
         Return a list of available instruments
+        @param request: request object
     """
     breadcrumbs = "home"
     instruments = get_instruments()
@@ -33,6 +38,8 @@ def instrument_list(request):
 def experiment_list(request, instrument):
     """
         Return the list of experiments for a given instrument
+        @param request: request object
+        @param instrument: instrument name
     """
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; %s catalog" % (reverse('home'), instrument.lower())
     experiments = get_experiments(instrument.upper())
@@ -48,29 +55,19 @@ def experiment_list(request, instrument):
                               template_values)
     
 @login_required
-def experiment_run_list(request, instrument, ipts='IPTS-8340'):
-
+def experiment_run_list(request, instrument, ipts):
+    """
+        Return a list of runs for a given experiment
+        @param request: request object
+        @param instrument: instrument name
+        @param ipts: experiment name
+    """
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s catalog</a> &rsaquo; %s" % (reverse('catalog.views.instrument_list'),
                                                                                              reverse('catalog.views.experiment_list', args=[instrument]),
                                                                                              instrument.lower(),
                                                                                              ipts.lower(),
                                                                                              )
     runs = get_ipts_runs(instrument.upper(), ipts)
-    # Backward compatibility while we are developing ICAT in parallel
-    if len(runs)==0:
-        icat_ipts = get_ipts_info(instrument.upper(), ipts)
-        if 'run_range' in icat_ipts:
-            try:
-                toks = icat_ipts['run_range'].split('-')
-                r_min = int(toks[0])
-                r_max = int(toks[1])
-                for r in range(r_min, r_max+1):
-                    runs.append({'id':r,
-                                 'webmon_url': catalog.view_util.get_webmon_url(instrument, r, ipts),
-                                 'reduce_url': catalog.view_util.get_new_reduction_url(instrument, r, ipts)})
-            except:
-                logging.error("Problem generating run list: %s" % sys.exc_value)
-
     template_values = {'run_data': runs,
                        'instrument': instrument,
                        'experiment': ipts,
@@ -88,6 +85,7 @@ def experiment_run_list(request, instrument, ipts='IPTS-8340'):
 def run_info(request, instrument, run_number):
     """
          Ajax call to get run information (retrieved from ICAT)
+         @param request: request object
          @param instrument: instrument name
          @param run_number: run number
     """ 
