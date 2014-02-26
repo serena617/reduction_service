@@ -81,11 +81,21 @@ def experiment(request, ipts):
         except:
             pass
         reductions.append(data_dict)
+        
+    # Get all user configurations
+    config_list = ReductionConfiguration.objects.filter(owner=request.user,
+                                                        experiments=experiment_obj)
+    configurations = []
+    for item in config_list:
+        data_dict = item.get_data_dict()
+        data_dict['id'] = item.id
+        configurations.append(data_dict)
     
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
     breadcrumbs += " &rsaquo; <a href='%s'>eqsans reduction</a>" % reverse('eqsans.views.reduction_home')
     breadcrumbs += " &rsaquo; %s" % ipts.lower()
     template_values = {'reductions': reductions,
+                       'configurations': configurations,
                        'title': 'EQSANS %s' % ipts,
                        'breadcrumbs': breadcrumbs,
                        'ipts_number': ipts,
@@ -267,6 +277,21 @@ def reduction_configuration_job_delete(request, config_id, reduction_id):
         reduction_config.reductions.remove(reduction_proc)
         reduction_proc.delete()
     return redirect(reverse('eqsans.views.reduction_configuration', args=[config_id]))
+    
+@login_required
+def reduction_configuration_delete(request, config_id):
+    """
+        Delete a configuration
+        @param config_id: pk of configuration this reduction belongs to
+    """
+    reduction_config = get_object_or_404(ReductionConfiguration, pk=config_id, owner=request.user)
+    for item in reduction_config.reductions.all():
+        reduction_config.reductions.remove(item)
+        item.delete()
+    reduction_config.delete()
+    if 'back_url' in request.GET:
+        return redirect(request.GET['back_url'])
+    return redirect(reverse('eqsans.views.reduction_home'))
     
 @login_required
 def reduction_script(request, reduction_id):

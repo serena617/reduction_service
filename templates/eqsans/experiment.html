@@ -10,12 +10,9 @@ Run range: <b>{{ icat_info.run_range|default:"-" }}</b>
 </p>
 {% endif %}
 
-<!-- form action="" method="GET">{% csrf_token %}
-Search or create reductions for run: {{ form.run_number.errors }}{{ form.run_number }}
-</form -->
-
 {% if reductions %}
-<p>
+<div class='display_section'>
+<p>The following are all the reductions processes you have for this experiment:</p>
 <table class="reduction_table">
   <thead>
     <tr>
@@ -41,15 +38,33 @@ Search or create reductions for run: {{ form.run_number.errors }}{{ form.run_num
   {% endfor %}
   </tbody>
 </table>
-{% endif %}
-<p>
-
-{% if errors %}
-<div class="error_section">
-  The submitted parameters are not valid because of the following reasons:<br>
-  {{ errors }}
 </div>
 {% endif %}
-
+<p>
+{% if configurations %}
+<div class='display_section'>
+<p >The following are all the configurations you have for this experiment. You can use a configurations to
+defined several reduction jobs and submit them all at once.</p>
+<table class="reduction_table">
+  <thead>
+    <tr>
+      <th>Configuration</th><th>Beam center run</th><th>Transmission</th><th>Dark current</th><th>Sensitivity</th><th>Sample aperture</th><th></th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for c in configurations %}
+    <tr><td><a href="{% url 'eqsans_configuration' c.id %}" >{{ c.reduction_name }}</a></td>
+        <td><div class='subtitle_black'>{{ c.direct_beam_run }}</div></td>
+        <td>{% if c.transmission_empty %}<div class='subtitle_black'>T-Empty: {{ c.transmission_empty }}</div>{% endif %}</td>
+        <td>{% if c.dark_current_run %}<div class='subtitle_black'>{{ c.dark_current_run }}</div>{% endif %}</td>
+        <td>{% if c.sensitivity_file %}<div class='subtitle_black'>{{ c.sensitivity_file }}</div>{% endif %}</td>
+        <td>{% if c.sample_aperture_diameter %}<div class='subtitle_black'>{{ c.sample_aperture_diameter }} mm</div>{% endif %}</td>
+        <td title='Click to delete this configuration. ALL ASSOCIATED REDUCTION JOBS WILL BE DELETED'><a href="{% url 'eqsans_configuration_delete' c.id %}?back_url={{ back_url }}"><span class="ui-icon ui-icon-trash"></span></a></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endif %}
 {% endblock %}
 

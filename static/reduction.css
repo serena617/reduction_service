@@ -15,6 +15,12 @@
 	-webkit-border-radius: 4px;
 	border-radius: 4px; /* future proofing */
 }
+
+.display_section {
+    padding-top: 20px;
+    padding-botton: 10px;
+}
+
 .tool_area {
     border-top: 1px solid #aaaaaa;
     padding-top: 5px;
