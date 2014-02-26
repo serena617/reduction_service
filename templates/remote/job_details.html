@@ -1,5 +1,15 @@
 {% extends "base.html" %}
 
+{% block page_specific_tools %}
+      <div class="tool_area">
+        <b>Remote jobs</b><br>
+        <ul>
+          <li><a href="{% url 'remote_query_jobs'%}" title="See all your remote jobs">see all jobs</a></li>
+          <li><a title='Click to remove this reduction job' href="{% url 'remote_stop_transaction' job_info.TransID %}?back_url={% url 'remote_query_jobs' %}">delete job</a></li>
+        </ul>
+      </div>
+{% endblock %}
+
 {% block content %}
 {% if need_authentication %}
     <div class="fermi_notification">
