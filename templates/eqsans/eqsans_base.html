@@ -1,45 +1,46 @@
 {% extends "base.html" %}
 
 {% block page_specific_tools %}
-    <div class="tool_area">
-      <b>Catalog</b><br>
-      <ul>
-        <li><a href="{% url 'catalog_experiments' 'eqsans'%}" title="See all experiments for this instrument">see experiments</a></li>
-{% if ipts_number and is_categorized %}
-        <li><a href="{% url 'catalog_runs' 'eqsans' ipts_number%}" title="See all runs for this experiment">see {{ ipts_number }} runs</a></li>
-{% endif %}
-{% for expt in expt_list %}
-{% if not expt.is_uncategorized %}
-        <li><a href="{% url 'catalog_runs' 'eqsans' expt%}" title="See all runs for this experiment">see {{ expt }} runs</a></li>
-{% endif %}
-{% endfor %}
-	  </ul>
-	</div>
-    <div class="tool_area">
-      <b>Reduction</b><br>
-      <ul>
-        <li><a href="{% url 'eqsans_reduction_home' %}" title="Go to reduction home for this instrument">reduction home</a></li>
-        <li><a href="{% url 'eqsans_new_reduction' %}" title="Start a new reduction">new reduction</a></li>
-{% if reduction_id %}
-        <li><a href="{% url 'eqsans_reduction_script' reduction_id %}" title="See reduction script">see script</a></li>
-        <li><a href="{% url 'eqsans_py_reduction_script' reduction_id %}" title="Download python script">download python</a></li>
-        <li><a href="{% url 'eqsans_xml_reduction_script' reduction_id %}" title="Download Mantid xml file">download xml</a></li>
-{% endif %}
-      </ul>
-    </div>
-    <div class="tool_area">
-      <b>Remote jobs</b><br>
-      <ul>
-        <li><a href="{% url 'eqsans_reduction_jobs'%}" title="See remote jobs">see all jobs</a></li>
-{% if reduction_id %}
-        <li><a href="{% url 'eqsans_submit_job' reduction_id %}" title="Submit this reduction job">submit this job</a></li>
-{% if existing_jobs and existing_jobs|length > 0 %}
-    {% for job in existing_jobs %}
-        <li><a href="{% url 'eqsans_job_details' job.remote_id %}" title="See job details">job {{ job.remote_id }}</a></li>
-    {% endfor %}
-{% endif %}
-{% endif %}
-      </ul>
-    </div>
-    
+      <div class="tool_area">
+        <b>Catalog</b><br>
+        <ul>
+          <li><a href="{% url 'catalog_experiments' 'eqsans'%}" title="See all experiments for this instrument">see experiments</a></li>
+          {% spaceless %}
+          {% if ipts_number and is_categorized %}
+          <li><a href="{% url 'catalog_runs' 'eqsans' ipts_number%}" title="See all runs for this experiment">see {{ ipts_number }} runs</a></li>
+          {% endif %}
+          {% for expt in expt_list %}
+            {% if not expt.is_uncategorized %}
+            <li><a href="{% url 'catalog_runs' 'eqsans' expt%}" title="See all runs for this experiment">see {{ expt }} runs</a></li>
+            {% endif %}
+          {% endfor %}
+          {% endspaceless %}
+        </ul>
+      </div>
+      <div class="tool_area">
+        <b>Reduction</b><br>
+        <ul>
+          <li><a href="{% url 'eqsans_reduction_home' %}" title="Go to reduction home for this instrument">reduction home</a></li>
+          <li><a href="{% url 'eqsans_new_reduction' %}" title="Start a new reduction">new reduction</a></li>
+          {% if reduction_id %}
+          <li><a href="{% url 'eqsans_reduction_script' reduction_id %}" title="See reduction script">see script</a></li>
+          <li><a href="{% url 'eqsans_py_reduction_script' reduction_id %}" title="Download python script">download python</a></li>
+          <li><a href="{% url 'eqsans_xml_reduction_script' reduction_id %}" title="Download Mantid xml file">download xml</a></li>
+          {% endif %}
+        </ul>
+      </div>
+      <div class="tool_area">
+        <b>Remote jobs</b><br>
+        <ul>
+          <li><a href="{% url 'eqsans_reduction_jobs'%}" title="See remote jobs">see all jobs</a></li>
+          {% if reduction_id %}
+          <li><a href="{% url 'eqsans_submit_job' reduction_id %}" title="Submit this reduction job">submit this job</a></li>
+          {% if existing_jobs and existing_jobs|length > 0 %}
+          {% for job in existing_jobs %}
+          <li><a href="{% url 'eqsans_job_details' job.remote_id %}" title="See job details">job {{ job.remote_id }}</a></li>
+          {% endfor %}
+          {% endif %}
+          {% endif %}
+        </ul>
+      </div>
 {% endblock %}

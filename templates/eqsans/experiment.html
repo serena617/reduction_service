@@ -24,7 +24,9 @@ Search or create reductions for run: {{ form.run_number.errors }}{{ form.run_num
   </thead>
   <tbody>
   {% for r in reductions %}
-    <tr><td><a href="{% url 'eqsans_reduction' r.id %}" >{{ r.data_file }}</a><div class='subtitle'>{{ r.reduction_name }}</div></td>
+    <tr><td><a href="{% url 'eqsans_reduction' r.id %}" >{{ r.data_file }}</a> {% spaceless %}
+            {% if r.config %}(<a title='Click to go to the configuration page for this reduction' href='{% url 'eqsans_configuration' r.config.id %}'>config</a>){% endif %}
+            {% endspaceless %}<div class='subtitle'>{{ r.reduction_name }}</div></td>
         <td><div class='subtitle_black'>{{ r.direct_beam_run }}</div></td>
         <td>{% if r.transmission_sample %}<div class='subtitle_black'>T-Sample: {{ r.transmission_sample }}</div>{% endif %}
             {% if r.transmission_empty %}<div class='subtitle_black'>T-Empty: {{ r.transmission_empty }}</div>{% endif %}</td>

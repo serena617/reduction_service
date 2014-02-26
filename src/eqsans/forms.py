@@ -1,11 +1,94 @@
 from django import forms
 from django.shortcuts import get_object_or_404
-from models import ReductionProcess, Instrument, Experiment
+from models import ReductionProcess, Instrument, Experiment, ReductionConfiguration
 import time
 import sys
 import json
 import logging
+import copy
 logger = logging.getLogger('eqsans.forms')
+
+class ReductionConfigurationForm(forms.Form):
+    reduction_name = forms.CharField(required=False)
+    experiment = forms.CharField(required=True, initial='')
+    # General options
+    absolute_scale_factor = forms.FloatField(required=False, initial=1.0)
+    dark_current_run = forms.CharField(required=False, initial='')
+    sample_aperture_diameter = forms.FloatField(required=False, initial=10.0)
+    
+    # Beam center
+    direct_beam_run = forms.CharField(required=False, initial='')
+    
+    # Sensitivity
+    sensitivity_file = forms.CharField(required=False, initial='')
+    sensitivity_min = forms.FloatField(required=False, initial=0.4)
+    sensitivity_max = forms.FloatField(required=False, initial=2.0)
+    
+    # Data
+    sample_thickness = forms.FloatField(required=False, initial=1.0)
+    transmission_empty = forms.CharField(required=True)
+
+    @classmethod
+    def data_from_db(cls, user, reduction_config):
+        expt_list = reduction_config.experiments.all()
+        data = reduction_config.get_data_dict()
+        # Ensure all the fields are there
+        for f in cls.base_fields:
+            if not f in data:
+                data[f]=cls.base_fields[f].initial
+        if len(expt_list)>0:
+            data['experiment'] = expt_list[0]
+        return data
+
+    def to_db(self, user, config_id=None):
+        """
+            Save a configuration to the database
+            @param user: User object
+            @param config_id: PK of the config object to update (None for creation)
+        """
+        eqsans = Instrument.objects.get(name='eqsans')
+        # Find or create a reduction process entry and update it
+        if config_id is not None:
+            reduction_config = get_object_or_404(ReductionConfiguration, pk=config_id, owner=user)
+        else:
+            reduction_config = ReductionConfiguration(owner=user,
+                                                      instrument=eqsans,
+                                                      name=self.cleaned_data['reduction_name'])
+            reduction_config.save()
+        
+        # Find experiment
+        uncategorized_expt = Experiment.objects.get_uncategorized('eqsans')
+        expts = self.cleaned_data['experiment'].split(',')
+        for item in expts:
+            # Experiments have unique names of no more than 24 characters
+            expt_objs = Experiment.objects.filter(name=item.upper().strip()[:24])
+            if len(expt_objs)>0:
+                if expt_objs[0] not in reduction_config.experiments.all():
+                    reduction_config.experiments.add(expt_objs[0])
+            else:
+                expt_obj = Experiment(name=item.upper().strip()[:24])
+                expt_obj.save()
+                reduction_config.experiments.add(expt_objs)
+        
+        if len(expts)>0:
+            if uncategorized_expt in reduction_config.experiments.all():
+                try:
+                    reduction_config.experiments.remove(uncategorized_expt)
+                except:
+                    logger.error("Could not remote uncategorized expt: %s" % sys.exc_value)
+        else:
+            reduction_config.experiments.add(uncategorized_expt)
+                
+        # Set the parameters associated with the reduction process entry
+        try:
+            properties = json.dumps(self.cleaned_data)
+            reduction_config.properties = properties
+            reduction_config.save()
+        except:
+            logger.error("Could not process reduction properties: %s" % sys.exc_value)
+        
+        return reduction_config.pk
+
 
 class ReductionOptions(forms.Form):
     """
@@ -13,6 +96,7 @@ class ReductionOptions(forms.Form):
     """
     # Reduction name
     reduction_name = forms.CharField(required=False)
+    reduction_id = forms.IntegerField(required=False, widget=forms.HiddenInput)
     expt_id = forms.IntegerField(required=False, widget=forms.HiddenInput)
     # General options
     absolute_scale_factor = forms.FloatField(required=False, initial=1.0)
@@ -38,7 +122,7 @@ class ReductionOptions(forms.Form):
     data_file = forms.CharField(required=True)
     sample_thickness = forms.FloatField(required=False, initial=1.0)
     transmission_sample = forms.CharField(required=True)
-    transmission_empty = forms.CharField(required=True)
+    transmission_empty = forms.CharField(required=False)
     beam_radius = forms.FloatField(required=False, initial=3.0, widget=forms.HiddenInput)
     fit_frames_together = forms.BooleanField(required=False, initial=False, widget=forms.HiddenInput)
     theta_dependent_correction = forms.BooleanField(required=False, initial=True, widget=forms.HiddenInput)
@@ -150,34 +234,66 @@ class ReductionOptions(forms.Form):
 
         return xml
 
-    def to_db(self, user, reduction_id=None):
+    def to_db(self, user, reduction_id=None, config_id=None):
         """
+            Save reduction properties to DB.
+            If we supply a config_id, the properties from that
+            configuration will take precedence.
+            If no config_id is supplied and the reduction_id 
+            provided is found to be associated to a configuration,
+            make a new copy of the reduction object so that we
+            don't corrupt the configured reduction.
+            @param user: User object
+            @param reduction_id: pk of the ReductionProcess entry
+            @param config_id: pk of the ReductionConfiguration entry
         """
         if not self.is_valid():
             raise RuntimeError, "Reduction options form invalid"
         
+        logging.error(self.cleaned_data)
+        if reduction_id is None:
+            reduction_id = self.cleaned_data['reduction_id']
+            
         # Find or create a reduction process entry and update it
         if reduction_id is not None:
             reduction_proc = get_object_or_404(ReductionProcess, pk=reduction_id, owner=user)
             # If the user changed the data to be reduced, create a new reduction process entry
             new_reduction = not reduction_proc.data_file==self.cleaned_data['data_file']
+            # If the reduction process is configured and the config isn't the provided one
+            config_obj = reduction_proc.get_config()
+            new_reduction = new_reduction or (config_obj is not None and not config_obj.id == config_id)
         else:
             new_reduction = True
             
         if new_reduction:
-            # Make sure we don't try to store a string that's longer than allowed
-            try:
-                eqsans = Instrument.objects.get(name='eqsans')
-            except:
-                eqsans = Instrument(name='eqsans')
-                eqsans.save()
-            
+            eqsans = Instrument.objects.get(name='eqsans')
             reduction_proc = ReductionProcess(owner=user,
                                               instrument=eqsans)
         reduction_proc.name = self.cleaned_data['reduction_name']
         reduction_proc.data_file = self.cleaned_data['data_file']
-        
         reduction_proc.save()
+        
+        # Set the parameters associated with the reduction process entry
+        config_property_dict = {}
+        property_dict = copy.deepcopy(self.cleaned_data)
+        property_dict['reduction_id'] = reduction_proc.id
+        if config_id is not None:
+            reduction_config = get_object_or_404(ReductionConfiguration, pk=config_id, owner=user)
+            if reduction_proc not in reduction_config.reductions.all():
+                reduction_config.reductions.add(reduction_proc)
+            config_property_dict = json.loads(reduction_config.properties)
+            property_dict.update(config_property_dict)
+            reduction_proc.name = 'Configuration: %s' % reduction_config.name
+            reduction_proc.save()
+            for item in reduction_config.experiments.all():
+                if item not in reduction_proc.experiments.all():
+                    reduction_proc.experiments.add(item)
+        try:
+            properties = json.dumps(property_dict)
+            reduction_proc.properties = properties
+            reduction_proc.save()
+        except:
+            logger.error("Could not process reduction properties: %s" % sys.exc_value)
         
         # Find experiment
         uncategorized_expt = Experiment.objects.get_uncategorized('eqsans')
@@ -185,23 +301,15 @@ class ReductionOptions(forms.Form):
             expt = get_object_or_404(Experiment, id=self.cleaned_data['expt_id'])
             if expt not in reduction_proc.experiments.all():
                 reduction_proc.experiments.add(expt)
-                if uncategorized_expt in reduction_proc.experiments.all():
-                    try:
-                        reduction_proc.experiments.remove(uncategorized_expt)
-                    except:
-                        logger.error("Could not remote uncategorized expt: %s" % sys.exc_value)
         else:
             reduction_proc.experiments.add(uncategorized_expt)
+        if uncategorized_expt in reduction_proc.experiments.all():
+            try:
+                reduction_proc.experiments.remove(uncategorized_expt)
+            except:
+                logger.error("Could not remote uncategorized expt: %s" % sys.exc_value)
         reduction_proc.save()
                 
-        # Set the parameters associated with the reduction process entry
-        try:
-            properties = json.dumps(self.cleaned_data)
-            reduction_proc.properties = properties
-            reduction_proc.save()
-        except:
-            logger.error("Could not process reduction properties: %s" % sys.exc_value)
-        
         return reduction_proc.pk
     
     @classmethod
@@ -229,8 +337,8 @@ class ReductionOptions(forms.Form):
         script += "EQSANS()\n"
         script += "SolidAngle(detector_tubes=True)\n"
         script += "TotalChargeNormalization()\n"
-        if data['absolute_scale_factor'] != 1.0:
-            script += "SetAbsoluteScale(%g)\n" % data['absolute_scale_factor']
+        if data['absolute_scale_factor'] is not None:
+            script += "SetAbsoluteScale(%s)\n" % data['absolute_scale_factor']
 
         script += "AzimuthalAverage(n_bins=100, n_subpix=1, log_binning=False)\n" # TODO
         script += "IQxQy(nbins=100)\n" # TODO
@@ -248,7 +356,7 @@ class ReductionOptions(forms.Form):
         if data['fit_direct_beam']:
             script += "DirectBeamCenter(\"%s\")\n" % data['direct_beam_run']
         else:
-            script += "SetBeamCenter(%f, %f)\n" % (data['beam_center_x'],
+            script += "SetBeamCenter(%s, %s)\n" % (data['beam_center_x'],
                                                    data['beam_center_y'])
             
         if data['perform_sensitivity']:
@@ -257,7 +365,7 @@ class ReductionOptions(forms.Form):
         else:
             script += "NoSensitivityCorrection()\n"
             
-        script += "DirectBeamTransmission(\"%s\", \"%s\", beam_radius=%g)\n" % (data['transmission_sample'],
+        script += "DirectBeamTransmission(\"%s\", \"%s\", beam_radius=%s)\n" % (data['transmission_sample'],
                                                                                 data['transmission_empty'],
                                                                                 data['beam_radius'])
         

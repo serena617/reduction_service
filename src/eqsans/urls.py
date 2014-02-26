@@ -1,6 +1,4 @@
 from django.conf.urls import patterns, url
-
-# Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 admin.autodiscover()
 
@@ -14,8 +12,11 @@ urlpatterns = patterns('',
     url(r'^reduction/(?P<reduction_id>\d+)/delete$', 'eqsans.views.delete_reduction', name='eqsans_delete_reduction'),
     url(r'^reduction/(?P<reduction_id>\d+)/download/py$', 'eqsans.views.py_reduction_script', name='eqsans_py_reduction_script'),
     url(r'^reduction/(?P<reduction_id>\d+)/download/xml$', 'eqsans.views.xml_reduction_script', name='eqsans_xml_reduction_script'),
-    url(r'^query/(?P<job_id>[\-\d]+)/$', 'eqsans.views.job_details', name='eqsans_job_details'),
+    url(r'^query/(?P<job_id>[\w\-\.]+)/$', 'eqsans.views.job_details', name='eqsans_job_details'),
     url(r'^query/dummy$', 'eqsans.views.test_result'),
     url(r'^jobs/$', 'eqsans.views.reduction_jobs', name='eqsans_reduction_jobs'),
+    url(r'^configuration/$', 'eqsans.views.reduction_configuration', name='eqsans_new_configuration'),
+    url(r'^configuration/(?P<config_id>\d+)/$', 'eqsans.views.reduction_configuration', name='eqsans_configuration'),
+    url(r'^configuration/(?P<config_id>\d+)/(?P<reduction_id>\d+)/delete$', 'eqsans.views.reduction_configuration_job_delete', name='eqsans_configuration_job_delete'),
 
 )

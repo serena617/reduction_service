@@ -4,12 +4,13 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
-from models import ReductionProcess, Experiment, RemoteJob, Instrument
+from models import ReductionProcess, Experiment, RemoteJob, Instrument, ReductionConfiguration
 import reduction_service.view_util
 import remote.view_util
 import view_util
 from catalog.icat_server_communication import get_ipts_info
 from . import forms
+from django.forms.formsets import formset_factory
 import logging
 import copy
 import sys
@@ -65,7 +66,7 @@ def experiment(request, ipts):
                                                            data_file__contains=str(item['run']))
             red_list.extend(partial_list)
         for item in ReductionProcess.objects.filter(owner=request.user,
-                                                        experiments=experiment_obj):
+                                                    experiments=experiment_obj):
             if not item in red_list:
                 red_list.append(item)
 
@@ -73,6 +74,7 @@ def experiment(request, ipts):
     for r in red_list:
         data_dict = r.get_data_dict()
         data_dict['id'] = r.id
+        data_dict['config'] = r.get_config()
         try:
             run_id = int(data_dict['data_file'])
             data_dict['webmon_url'] = "https://monitor.sns.gov/report/eqsans/%s/" % run_id
@@ -179,6 +181,93 @@ def reduction_options(request, reduction_id=None):
     return render_to_response('eqsans/reduction_options.html',
                               template_values)
 
+@login_required
+def reduction_configuration(request, config_id=None):
+    """
+        Show the reduction properties for a given configuration,
+        along with all the reduction jobs associated with it.
+        
+        @param request: The request object
+        @param config_id: The ReductionConfiguration pk
+    """
+    # Create a form for the page
+    default_extra = 1 if config_id is None else 0
+    try:
+        extra = int(request.GET.get('extra', default_extra))
+    except:
+        extra = default_extra
+    ReductionOptionsSet = formset_factory(forms.ReductionOptions, extra=extra)
+
+    # Deal with data submission
+    if request.method == 'POST':
+        options_form = ReductionOptionsSet(request.POST)
+        config_form = forms.ReductionConfigurationForm(request.POST)
+        # If the form is valid update or create an entry for it
+        if options_form.is_valid() and config_form.is_valid():
+            # Save the configuration
+            config_id = config_form.to_db(request.user, config_id)
+            # Save the individual reductions
+            for form in options_form:
+                form.to_db(request.user, None, config_id)
+            if config_id is not None:
+                return redirect(reverse('eqsans.views.reduction_configuration', args=[config_id]))
+        else:
+            logging.error(options_form.errors)
+            logging.error(config_form.errors)
+    else:
+        # Deal with the case of creating a new configuration
+        if config_id is None:
+            options_form = ReductionOptionsSet()
+            config_form = forms.ReductionConfigurationForm()
+        # Retrieve existing configuration
+        else:
+            reduction_config = get_object_or_404(ReductionConfiguration, pk=config_id, owner=request.user)
+            initial_config = forms.ReductionConfigurationForm.data_from_db(request.user, reduction_config)
+            
+            initial_values = []
+            for item in reduction_config.reductions.all():
+                props = forms.ReductionOptions.data_from_db(request.user, item.pk)
+                initial_values.append(props)
+                
+            options_form = ReductionOptionsSet(initial=initial_values)
+            config_form = forms.ReductionConfigurationForm(initial=initial_config)
+
+    breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
+    breadcrumbs += " &rsaquo; <a href='%s'>eqsans reduction</a>" % reverse('eqsans.views.reduction_home')
+    if config_id is not None:
+        breadcrumbs += " &rsaquo; configuration %s" % config_id
+    else:
+        breadcrumbs += " &rsaquo; new configuration"
+
+    # ICAT info url
+    icat_url = reverse('catalog.views.run_info', args=['EQSANS', '0000'])
+    icat_url = icat_url.replace('/0000','')
+    #TODO: add New an Save-As functionality
+    template_values = {'config_id': config_id,
+                       'options_form': options_form,
+                       'config_form': config_form,
+                       'title': 'EQSANS Reduction',
+                       'breadcrumbs': breadcrumbs,
+                       'icat_url': icat_url,
+                       'errors': len(options_form.errors) }
+    template_values = reduction_service.view_util.fill_template_values(request, **template_values)
+    return render_to_response('eqsans/reduction_table.html',
+                              template_values)
+    
+@login_required
+def reduction_configuration_job_delete(request, config_id, reduction_id):
+    """
+        Delete a reduction from a configuration
+        @param config_id: pk of configuration this reduction belongs to
+        @param reduction_id: pk of the reduction object
+    """
+    reduction_config = get_object_or_404(ReductionConfiguration, pk=config_id, owner=request.user)
+    reduction_proc = get_object_or_404(ReductionProcess, pk=reduction_id, owner=request.user)
+    if reduction_proc in reduction_config.reductions.all():
+        reduction_config.reductions.remove(reduction_proc)
+        reduction_proc.delete()
+    return redirect(reverse('eqsans.views.reduction_configuration', args=[config_id]))
+    
 @login_required
 def reduction_script(request, reduction_id):
     data = forms.ReductionOptions.data_from_db(request.user, reduction_id)

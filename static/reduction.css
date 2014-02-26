@@ -119,3 +119,7 @@ table .errorlist {
 .subtitle { font-size:10px; color:silver; }
 .subtitle_black { font-size:10px; }
 
+.ui-button a:link {color:#0077cc; text-decoration:none;}
+.ui-button a:visited {color:#0077cc; text-decoration:none;}
+.ui-button a:hover {color:#0077cc; text-decoration:underline;}
+.ui-button a:active {color:#0077cc; text-decoration:none;}

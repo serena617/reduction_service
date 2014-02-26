@@ -81,27 +81,57 @@ class ReductionProcess(models.Model):
     def __str__(self):
         return "%s - %s" % (self.id, self.name)
     
+    def get_config(self):
+        """
+            Return the reduction configuration associated to with this entry
+        """
+        configs = ReductionConfiguration.objects.filter(reductions=self)
+        if len(configs)>1:
+            logger.error("More than one configuration found for ReductionProcess id=%s" % self.id)
+        if len(configs)>0:
+            return configs[0]
+        return None
+        
     def get_data_dict(self):
         """
             Return a dictionary of properties for this entry
         """
-        data = {'reduction_name': self.name}
+        data = {}
         try:
             data = json.loads(self.properties)
         except:
             logger.error("Could not retrieve properties: %s" % sys.exc_value)
+        data.update({'reduction_name': self.name,
+                     'reduction_id': self.id})
         return data
     
-class ReductionProperty(models.Model):
-    reduction = models.ForeignKey(ReductionProcess)
-    name = models.CharField(max_length=56)
+class ReductionConfiguration(models.Model):
+    """
+        Common reduction properties used for a given configuration
+    """
+    instrument = models.ForeignKey(Instrument)
+    experiments = models.ManyToManyField(Experiment, related_name='_configuration_experiment+')
+    name = models.TextField()
+    owner = models.ForeignKey(User)
+    reductions = models.ManyToManyField(ReductionProcess, related_name='_configuration_reduction+')
+    properties = models.TextField()
+    timestamp = models.DateTimeField('timestamp', auto_now=True)
 
-    def reduction_link(self):
-            return "<a href='/database/eqsans/reductionprocess/%s'>%s %s</a>" % (self.reduction.id, self.reduction.id, self.reduction)
-    reduction_link.allow_tags = True
-
-    class Meta:
-        abstract = True
+    def __str__(self):
+        return "%s - %s" % (self.id, self.name)
+    
+    def get_data_dict(self):
+        """
+            Return a dictionary of properties for this entry
+        """
+        data = {}
+        try:
+            data.update(json.loads(self.properties))
+        except:
+            logger.error("Could not retrieve properties: %s" % sys.exc_value)
+        data.update({'reduction_name': self.name,
+                     'configuration_id': self.id})
+        return data
     
 class RemoteJob(models.Model):
     reduction = models.ForeignKey(ReductionProcess)

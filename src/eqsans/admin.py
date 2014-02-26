@@ -1,4 +1,4 @@
-from models import ReductionProcess, Instrument, Experiment, RemoteJob
+from models import ReductionProcess, Instrument, Experiment, RemoteJob, ReductionConfiguration
 from django.contrib import admin
 import logging
 import sys
@@ -25,14 +25,34 @@ class ReductionProcessAdmin(admin.ModelAdmin):
             expts = []
             for item in obj.experiments.all():
                 expts.append(str(item))
-            return '.'.join(expts) 
+            return ', '.join(expts) 
         except:
             return ''
     get_experiments.short_description = "Experiments"
     
-class ReductionPropertyAdmin(admin.ModelAdmin):
-    list_display = ('name', 'reduction_link', 'value')
-
+class ReductionConfigurationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'owner', 'get_reductions', 'timestamp', 'get_experiments')
+    
+    def get_reductions(self, obj):
+        try:
+            reds = []
+            for item in obj.reductions.all():
+                reds.append(str(item))
+            return ', '.join(reds) 
+        except:
+            return ''
+    get_reductions.short_description = "Reductions"
+    
+    def get_experiments(self, obj):
+        try:
+            expts = []
+            for item in obj.experiments.all():
+                expts.append(str(item))
+            return ', '.join(expts) 
+        except:
+            return ''
+    get_experiments.short_description = "Experiments"
+    
 class ExperimentAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'get_instruments')
     def get_instruments(self, obj):
@@ -77,3 +97,4 @@ admin.site.register(Experiment, ExperimentAdmin)
 admin.site.register(Instrument, InstrumentAdmin)
 admin.site.register(ReductionProcess, ReductionProcessAdmin)
 admin.site.register(RemoteJob, RemoteJobAdmin)
+admin.site.register(ReductionConfiguration, ReductionConfigurationAdmin)
