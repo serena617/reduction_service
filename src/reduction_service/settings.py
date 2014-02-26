@@ -1,3 +1,9 @@
+"""
+    Base settings for the SNS reduction/analysis web application.
+    
+    @author: M. Doucet, Oak Ridge National Laboratory
+    @copyright: 2014 Oak Ridge National Laboratory
+"""
 # Django settings for reduction service project.
 import os
 import django
@@ -13,13 +19,12 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': '%s/.reduction_service/sqlite.db' % os.path.expanduser('~'),                      # Or path to database file if using sqlite3.
-        # The following settings are not used with sqlite3:
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': '%s/.reduction_service/sqlite.db' % os.path.expanduser('~'),
         'USER': '',
         'PASSWORD': '',
-        'HOST': '',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
-        'PORT': '',                      # Set to empty string for default.
+        'HOST': '',
+        'PORT': '',
     }
 }
 
@@ -157,6 +162,10 @@ ALLOWED_DOMAIN = ''
 LOGIN_URL = 'users.views.perform_login'
 LANDING_VIEW = 'catalog.views.instrument_list'
 ALTERNATE_LANDING_VIEW = 'eqsans.views.reduction_home'
+
+# Fermi information
+FERMI_HOST = 'fermi.ornl.gov'
+FERMI_BASE_URL = '/MantidRemote/'
 
 LOGGING = {
    'version': 1,

@@ -1,7 +1,7 @@
 {% extends "eqsans/eqsans_base.html" %}
 
 {% block content %}
-{% if need_authentication %}
+{% if not fermi_authenticated %}
 <div class="fermi_notification">
 You need to authenticate with the Fermi remote submission service.
 Please use the form on this page.
@@ -14,7 +14,7 @@ Please use the form on this page.
     </tr>
   </thead>
   <tbody>
-  {% for job in status_data|dictsort:"ID" %}
+  {% for job in status_data|dictsortreversed:"ID" %}
     <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
       <td><a href="{% url 'eqsans_job_details' job.ID %}">{{ job.ID }}</a></td>
       <td>{{ job.JobName }}</td>
@@ -24,12 +24,4 @@ Please use the form on this page.
   {% endfor %}
   </tbody>
 </table>
-
-{% if errors %}
-<div class="error_section">
-  The submitted parameters are not valid because of the following reasons:<br>
-  {{ errors }}
-</div>
-{% endif %}
-
 {% endblock %}

@@ -1,3 +1,9 @@
+"""
+    EQSANS views for the SNS analysis/reduction web application.
+    
+    @author: M. Doucet, Oak Ridge National Laboratory
+    @copyright: 2014 Oak Ridge National Laboratory
+"""
 from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
@@ -18,8 +24,10 @@ import sys
 @login_required
 def experiment(request, ipts):
     """
-        List of reductions
-        #TODO add a way to delete your own entries
+        List of reductions and configurations for a given experiment
+        @param request: request object
+        @param ipts: experiment name
+        
         #TODO create new reduction using a pre-existing one as a template
     """
     # Get experiment object
@@ -268,6 +276,7 @@ def reduction_configuration(request, config_id=None):
 def reduction_configuration_job_delete(request, config_id, reduction_id):
     """
         Delete a reduction from a configuration
+        @param request: request object
         @param config_id: pk of configuration this reduction belongs to
         @param reduction_id: pk of the reduction object
     """
@@ -282,6 +291,7 @@ def reduction_configuration_job_delete(request, config_id, reduction_id):
 def reduction_configuration_delete(request, config_id):
     """
         Delete a configuration
+        @param request: request object
         @param config_id: pk of configuration this reduction belongs to
     """
     reduction_config = get_object_or_404(ReductionConfiguration, pk=config_id, owner=request.user)
@@ -295,6 +305,12 @@ def reduction_configuration_delete(request, config_id):
     
 @login_required
 def reduction_script(request, reduction_id):
+    """
+        Display a script representation of a reduction process.
+        
+        @param request: request object
+        @param reduction_id: pk of the ReductionProcess object
+    """
     data = forms.ReductionOptions.data_from_db(request.user, reduction_id)
     
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
@@ -311,7 +327,10 @@ def reduction_script(request, reduction_id):
 @login_required
 def py_reduction_script(request, reduction_id):
     """
-        Return the python script for a reduction process
+        Return the python script for a reduction process.
+        
+        @param request: request object
+        @param reduction_id: pk of the ReductionProcess object
     """
     data = forms.ReductionOptions.data_from_db(request.user, reduction_id) 
     response = HttpResponse(forms.ReductionOptions.as_mantid_script(data))
@@ -321,7 +340,11 @@ def py_reduction_script(request, reduction_id):
 @login_required
 def xml_reduction_script(request, reduction_id):
     """
-        Return the xml representation of a reduction process
+        Return the xml representation of a reduction process that the user
+        can load into Mantid.
+        
+        @param request: request object
+        @param reduction_id: pk of the ReductionProcess object
     """
     data = forms.ReductionOptions.data_from_db(request.user, reduction_id) 
     response = HttpResponse(forms.ReductionOptions.as_xml(data))
@@ -331,10 +354,12 @@ def xml_reduction_script(request, reduction_id):
 @login_required
 def submit_job(request, reduction_id):
     """
-        Submit a reduction script to Fermi
+        Submit a reduction script to Fermi.
+
+        @param request: request object
+        @param reduction_id: pk of the ReductionProcess object
     """
-    #TODO: save snapshot of script
-    #TODO: report submission errors
+    #TODO: Make sure the submission errors are clearly reported
     reduction_proc = get_object_or_404(ReductionProcess, pk=reduction_id, owner=request.user)
 
     # Start a new transaction
@@ -348,9 +373,9 @@ def submit_job(request, reduction_id):
                            'breadcrumbs': breadcrumbs,}
         template_values = reduction_service.view_util.fill_template_values(request, **template_values)
         return render_to_response('remote/failed_connection.html',
-                                  template_values)        
+                                  template_values)
 
-    data = forms.ReductionOptions.data_from_db(request.user, reduction_id)     
+    data = forms.ReductionOptions.data_from_db(request.user, reduction_id)
     code = forms.ReductionOptions.as_mantid_script(data, transaction.directory)
     jobID = remote.view_util.submit_job(request, transaction, code)
     if jobID is not None:
@@ -364,7 +389,11 @@ def submit_job(request, reduction_id):
 @login_required
 def job_details(request, job_id):
     """
-        Show status of a given remote job
+        Show status of a given remote job.
+        
+        @param request: request object
+        @param job_id: pk of the RemoteJob object
+        
     """
     remote_job = get_object_or_404(RemoteJob, remote_id=job_id)
 
@@ -409,15 +438,12 @@ def test_result(request, job_id='-1'):
 @login_required
 def reduction_jobs(request):
     """
-        { "3954": { "CompletionDate": "2013-10-29T17:13:08+00:00",
-                    "StartDate": "2013-10-29T17:12:32+00:00",
-                    "SubmitDate": "2013-10-29T17:12:31+00:00",
-                    "JobName": "eqsans",
-                    "ScriptName": "job_submission_0.py",
-                    "JobStatus": "COMPLETED",
-                    "TransID": 57 } }
+        Return a list of the remote reduction jobs for EQSANS.
+        The jobs are those that are owned by the user and have an
+        entry in the database.
+        
+        @param request: request object
     """
-    #TODO sorting
     jobs = RemoteJob.objects.filter(transaction__owner=request.user)
     status_data = []
     for job in jobs:
@@ -443,11 +469,11 @@ def reduction_jobs(request):
 
 @login_required
 def reduction_home(request):
-    try:
-        eqsans = Instrument.objects.get(name='eqsans')
-    except:
-        eqsans = Instrument(name='eqsans')
-        eqsans.save()
+    """
+        Home page for the EQSANS reduction
+        @param request: request object
+    """
+    eqsans = Instrument.objects.get(name='eqsans')
     experiments = Experiment.objects.experiments_for_instrument(eqsans, owner=request.user)
 
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; eqsans reduction" % reverse(settings.LANDING_VIEW)

@@ -1,68 +1,26 @@
+"""
+    Views for the remote submission to Fermi
+    
+    @author: M. Doucet, Oak Ridge National Laboratory
+    @copyright: 2014 Oak Ridge National Laboratory
+"""
 from django.http import HttpResponse
 from django.shortcuts import render_to_response, redirect
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
-from django.utils.dateparse import parse_datetime
 from django.conf import settings
 
 import reduction_service.view_util
 import remote.view_util
 
-import httplib
-import json
-import logging
-import sys
-
-# The following should be in settings
-FERMI_HOST = 'fermi.ornl.gov'
-FERMI_BASE_URL = '/MantidRemote/'
-FERMI_QUERY = '/MantidRemote/query'
-
 @login_required
 def query_remote_jobs(request):
     """
         Query the Fermi remote service for the user's jobs.
-        The response will be like this:
-        
-        { "3954": { "CompletionDate": "2013-10-29T17:13:08+00:00",
-                    "StartDate": "2013-10-29T17:12:32+00:00",
-                    "SubmitDate": "2013-10-29T17:12:31+00:00",
-                    "JobName": "eqsans",
-                    "ScriptName": "job_submission_0.py",
-                    "JobStatus": "COMPLETED",
-                    "TransID": 57 } }
+        @param request: request object
     """
-    sessionid = request.session.get('fermi', '')
-    template_values = {}
-    try:
-        conn = httplib.HTTPSConnection(FERMI_HOST, timeout=30)
-        conn.request('GET', FERMI_QUERY, headers={'Cookie': sessionid})
-        r = conn.getresponse()
-        # Check to see whether we need authentication
-        jobs = json.loads(r.read())
-        need_authentication = True
-        if r.status == 401:
-            pass
-        elif r.status == 404:
-            need_authentication = False
-            template_values['errors'] = "Fermi service could not be found [404]"
-        else:
-            need_authentication = False
-            status_data = []
-            for key in jobs:
-                jobs[key]['ID'] = key
-                jobs[key]['CompletionDate'] = parse_datetime(jobs[key]['CompletionDate'])
-                jobs[key]['StartDate'] = parse_datetime(jobs[key]['StartDate'])
-                jobs[key]['SubmitDate'] = parse_datetime(jobs[key]['SubmitDate'])
-                status_data.append(jobs[key])
-            template_values['status_data'] = status_data
-            template_values['back_url'] = request.path
-        template_values['need_authentication'] = need_authentication
-
-    except:
-        logging.error("Could not connect to status page: %s" % sys.exc_value)
-        template_values['errors'] = "Could not connect to Fermi: %s" % sys.exc_value
-    
+    template_values = {'back_url': request.path,
+                       'status_data': remote.view_util.get_remote_jobs(request)}
     template_values = reduction_service.view_util.fill_template_values(request, **template_values)
     return render_to_response('remote/query_remote_jobs.html',
                               template_values)
@@ -70,7 +28,8 @@ def query_remote_jobs(request):
 @login_required
 def authenticate(request):
     """
-        Authenticate and return to the previous page    
+        Authenticate and return to the previous page.
+        @param request: request object
     """
     redirect_url = reverse(settings.LANDING_VIEW)
     if 'redirect' in request.POST:
@@ -96,8 +55,8 @@ def authenticate(request):
 def job_details(request, job_id):
     """
         Show job details
-        https://fermi.ornl.gov/MantidRemote/query?JobID=5782
-        https://fermi.ornl.gov/MantidRemote/files?TransID=75
+        @param request: request object
+        @param job_id: pk of the RemoteJob object
     """
     template_values = remote.view_util.fill_job_dictionary(request, job_id)
     template_values = reduction_service.view_util.fill_template_values(request, **template_values)
@@ -107,7 +66,11 @@ def job_details(request, job_id):
 @login_required
 def download_file(request, trans_id, filename):
     """
-        Get a file from the compute node
+        Get a file from the compute node. The transaction name
+        corresponds to the name it is given by the remote submission service.
+        @param request: request object
+        @param trans_id: remote name of the transaction
+        @param filename: name of the file to download
     """
     file_content = remote.view_util.download_file(request, trans_id, filename)
     response = HttpResponse(file_content)
@@ -117,7 +80,9 @@ def download_file(request, trans_id, filename):
 @login_required
 def stop_transaction(request, trans_id):
     """
-        Stop an existing remote transaction
+        Stop an existing remote transaction. The transaction name
+        corresponds to the name it is given by the remote submission service.
+        @param request: request object
         @param trans_id: remote transaction ID
     """
     remote.view_util.stop_transaction(request, trans_id)
