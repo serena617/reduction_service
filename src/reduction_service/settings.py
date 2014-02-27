@@ -8,8 +8,9 @@
 import os
 import django
 
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+DEBUG_TOOLBAR = False
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
@@ -108,7 +109,7 @@ MIDDLEWARE_CLASSES = (
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
-if DEBUG:
+if DEBUG_TOOLBAR:
     MIDDLEWARE_CLASSES = ('debug_toolbar.middleware.DebugToolbarMiddleware',) + MIDDLEWARE_CLASSES
 
 CACHES = {
@@ -142,7 +143,7 @@ INSTALLED_APPS = (
     'catalog',
     'plotting',
 )
-if DEBUG:
+if DEBUG_TOOLBAR:
     INSTALLED_APPS = INSTALLED_APPS + ('debug_toolbar',)
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
