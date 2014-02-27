@@ -17,7 +17,7 @@ class ReductionConfigurationForm(forms.Form):
     sample_aperture_diameter = forms.FloatField(required=False, initial=10.0)
     
     # Beam center
-    direct_beam_run = forms.CharField(required=False, initial='')
+    direct_beam_run = forms.CharField(required=True)
     
     # Sensitivity
     sensitivity_file = forms.CharField(required=False, initial='')
@@ -38,6 +38,11 @@ class ReductionConfigurationForm(forms.Form):
                 data[f]=cls.base_fields[f].initial
         if len(expt_list)>0:
             data['experiment'] = expt_list[0]
+        data['fit_direct_beam'] = True
+        if len(data['sensitivity_file'])>0:
+            data['perform_sensitivity']=True
+        if len(data['background_file'])>0:
+            data['subtract_background']=True
         return data
 
     def to_db(self, user, config_id=None):
