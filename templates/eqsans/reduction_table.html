@@ -33,6 +33,7 @@
             <tr><td title='Enter a run number for the beam center calculation'>{{ config_form.direct_beam_run.label_tag }}</td><td>{{ config_form.direct_beam_run.errors }}{{ config_form.direct_beam_run }}</td></tr>
           </tbody>
         </table>
+      {{ config_form.beam_radius }} {{ config_form.fit_frames_together }} {{ config_form.theta_dependent_correction }}
       </div>
       <hr>
       <a style='float:right' href='?extra=1'><span style='display:inline-block' class="ui-icon ui-icon-plusthick"></span> add a job</a>

@@ -15,7 +15,7 @@
   <tbody>
   {% for r in run_data|dictsortreversed:'id' %}
     <tr><td>{% if r.webmon_url %}<a ref="nofollow" class="external" title="Click to open web monitor for this run in a new window" target="_blank" href="{{ r.webmon_url }}">{{ r.id }}</a>{% else %}{{ r.id }}{% endif %}</td>
-    {% if r.reduce_url %}<td><a class="gear" title="Click to reduce this run" href="{{ r.reduce_url }}"></a></td>{% endif %}
+    {% if r.reduce_url %}<td><a class="gear" title="Click to reduce this run" target="_blank" href="{{ r.reduce_url }}"></a></td>{% endif %}
     <td>{{ r.title }}
        {% if r.endTime and r.startTime %}<div class='subtitle'>{{ r.startTime|timeperiod:r.endTime}}</div>{% endif %}
     </td>

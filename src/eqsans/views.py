@@ -173,6 +173,11 @@ def reduction_options(request, reduction_id=None):
 
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
     breadcrumbs += " &rsaquo; <a href='%s'>eqsans reduction</a>" % reverse('eqsans.views.reduction_home')
+
+    # Get configuration information
+    config_obj = reduction_proc.get_config()
+    if config_obj is not None:
+        breadcrumbs += " &rsaquo; <a href='%s'>configuration %s</a>" % (reverse('eqsans.views.reduction_configuration', args=[config_obj.id]), config_obj.id)
     if reduction_id is not None:
         breadcrumbs += " &rsaquo; reduction %s" % reduction_id
     else:
@@ -315,7 +320,7 @@ def reduction_script(request, reduction_id):
     
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
     breadcrumbs += " &rsaquo; <a href='%s'>eqsans reduction</a>" % reverse('eqsans.views.reduction_home')
-    breadcrumbs += " &rsaquo; <a href='.'>reduction</a> &rsaquo; script"
+    breadcrumbs += " &rsaquo; <a href='.'>reduction %s</a> &rsaquo; script" % reduction_id
     
     template_values = {'reduction_name': data['reduction_name'],
                        'breadcrumbs': breadcrumbs,

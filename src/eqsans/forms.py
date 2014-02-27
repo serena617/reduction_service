@@ -15,6 +15,9 @@ class ReductionConfigurationForm(forms.Form):
     absolute_scale_factor = forms.FloatField(required=False, initial=1.0)
     dark_current_run = forms.CharField(required=False, initial='')
     sample_aperture_diameter = forms.FloatField(required=False, initial=10.0)
+    beam_radius = forms.FloatField(required=False, initial=3.0, widget=forms.HiddenInput)
+    fit_frames_together = forms.BooleanField(required=False, initial=False, widget=forms.HiddenInput)
+    theta_dependent_correction = forms.BooleanField(required=False, initial=True, widget=forms.HiddenInput)
     
     # Beam center
     direct_beam_run = forms.CharField(required=True)
@@ -38,9 +41,6 @@ class ReductionConfigurationForm(forms.Form):
                 data[f]=cls.base_fields[f].initial
         if len(expt_list)>0:
             data['experiment'] = expt_list[0]
-        data['fit_direct_beam'] = True
-        if len(data['sensitivity_file'])>0:
-            data['perform_sensitivity']=True
         return data
 
     def to_db(self, user, config_id=None):
@@ -84,7 +84,15 @@ class ReductionConfigurationForm(forms.Form):
                 
         # Set the parameters associated with the reduction process entry
         try:
-            properties = json.dumps(self.cleaned_data)
+            property_dict = copy.deepcopy(self.cleaned_data)
+            # Make sure we have a background transmission empty
+            property_dict['background_transmission_empty']=property_dict['transmission_empty']
+            # This configuration requires that we fit the beam center
+            property_dict['fit_direct_beam'] = True
+            # Set the sensitivity calculation flag as needed
+            if len(property_dict['sensitivity_file'])>0:
+                property_dict['perform_sensitivity']=True
+            properties = json.dumps(property_dict)
             reduction_config.properties = properties
             reduction_config.save()
         except:
@@ -253,7 +261,6 @@ class ReductionOptions(forms.Form):
         if not self.is_valid():
             raise RuntimeError, "Reduction options form invalid"
         
-        logging.error(self.cleaned_data)
         if reduction_id is None:
             reduction_id = self.cleaned_data['reduction_id']
             
@@ -295,6 +302,9 @@ class ReductionOptions(forms.Form):
             properties = json.dumps(property_dict)
             reduction_proc.properties = properties
             reduction_proc.save()
+            logging.error(property_dict)
+
+
         except:
             logger.error("Could not process reduction properties: %s" % sys.exc_value)
         
