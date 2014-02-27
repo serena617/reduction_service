@@ -68,7 +68,7 @@ class ReductionConfigurationForm(forms.Form):
             else:
                 expt_obj = Experiment(name=item.upper().strip()[:24])
                 expt_obj.save()
-                reduction_config.experiments.add(expt_objs)
+                reduction_config.experiments.add(expt_obj)
         
         if len(expts)>0:
             if uncategorized_expt in reduction_config.experiments.all():
