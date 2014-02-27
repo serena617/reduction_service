@@ -41,8 +41,6 @@ class ReductionConfigurationForm(forms.Form):
         data['fit_direct_beam'] = True
         if len(data['sensitivity_file'])>0:
             data['perform_sensitivity']=True
-        if len(data['background_file'])>0:
-            data['subtract_background']=True
         return data
 
     def to_db(self, user, config_id=None):
@@ -325,6 +323,8 @@ class ReductionOptions(forms.Form):
         for f in cls.base_fields:
             if not f in data:
                 data[f]=cls.base_fields[f].initial
+        if len(data['background_file'])>0:
+            data['subtract_background']=True
         return data
     
     @classmethod
