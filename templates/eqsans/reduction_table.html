@@ -21,16 +21,16 @@
       <div>
         <table cellspacing="0" class="property_table">
           <tbody>
-            <tr><td title='Enter an experiment identifier'><b>Experiment</b></td><td>{{ config_form.experiment.errors }}{{ config_form.experiment }}</td></tr>
-            <tr><td title='Enter value for the overall scale factor'>{{ config_form.absolute_scale_factor.label_tag }}</td><td>{{ config_form.absolute_scale_factor.errors }}{{ config_form.absolute_scale_factor }}</td></tr>
-            <tr><td title='Enter value for sample thickness'>{{ config_form.sample_thickness.label_tag }}</td><td>{{ config_form.sample_thickness.errors }}{{ config_form.sample_thickness }}</td></tr>
-            <tr><td title='Enter the sample aperture diameter, in mm'>{{ config_form.sample_aperture_diameter.label_tag }}</td><td>{{ config_form.sample_aperture_diameter.errors }}{{ config_form.sample_aperture_diameter }} [mm]</td></tr>
-            <tr><td title='Enter a run number for your dark current [optional]'>{{ config_form.dark_current_run.label_tag }}</td><td>{{ config_form.dark_current_run.errors }}{{ config_form.dark_current_run }}</td></tr>
-            <tr><td title='Enter a sensitivity file or sensitivity run number'>{{ config_form.sensitivity_file.label_tag }}</td><td>{{ config_form.sensitivity_file.errors }}{{ config_form.sensitivity_file }}</td>
-                <td title="Enter a minimum value for a pixel's relative signal">Min</td><td>{{ config_form.sensitivity_min.errors }}{{ config_form.sensitivity_min }}</td>
-                <td title="Enter a maximum value for a pixel's relative signal">Max</td><td>{{ config_form.sensitivity_max.errors }}{{ config_form.sensitivity_max }}</td></tr>
-            <tr><td title='Enter a run number for the empty transmission run'>{{ config_form.transmission_empty.label_tag }}</td><td>{{ config_form.transmission_empty.errors }}{{ config_form.transmission_empty }}</td></tr>
-            <tr><td title='Enter a run number for the beam center calculation'>{{ config_form.direct_beam_run.label_tag }}</td><td>{{ config_form.direct_beam_run.errors }}{{ config_form.direct_beam_run }}</td></tr>
+            <tr><td title='Enter an experiment identifier or IPTS number'><b>Experiment</b></td><td class='long_input'>{{ config_form.experiment.errors }}{{ config_form.experiment }}</td></tr>
+            <tr><td title='Enter value for the overall scale factor'>{{ config_form.absolute_scale_factor.label_tag }}</td><td class='short_input'>{{ config_form.absolute_scale_factor.errors }}{{ config_form.absolute_scale_factor }}</td></tr>
+            <tr><td title='Enter value for sample thickness, in cm'>{{ config_form.sample_thickness.label_tag }}</td><td class='short_input'>{{ config_form.sample_thickness.errors }}{{ config_form.sample_thickness }} [cm]</td></tr>
+            <tr><td title='Enter the sample aperture diameter, in mm'>{{ config_form.sample_aperture_diameter.label_tag }}</td><td class='short_input'>{{ config_form.sample_aperture_diameter.errors }}{{ config_form.sample_aperture_diameter }} [mm]</td></tr>
+            <tr><td title='Enter a run number for your dark current [optional]'>{{ config_form.dark_current_run.label_tag }}</td><td class='long_input'>{{ config_form.dark_current_run.errors }}{{ config_form.dark_current_run }}</td></tr>
+            <tr><td title='Enter a sensitivity file or sensitivity run number'>{{ config_form.sensitivity_file.label_tag }}</td><td class='long_input'>{{ config_form.sensitivity_file.errors }}{{ config_form.sensitivity_file }}</td>
+                <td title="Enter a minimum value for a pixel's relative signal">Min</td><td class='short_input'>{{ config_form.sensitivity_min.errors }}{{ config_form.sensitivity_min }}</td>
+                <td title="Enter a maximum value for a pixel's relative signal">Max</td><td class='short_input'>{{ config_form.sensitivity_max.errors }}{{ config_form.sensitivity_max }}</td></tr>
+            <tr><td title='Enter a run number for the empty transmission run'>{{ config_form.transmission_empty.label_tag }}</td><td class='long_input'>{{ config_form.transmission_empty.errors }}{{ config_form.transmission_empty }}</td></tr>
+            <tr><td title='Enter a run number for the beam center calculation'>{{ config_form.direct_beam_run.label_tag }}</td><td class='long_input'>{{ config_form.direct_beam_run.errors }}{{ config_form.direct_beam_run }}</td></tr>
           </tbody>
         </table>
       {{ config_form.beam_radius }} {{ config_form.fit_frames_together }} {{ config_form.theta_dependent_correction }}
@@ -39,8 +39,8 @@
       <a style='float:right' href='?extra=1'><span style='display:inline-block' class="ui-icon ui-icon-plusthick"></span> add a job</a>
       <p>
       {{ options_form.management_form }}
-      <div style="overflow:scroll">
-        <table cellspacing="0" class="property_table fixed_table">
+      <div>
+        <table cellspacing="0" class="property_table">
           <thead>
             <tr>
               <td title='Enter sample scattering run number'>Sample run</td>

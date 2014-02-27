@@ -84,7 +84,7 @@
 <form action="" method="POST">{% csrf_token %}
     <table class='property_table'>
       <tr><th>{{ options_form.reduction_name.label_tag }}</th><td class='long_input'>{{ options_form.reduction_name }}</td></tr>
-      <tr><th>{{ options_form.experiment.label_tag }}</th><td class='long_input'>{{ options_form.experiment }}</td></tr>
+      <tr><th title='Enter an experiment identifier or IPTS number'>{{ options_form.experiment.label_tag }}</th><td class='long_input'>{{ options_form.experiment }}</td></tr>
     </table>
   <p>
   <div id="tabs">

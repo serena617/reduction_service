@@ -100,6 +100,7 @@ class ReductionConfigurationForm(forms.Form):
         # Find or create a reduction process entry and update it
         if config_id is not None:
             reduction_config = get_object_or_404(ReductionConfiguration, pk=config_id, owner=user)
+            reduction_config.name = self.cleaned_data['reduction_name']
         else:
             reduction_config = ReductionConfiguration(owner=user,
                                                       instrument=eqsans,

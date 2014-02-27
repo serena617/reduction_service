@@ -49,6 +49,7 @@
     margin-left: 10px;
 }
 .long_input input { width:400px; }
+.short_input input { width:80px; }
 
 #tabs {
     font-size:12px;
