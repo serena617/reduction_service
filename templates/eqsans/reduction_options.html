@@ -82,10 +82,10 @@
 
 {% block content %}
 <form action="" method="POST">{% csrf_token %}
-  <div class="modifiable_title">
-    <b>{{ options_form.reduction_name.label_tag }}</b> {{ options_form.reduction_name.errors }}{{ options_form.reduction_name }}
-    {{ options_form.expt_id }}
-  </div>
+    <table class='property_table'>
+      <tr><th>{{ options_form.reduction_name.label_tag }}</th><td class='long_input'>{{ options_form.reduction_name }}</td></tr>
+      <tr><th>{{ options_form.experiment.label_tag }}</th><td class='long_input'>{{ options_form.experiment }}</td></tr>
+    </table>
   <p>
   <div id="tabs">
     <ul>
@@ -150,25 +150,6 @@
   </div>
   <p><input id="submit_reduction_button" type="submit" value="update"/></p>
 </form>
-
-{% if errors > 0 %}
-<div class="error_section">
-  The submitted parameters are not valid because of the following reasons:<br>
-  <ol>
-  {% for field in options_form %}
-  {% if field.errors %}
-    {{ field.label }}
-    <ul>
-      {% for e in field.errors %}
-      <li>{{ e }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-{% endfor %}
-  </ol>
-</div>
-{% endif %}
-
 
 <script id="source" language="javascript" type="text/javascript">
 get_icat_info('{{ options_form.data_file.value }}','data_file_info');

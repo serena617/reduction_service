@@ -1,3 +1,9 @@
+"""
+    Forms for EQSANS reduction
+    
+    @author: M. Doucet, Oak Ridge National Laboratory
+    @copyright: 2014 Oak Ridge National Laboratory
+"""
 from django import forms
 from django.shortcuts import get_object_or_404
 from models import ReductionProcess, Instrument, Experiment, ReductionConfiguration
@@ -8,10 +14,46 @@ import logging
 import copy
 logger = logging.getLogger('eqsans.forms')
 
+def _process_experiment(reduction_obj, expt_string):
+    """
+        Process the experiment string of a form and find/create
+        the appropriate Experiment object
+        @param reduction_obj: ReductionProcess or ReductionConfiguration object
+        @param expt_string: string taken from the reduction form
+    """
+    # Find experiment
+    uncategorized_expt = Experiment.objects.get_uncategorized('eqsans')
+    expts = expt_string.split(',')
+    for item in expts:
+        # Experiments have unique names of no more than 24 characters
+        expt_objs = Experiment.objects.filter(name=item.upper().strip()[:24])
+        if len(expt_objs)>0:
+            if expt_objs[0] not in reduction_obj.experiments.all():
+                reduction_obj.experiments.add(expt_objs[0])
+        else:
+            expt_obj = Experiment(name=item.upper().strip()[:24])
+            expt_obj.save()
+            reduction_obj.experiments.add(expt_obj)
+    
+    # Clean up the uncategorized experiment object if we found
+    # at least one suitable experiment to associate with this reduction
+    if len(expts)>0:
+        if uncategorized_expt in reduction_obj.experiments.all():
+            try:
+                reduction_obj.experiments.remove(uncategorized_expt)
+            except:
+                logger.error("Could not remote uncategorized expt: %s" % sys.exc_value)
+    else:
+        reduction_obj.experiments.add(uncategorized_expt)
+
+
 class ReductionConfigurationForm(forms.Form):
+    """
+        Configuration form for EQSANS reduction
+    """
+    # General information
     reduction_name = forms.CharField(required=False)
-    experiment = forms.CharField(required=True, initial='')
-    # General options
+    experiment = forms.CharField(required=True, initial='uncategorized')
     absolute_scale_factor = forms.FloatField(required=False, initial=1.0)
     dark_current_run = forms.CharField(required=False, initial='')
     sample_aperture_diameter = forms.FloatField(required=False, initial=10.0)
@@ -33,14 +75,19 @@ class ReductionConfigurationForm(forms.Form):
 
     @classmethod
     def data_from_db(cls, user, reduction_config):
-        expt_list = reduction_config.experiments.all()
+        """
+            Return a dictionary that we can use to populate the initial
+            contents of a form
+            @param user: User object
+            @param reduction_config: ReductionConfiguration object
+        """
         data = reduction_config.get_data_dict()
         # Ensure all the fields are there
         for f in cls.base_fields:
             if not f in data:
                 data[f]=cls.base_fields[f].initial
-        if len(expt_list)>0:
-            data['experiment'] = expt_list[0]
+        expt_list = reduction_config.experiments.all()
+        data['experiment'] = ', '.join([str(e.name) for e in expt_list if len(str(e.name))>0])
         return data
 
     def to_db(self, user, config_id=None):
@@ -60,27 +107,7 @@ class ReductionConfigurationForm(forms.Form):
             reduction_config.save()
         
         # Find experiment
-        uncategorized_expt = Experiment.objects.get_uncategorized('eqsans')
-        expts = self.cleaned_data['experiment'].split(',')
-        for item in expts:
-            # Experiments have unique names of no more than 24 characters
-            expt_objs = Experiment.objects.filter(name=item.upper().strip()[:24])
-            if len(expt_objs)>0:
-                if expt_objs[0] not in reduction_config.experiments.all():
-                    reduction_config.experiments.add(expt_objs[0])
-            else:
-                expt_obj = Experiment(name=item.upper().strip()[:24])
-                expt_obj.save()
-                reduction_config.experiments.add(expt_obj)
-        
-        if len(expts)>0:
-            if uncategorized_expt in reduction_config.experiments.all():
-                try:
-                    reduction_config.experiments.remove(uncategorized_expt)
-                except:
-                    logger.error("Could not remote uncategorized expt: %s" % sys.exc_value)
-        else:
-            reduction_config.experiments.add(uncategorized_expt)
+        _process_experiment(reduction_config, self.cleaned_data['experiment'])
                 
         # Set the parameters associated with the reduction process entry
         try:
@@ -109,6 +136,7 @@ class ReductionOptions(forms.Form):
     reduction_name = forms.CharField(required=False)
     reduction_id = forms.IntegerField(required=False, widget=forms.HiddenInput)
     expt_id = forms.IntegerField(required=False, widget=forms.HiddenInput)
+    experiment = forms.CharField(required=False, initial='uncategorized')
     # General options
     absolute_scale_factor = forms.FloatField(required=False, initial=1.0)
     dark_current_run = forms.CharField(required=False, initial='')
@@ -149,6 +177,7 @@ class ReductionOptions(forms.Form):
     def as_xml(cls, data):
         """
             Create XML from the current data.
+            @param data: dictionary of reduction properties
         """
         xml  = "<Reduction>\n"
         xml += "<instrument_name>EQSANS</instrument_name>\n"
@@ -302,31 +331,21 @@ class ReductionOptions(forms.Form):
             properties = json.dumps(property_dict)
             reduction_proc.properties = properties
             reduction_proc.save()
-            logging.error(property_dict)
-
-
         except:
             logger.error("Could not process reduction properties: %s" % sys.exc_value)
         
         # Find experiment
-        uncategorized_expt = Experiment.objects.get_uncategorized('eqsans')
-        if self.cleaned_data['expt_id'] is not None:
-            expt = get_object_or_404(Experiment, id=self.cleaned_data['expt_id'])
-            if expt not in reduction_proc.experiments.all():
-                reduction_proc.experiments.add(expt)
-        else:
-            reduction_proc.experiments.add(uncategorized_expt)
-        if uncategorized_expt in reduction_proc.experiments.all():
-            try:
-                reduction_proc.experiments.remove(uncategorized_expt)
-            except:
-                logger.error("Could not remote uncategorized expt: %s" % sys.exc_value)
-        reduction_proc.save()
+        _process_experiment(reduction_proc, self.cleaned_data['experiment'])
                 
         return reduction_proc.pk
     
     @classmethod
     def data_from_db(cls, user, reduction_id):
+        """
+            Return a dictionary that we can use to populate a form
+            @param user: User object
+            @param reduction_id: ReductionProcess primary key
+        """
         reduction_proc = get_object_or_404(ReductionProcess, pk=reduction_id, owner=user)
         data = reduction_proc.get_data_dict()
         # Ensure all the fields are there
@@ -335,12 +354,16 @@ class ReductionOptions(forms.Form):
                 data[f]=cls.base_fields[f].initial
         if len(data['background_file'])>0:
             data['subtract_background']=True
+        expt_list = reduction_proc.experiments.all()
+        data['experiment'] = ', '.join([str(e.name) for e in expt_list if len(str(e.name))>0])
         return data
     
     @classmethod
     def as_mantid_script(self, data, output_path='/tmp'):
         """
             Return the Mantid script associated with the current parameters
+            @param data: dictionary of reduction properties
+            @param output_path: output path to use in the script
         """
         script =  "# EQSANS reduction script\n"
         script += "import mantid\n"
@@ -357,7 +380,6 @@ class ReductionOptions(forms.Form):
 
         script += "AzimuthalAverage(n_bins=100, n_subpix=1, log_binning=False)\n" # TODO
         script += "IQxQy(nbins=100)\n" # TODO
-        #output_path = "/SNS/users/m2d"
         script += "OutputPath(\"%s\")\n" % output_path
         
         script += "UseConfigTOFTailsCutoff(True)\n"
@@ -413,5 +435,3 @@ class ReductionStart(forms.Form):
     """
     run_number = forms.IntegerField(required=False)
 
-
-        

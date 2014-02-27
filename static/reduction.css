@@ -48,6 +48,7 @@
     font-size:inherit;
     margin-left: 10px;
 }
+.long_input input { width:400px; }
 
 #tabs {
     font-size:12px;

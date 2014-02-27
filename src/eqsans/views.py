@@ -17,9 +17,7 @@ import view_util
 from catalog.icat_server_communication import get_ipts_info
 from . import forms
 from django.forms.formsets import formset_factory
-import logging
 import copy
-import sys
 
 @login_required
 def experiment(request, ipts):
@@ -41,20 +39,9 @@ def experiment(request, ipts):
 
     reduction_start_form = forms.ReductionStart(request.GET)
 
-    # Query ICAT
-    run_list = []
     icat_ipts = {}
     if not IS_UNCATEGORIZED:
         icat_ipts = get_ipts_info('EQSANS', ipts)
-        if 'run_range' in icat_ipts:
-            try:
-                toks = icat_ipts['run_range'].split('-')
-                r_min = int(toks[0])
-                r_max = int(toks[1])
-                for r in range(r_min, r_max+1):
-                    run_list.append({'run':r})
-            except:
-                logging.error("Problem generating run list: %s" % sys.exc_value)
 
     # Get all the user's reductions
     red_list = []
@@ -68,13 +55,8 @@ def experiment(request, ipts):
             create_url +=  '&data_file=%s' % request.GET['run_number']
             return redirect(create_url)
     else:
-        for item in run_list:
-            partial_list = ReductionProcess.objects.filter(owner=request.user,
-                                                           experiments=uncategorized,
-                                                           data_file__contains=str(item['run']))
-            red_list.extend(partial_list)
         for item in ReductionProcess.objects.filter(owner=request.user,
-                                                    experiments=experiment_obj):
+                                                    experiments=experiment_obj).order_by('data_file'):
             if not item in red_list:
                 red_list.append(item)
 
@@ -92,7 +74,7 @@ def experiment(request, ipts):
         
     # Get all user configurations
     config_list = ReductionConfiguration.objects.filter(owner=request.user,
-                                                        experiments=experiment_obj)
+                                                        experiments=experiment_obj).order_by('name')
     configurations = []
     for item in config_list:
         data_dict = item.get_data_dict()
@@ -107,7 +89,6 @@ def experiment(request, ipts):
                        'title': 'EQSANS %s' % ipts,
                        'breadcrumbs': breadcrumbs,
                        'ipts_number': ipts,
-                       'run_list': run_list,
                        'back_url': reverse('eqsans.views.experiment', args=[ipts]),
                        'icat_info': icat_ipts,
                        'form': reduction_start_form,
@@ -122,6 +103,7 @@ def experiment(request, ipts):
 def delete_reduction(request, reduction_id):
     """
         Delete a reduction process entry
+        @param request: request object
         @param reduction_id: primary key of reduction object
     """
     reduction_proc = get_object_or_404(ReductionProcess, pk=reduction_id, owner=request.user)
@@ -134,13 +116,15 @@ def delete_reduction(request, reduction_id):
 def reduction_options(request, reduction_id=None):
     """
         Display the reduction options form
+        @param request: request object
+        @param reduction_id: pk of reduction process object
     """
-    #TODO: add ICAT info on top of the page
-    #TODO: add notes?
+    # Get reduction and configuration information
+    config_obj = None
     if reduction_id is not None:
         reduction_proc = get_object_or_404(ReductionProcess, pk=reduction_id, owner=request.user)
+        config_obj = reduction_proc.get_config()
     
-    experiment_obj = None
     if request.method == 'POST':
         options_form = forms.ReductionOptions(request.POST)
         # If the form is valid update or create an entry for it
@@ -154,28 +138,12 @@ def reduction_options(request, reduction_id=None):
         else:
             initial_values = copy.deepcopy(request.GET)
             if 'expt_name' in request.GET:
-                try:
-                    experiment_obj = Experiment.objects.get(name=request.GET['expt_name'])
-                except:
-                    experiment_obj = Experiment(name=request.GET['expt_name'])
-                    experiment_obj.save()
-                initial_values['expt_id'] = experiment_obj.id
-                try:
-                    instrument_obj = Instrument.objects.get(name='eqsans')
-                except:
-                    instrument_obj = Instrument(name='eqsans')
-                    instrument_obj.save()
-                if not instrument_obj in experiment_obj.instruments.all():
-                    experiment_obj.instruments.add(instrument_obj)
-                    experiment_obj.save()
-        
+                initial_values['experiment'] = request.GET['expt_name']
         options_form = forms.ReductionOptions(initial=initial_values)
 
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
     breadcrumbs += " &rsaquo; <a href='%s'>eqsans reduction</a>" % reverse('eqsans.views.reduction_home')
 
-    # Get configuration information
-    config_obj = reduction_proc.get_config()
     if config_obj is not None:
         breadcrumbs += " &rsaquo; <a href='%s'>configuration %s</a>" % (reverse('eqsans.views.reduction_configuration', args=[config_obj.id]), config_obj.id)
     if reduction_id is not None:
@@ -191,15 +159,12 @@ def reduction_options(request, reduction_id=None):
                        'title': 'EQSANS Reduction',
                        'breadcrumbs': breadcrumbs,
                        'reduction_id': reduction_id,
-                       'icat_url': icat_url,
-                       'errors': len(options_form.errors) }
+                       'icat_url': icat_url }
     # Get existing jobs for this reduction
     if reduction_id is not None:
         existing_jobs = RemoteJob.objects.filter(reduction=reduction_proc).order_by('id')
         template_values['existing_jobs'] = existing_jobs
         template_values['expt_list'] = reduction_proc.experiments.all()
-    elif experiment_obj is not None:
-        template_values['expt_list'] = [experiment_obj]
     template_values = reduction_service.view_util.fill_template_values(request, **template_values)
     return render_to_response('eqsans/reduction_options.html',
                               template_values)
@@ -235,8 +200,9 @@ def reduction_configuration(request, config_id=None):
             if config_id is not None:
                 return redirect(reverse('eqsans.views.reduction_configuration', args=[config_id]))
         else:
-            logging.error(options_form.errors)
-            logging.error(config_form.errors)
+            # There's a proble with the data, the validated form 
+            # will automatically display what the problem is to the user
+            pass
     else:
         # Deal with the case of creating a new configuration
         if config_id is None:
@@ -271,8 +237,7 @@ def reduction_configuration(request, config_id=None):
                        'config_form': config_form,
                        'title': 'EQSANS Reduction',
                        'breadcrumbs': breadcrumbs,
-                       'icat_url': icat_url,
-                       'errors': len(options_form.errors) }
+                       'icat_url': icat_url }
     template_values = reduction_service.view_util.fill_template_values(request, **template_values)
     return render_to_response('eqsans/reduction_table.html',
                               template_values)

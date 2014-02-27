@@ -15,8 +15,8 @@ List of experiments for which you have set up reductions.
   <tbody>
   {% for e in experiments %}
     <tr>
-        <td><a href="{% url 'eqsans_experiment' e.name %}" >{{ e.name }}</a></td>
-        <td><div class='subtitle_black'>{{ e.created_on }}</div></td>
+        {% if e.name|length > 0 %} <td><a href="{% url 'eqsans_experiment' e.name %}" >{{ e.name }}</a></td>
+        <td><div class='subtitle_black'>{{ e.created_on }}</div></td>{% endif %}
     </tr>
   {% endfor %}
   </tbody>
