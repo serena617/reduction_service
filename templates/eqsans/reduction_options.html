@@ -54,6 +54,7 @@
             $("#id_background_file").fadeOut(10);
             $("#id_background_transmission_sample").fadeOut(10);
             $("#id_background_transmission_empty").fadeOut(10);
+            $("#background_transmission_empty_info").fadeOut(10);
         } else {
             $("#th_background_file").fadeIn(10);
             $("#th_background_transmission_sample").fadeIn(10);
@@ -61,6 +62,7 @@
             $("#id_background_file").fadeIn(10);
             $("#id_background_transmission_sample").fadeIn(10);
             $("#id_background_transmission_empty").fadeIn(10);
+            $("#background_transmission_empty_info").fadeIn(10);
         }
         hide_background = !hide_background;
     }
@@ -156,26 +158,28 @@
 </form>
 
 <script id="source" language="javascript" type="text/javascript">
-get_icat_info('{{ options_form.data_file.value }}','data_file_info');
-get_icat_info('{{ options_form.transmission_sample.value }}','transmission_sample_info');
-get_icat_info('{{ options_form.transmission_empty.value }}','transmission_empty_info');
-get_icat_info('{{ options_form.background_file.value }}','background_file_info');
-get_icat_info('{{ options_form.background_transmission_sample.value }}','background_transmission_sample_info');
-get_icat_info('{{ options_form.background_transmission_empty.value }}','background_transmission_empty_info');
-get_icat_info('{{ options_form.sensitivity_file.value }}','sensitivity_file_info');
-get_icat_info('{{ options_form.direct_beam_run.value }}','direct_beam_run_info');
-get_icat_info('{{ options_form.dark_current_run.value }}','dark_current_run_info');
 
-$(document).ready(toggle_beam_center);
-$(document).ready(toggle_sensitivity);
-$(document).ready(toggle_background);
 $(document).ready(function() {
-      $(window).keydown(function(event){
-        if(event.keyCode == 13) {
-          event.preventDefault();
-          return false;
-        }
-      });
+    get_icat_info('{{ options_form.data_file.value }}','data_file_info');
+    get_icat_info('{{ options_form.transmission_sample.value }}','transmission_sample_info');
+    get_icat_info('{{ options_form.transmission_empty.value }}','transmission_empty_info');
+    get_icat_info('{{ options_form.sensitivity_file.value }}','sensitivity_file_info');
+    get_icat_info('{{ options_form.direct_beam_run.value }}','direct_beam_run_info');
+    get_icat_info('{{ options_form.dark_current_run.value }}','dark_current_run_info');
+    toggle_beam_center();
+    toggle_sensitivity();
+    toggle_background();
+    if ($('#subtract_background').is(':checked')) {
+        get_icat_info('{{ options_form.background_file.value }}','background_file_info');
+        get_icat_info('{{ options_form.background_transmission_sample.value }}','background_transmission_sample_info');
+        get_icat_info('{{ options_form.background_transmission_empty.value }}','background_transmission_empty_info');
+    }
+    $(window).keydown(function(event){
+      if(event.keyCode == 13) {
+        event.preventDefault();
+        return false;
+      }
+    });
     });
 </script>
 {% endblock %}
