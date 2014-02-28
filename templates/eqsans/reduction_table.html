@@ -47,6 +47,7 @@
               <td title='Enter sample transmission scattering run'>Trans scattering</td>
               <td title='Enter background run number'>Background</td>
               <td title='Enter background transmission scattering run'>Background trans</td>
+              <td title='Enter a nickname for this reduction. The nickname will be prepended to the output file names. [optional]'>Nickname</td>
             </tr>
           </thead>
           <tbody>
@@ -57,6 +58,7 @@
               <td>{{ form.transmission_sample.errors }}{{ form.transmission_sample }}</td>
               <td>{{ form.background_file.errors }}{{ form.background_file }}</td>
               <td>{{ form.background_transmission_sample.errors }}{{ form.background_transmission_sample }}</td>
+              <td>{{ form.nickname.errors }}{{ form.nickname }}</td>
               {% spaceless %}
               {% if form.reduction_id.value %}
               <td title='Click to remove this reduction job'><a href='{% url 'eqsans_configuration_job_delete' config_id form.reduction_id.value %}'><span class="ui-icon ui-icon-trash"></span></a></td>

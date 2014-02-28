@@ -186,6 +186,8 @@ def reduction_configuration(request, config_id=None):
         extra = default_extra
     ReductionOptionsSet = formset_factory(forms.ReductionOptions, extra=extra)
 
+    # The list of relevant experiments will be displayed on the page
+    expt_list = None
     # Deal with data submission
     if request.method == 'POST':
         options_form = ReductionOptionsSet(request.POST)
@@ -220,6 +222,8 @@ def reduction_configuration(request, config_id=None):
                 
             options_form = ReductionOptionsSet(initial=initial_values)
             config_form = forms.ReductionConfigurationForm(initial=initial_config)
+            expt_list = reduction_config.experiments.all()
+
 
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
     breadcrumbs += " &rsaquo; <a href='%s'>eqsans reduction</a>" % reverse('eqsans.views.reduction_home')
@@ -235,9 +239,11 @@ def reduction_configuration(request, config_id=None):
     template_values = {'config_id': config_id,
                        'options_form': options_form,
                        'config_form': config_form,
+                       'expt_list': expt_list,
                        'title': 'EQSANS Reduction',
                        'breadcrumbs': breadcrumbs,
                        'icat_url': icat_url }
+
     template_values = reduction_service.view_util.fill_template_values(request, **template_values)
     return render_to_response('eqsans/reduction_table.html',
                               template_values)

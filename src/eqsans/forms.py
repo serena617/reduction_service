@@ -138,6 +138,7 @@ class ReductionOptions(forms.Form):
     reduction_id = forms.IntegerField(required=False, widget=forms.HiddenInput)
     expt_id = forms.IntegerField(required=False, widget=forms.HiddenInput)
     experiment = forms.CharField(required=False, initial='uncategorized')
+    nickname = forms.CharField(required=False, initial='')
     # General options
     absolute_scale_factor = forms.FloatField(required=False, initial=1.0)
     dark_current_run = forms.CharField(required=False, initial='')
@@ -408,7 +409,10 @@ class ReductionOptions(forms.Form):
                                                                                 data['beam_radius'])
         
         script += "ThetaDependentTransmission(%s)\n" % data['theta_dependent_correction']
-        script += "AppendDataFile([\"%s\"])\n" % data['data_file']
+        if data['nickname'] is not None and len(data['nickname'])>0:
+            script += "AppendDataFile([\"%s\"], \"%s\")\n" % (data['data_file'], data['nickname'])
+        else:
+            script += "AppendDataFile([\"%s\"])\n" % data['data_file']
         script += "CombineTransmissionFits(%s)\n" % data['fit_frames_together']
         
         if data['subtract_background']:
