@@ -179,7 +179,7 @@ def reduction_configuration(request, config_id=None):
         @param config_id: The ReductionConfiguration pk
     """
     # Create a form for the page
-    default_extra = 1 if config_id is None else 0
+    default_extra = 1 if config_id is None and not (request.method == 'GET' and 'data_file' in request.GET) else 0
     try:
         extra = int(request.GET.get('extra', default_extra))
     except:
@@ -208,8 +208,11 @@ def reduction_configuration(request, config_id=None):
     else:
         # Deal with the case of creating a new configuration
         if config_id is None:
-            options_form = ReductionOptionsSet()
-            config_form = forms.ReductionConfigurationForm()
+            initial_values = []
+            if 'data_file' in request.GET:
+                initial_values = [{'data_file': request.GET.get('data_file','')}]
+            options_form = ReductionOptionsSet(initial=initial_values)
+            config_form = forms.ReductionConfigurationForm(request.GET)
         # Retrieve existing configuration
         else:
             reduction_config = get_object_or_404(ReductionConfiguration, pk=config_id, owner=request.user)

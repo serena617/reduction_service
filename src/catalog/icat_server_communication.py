@@ -159,7 +159,8 @@ def get_ipts_runs(instrument, ipts):
         for r in dom.getElementsByTagName('run'):
             run_info = {'id': r.attributes['id'].value,
                         'webmon_url': catalog.view_util.get_webmon_url(instrument, r.attributes['id'].value, ipts),
-                        'reduce_url': catalog.view_util.get_new_reduction_url(instrument, r.attributes['id'].value, ipts)}
+                        'reduce_url': catalog.view_util.get_new_reduction_url(instrument, r.attributes['id'].value, ipts),
+                        'batch_url': catalog.view_util.get_new_batch_url(instrument, r.attributes['id'].value, ipts)}
             for n in r.childNodes:
                 if n.hasChildNodes():
                     if n.nodeName in ['title']:

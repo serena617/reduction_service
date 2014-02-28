@@ -56,3 +56,14 @@ def get_reduction_url(instrument):
         except:
             logging.error('Error getting URL: %s' % sys.exc_value)
     return url
+
+def get_new_batch_url(instrument, run=None, ipts=None):
+    url = None
+    if instrument.lower() in settings.INSTALLED_APPS:
+        try:
+            instrument_app = __import__(instrument.lower())
+            if hasattr(instrument_app, 'get_new_batch_url'):
+                url = instrument_app.get_new_batch_url(run, ipts)
+        except:
+            logging.error('Error getting URL: %s' % sys.exc_value)
+    return url
