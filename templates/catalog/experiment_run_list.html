@@ -1,6 +1,28 @@
 {% extends "catalog/catalog_base.html" %}
 {% load catalog_tags %}
 
+{% block header %}
+  <script>
+  function submit_job(url) {
+    $("#dialog-confirm").dialog({
+        resizable: false,
+        modal: true,
+        buttons: {
+              "Single": function() {
+                  window.location.href = url;
+                  $( this ).dialog( "close" );
+              },
+              "Configuration": function() {
+                  window.location.href = url;
+                  $( this ).dialog( "close" );
+              },
+        Cancel: function() { $( this ).dialog( "close" ); }
+        }
+      });
+  };
+  </script>
+{% endblock %}
+
 {% block content %}
 <p>
 {% if run_data %}
@@ -15,7 +37,8 @@
   <tbody>
   {% for r in run_data|dictsortreversed:'id' %}
     <tr><td>{% if r.webmon_url %}<a ref="nofollow" class="external" title="Click to open web monitor for this run in a new window" target="_blank" href="{{ r.webmon_url }}">{{ r.id }}</a>{% else %}{{ r.id }}{% endif %}</td>
-    {% if r.reduce_url %}<td><a class="gear" title="Click to reduce this run" target="_blank" href="{{ r.reduce_url }}"></a></td>{% endif %}
+    {% if r.reduce_url %}<td>
+    <a class="gear" title="Click to reduce this run" target="_blank" href="javascript:void(0);" onClick="submit_job('{{ r.reduce_url }}');"></a></td>{% endif %}
     <td>{{ r.title }}
        {% if r.endTime and r.startTime %}<div class='subtitle'>{{ r.startTime|timeperiod:r.endTime}}</div>{% endif %}
     </td>
@@ -24,15 +47,16 @@
   </tbody>
 </table>
 
-{% endif %}
-<p>
-
-{% if errors %}
-<div class="error_section">
-  The submitted parameters are not valid because of the following reasons:<br>
-  {{ errors }}
+<div id="dialog-confirm" class="reduction_dialog" title="Create a new reduction?">
+  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>
+  You may create a new reduction for this run using
+  <dl>
+    <dt>Single</dt><dd>A <b>single</b> reduction, which will create a reduction job only for this run.</dd>
+    <dt>Configuration</dt><dd>A reduction <b>configuration</b>, which will create a configruation that you can use with multiple runs.</dd>
+  </dl>
+  </p>
 </div>
 {% endif %}
-
+<p>
 {% endblock %}
 

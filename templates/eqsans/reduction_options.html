@@ -153,11 +153,11 @@
   </div>
   <p>
     <input title="Click to apply your changes to this reduction" id="submit_reduction_button" type="submit" value="update"/>
-    <input title="Click to submit this reduction for execution" id="execute_job_button" type="button" value="submit" onclick='window.location.href = "{% url 'eqsans_submit_job' reduction_id %}"'/>
+    {% if reduction_id %}<input title="Click to submit this reduction for execution" id="execute_job_button" type="button" value="submit" onclick='window.location.href = "{% url 'eqsans_submit_job' reduction_id %}"'/>{% endif %}
   </p>
 </form>
 
-<script id="source" language="javascript" type="text/javascript">
+<script type="text/javascript">
 
 $(document).ready(function() {
     get_icat_info('{{ options_form.data_file.value }}','data_file_info');

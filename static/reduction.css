@@ -64,6 +64,16 @@
     display: none;
 }
 
+.reduction_dialog dt {
+    margin-top: 10px;
+    margin-bottom: 5px;
+    font-weight:bold;
+}
+.reduction_dialog dd {
+    font-size: 80%;
+    color:#444;
+}
+
 table .errorlist {
     float:right;
     font-size:75%;
