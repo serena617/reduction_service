@@ -76,6 +76,7 @@
     $(function() {
       $("#tabs").tabs({ active: 2 });
       $("#submit_reduction_button").button();
+      $("#execute_job_button").button();
     });
 </script>
 {% endblock %}
@@ -148,7 +149,10 @@
       </table>
     </div>
   </div>
-  <p><input id="submit_reduction_button" type="submit" value="update"/></p>
+  <p>
+    <input title="Click to apply your changes to this reduction" id="submit_reduction_button" type="submit" value="update"/>
+    <input title="Click to submit this reduction for execution" id="execute_job_button" type="button" value="submit" onclick='window.location.href = "{% url 'eqsans_submit_job' reduction_id %}"'/>
+  </p>
 </form>
 
 <script id="source" language="javascript" type="text/javascript">
