@@ -60,6 +60,7 @@ class ReductionConfigurationForm(forms.Form):
     beam_radius = forms.FloatField(required=False, initial=3.0, widget=forms.HiddenInput)
     fit_frames_together = forms.BooleanField(required=False, initial=False, widget=forms.HiddenInput)
     theta_dependent_correction = forms.BooleanField(required=False, initial=True, widget=forms.HiddenInput)
+    mask_file = forms.CharField(required=False, initial='')
     
     # Beam center
     direct_beam_run = forms.CharField(required=True)
@@ -143,6 +144,7 @@ class ReductionOptions(forms.Form):
     absolute_scale_factor = forms.FloatField(required=False, initial=1.0)
     dark_current_run = forms.CharField(required=False, initial='')
     sample_aperture_diameter = forms.FloatField(required=False, initial=10.0)
+    mask_file = forms.CharField(required=False, initial='')
     
     # Beam center
     beam_center_x = forms.FloatField(required=False, initial=96.0)
@@ -196,7 +198,7 @@ class ReductionOptions(forms.Form):
 
         xml += "  <normalization>2</normalization>\n" # 2 is monitor normalization
         xml += "  <UseDataDirectory>False</UseDataDirectory>\n"
-        xml += "  <OutputDirectory>'/tmp'</OutputDirectory>\n" # TODO
+        xml += "  <OutputDirectory></OutputDirectory>\n" # TODO
         xml += "</Instrument>\n"
         
         xml += "<AbsScale>\n"
@@ -211,7 +213,13 @@ class ReductionOptions(forms.Form):
         xml += "</TOFcorr>\n"
         
         # Mask
-        xml += "<UseConfigMask>True</UseConfigMask>\n"
+        if 'mask_file' in data and len(data['mask_file'])>0:
+            xml += "<UseConfigMask>True</UseConfigMask>\n"
+            xml += "<Mask>\n"
+            xml += "  <DetectorIDs></DetectorIDs>\n"
+            xml += "  <mask_file>%s</mask_file>\n" % data['mask_file']
+            xml += "  <use_mask_file>True</use_mask_file>\n"
+            xml += "</Mask>\n"
         
         # Resolution
         xml += "<ComputeResolution>False</ComputeResolution>\n" # TODO
@@ -231,10 +239,11 @@ class ReductionOptions(forms.Form):
 
         # Beam center
         xml += "<BeamFinder>\n"
-        xml += "  <position>\n"
-        xml += "    <x>%s</x>\n" % data['beam_center_x']
-        xml += "    <y>%s</y>\n" % data['beam_center_y']
-        xml += "  </position>\n"
+        if not data['fit_direct_beam']:
+            xml += "  <position>\n"
+            xml += "    <x>%s</x>\n" % data['beam_center_x']
+            xml += "    <y>%s</y>\n" % data['beam_center_y']
+            xml += "  </position>\n"
         xml += "  <use_finder>%s</use_finder>\n" % data['fit_direct_beam']
         xml += "  <beam_file>%s</beam_file>\n" % data['direct_beam_run']
         xml += "  <use_direct_beam>True</use_direct_beam>\n"
@@ -374,6 +383,11 @@ class ReductionOptions(forms.Form):
         script += "config = ConfigService.Instance()\n"
         script += "config['instrumentName']='EQSANS'\n"
 
+        if 'mask_file' in data and len(data['mask_file'])>0:
+            script += "mask_ws = Load(Filename=\"%s\")\n" % data['mask_file']
+            script += "ws, masked_detectors = ExtractMask(InputWorkspace=mask_ws, OutputWorkspace=\"__edited_mask\")\n"
+            script += "detector_ids = [int(i) for i in masked_detectors]\n"
+
         script += "EQSANS()\n"
         script += "SolidAngle(detector_tubes=True)\n"
         script += "TotalChargeNormalization()\n"
@@ -389,6 +403,8 @@ class ReductionOptions(forms.Form):
         script += "Resolution(sample_aperture_diameter=%s)\n" % data['sample_aperture_diameter']
         script += "PerformFlightPathCorrection(True)\n"
         
+        if 'mask_file' in data and len(data['mask_file'])>0:
+            script += "MaskDetectors(detector_ids)\n"
         if data['dark_current_run'] and len(data['dark_current_run'])>0:
             script += "\tDarkCurrentFile='%s',\n" % data['dark_current_run']
         

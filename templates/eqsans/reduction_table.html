@@ -31,6 +31,7 @@
                 <td title="Enter a maximum value for a pixel's relative signal">Max</td><td class='short_input'>{{ config_form.sensitivity_max.errors }}{{ config_form.sensitivity_max }}</td></tr>
             <tr><td title='Enter a run number for the empty transmission run'>{{ config_form.transmission_empty.label_tag }}</td><td class='long_input'>{{ config_form.transmission_empty.errors }}{{ config_form.transmission_empty }}</td></tr>
             <tr><td title='Enter a run number for the beam center calculation'>{{ config_form.direct_beam_run.label_tag }}</td><td class='long_input'>{{ config_form.direct_beam_run.errors }}{{ config_form.direct_beam_run }}</td></tr>
+            <tr><td title='Enter a file path for your mask file [optional]'>{{ config_form.mask_file.label_tag }}</td><td class='long_input'>{{ config_form.mask_file.errors }}{{ config_form.mask_file }}</td></tr>
           </tbody>
         </table>
       {{ config_form.beam_radius }} {{ config_form.fit_frames_together }} {{ config_form.theta_dependent_correction }}
