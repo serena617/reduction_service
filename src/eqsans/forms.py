@@ -238,6 +238,9 @@ class ReductionOptions(forms.Form):
         xml += "</Sensitivity>\n"
 
         # Beam center
+        beam_radius = data['beam_radius']
+        if beam_radius is None:
+            beam_radius=cls.base_fields['beam_radius'].initial
         xml += "<BeamFinder>\n"
         if not data['fit_direct_beam']:
             xml += "  <position>\n"
@@ -247,7 +250,7 @@ class ReductionOptions(forms.Form):
         xml += "  <use_finder>%s</use_finder>\n" % data['fit_direct_beam']
         xml += "  <beam_file>%s</beam_file>\n" % data['direct_beam_run']
         xml += "  <use_direct_beam>True</use_direct_beam>\n"
-        xml += "  <beam_radius>%s</beam_radius>\n" % data['beam_radius']
+        xml += "  <beam_radius>%s</beam_radius>\n" % beam_radius
         xml += "</BeamFinder>\n"
         
         # Sample transmission
@@ -257,7 +260,7 @@ class ReductionOptions(forms.Form):
         xml += "  <DirectBeam>\n"
         xml += "    <sample_file>%s</sample_file>\n" % data['transmission_sample']
         xml += "    <direct_beam>%s</direct_beam>\n" % data['transmission_empty']
-        xml += "    <beam_radius>%g</beam_radius>\n" % data['beam_radius']
+        xml += "    <beam_radius>%g</beam_radius>\n" % beam_radius
         xml += "  </DirectBeam>\n"
         xml += "  <combine_transmission_frames>%s</combine_transmission_frames>\n" % data['fit_frames_together']
         xml += "</Transmission>\n"
@@ -277,7 +280,7 @@ class ReductionOptions(forms.Form):
         xml += "  <DirectBeam>\n"
         xml += "    <sample_file>%s</sample_file>\n" % data['background_transmission_sample']
         xml += "    <direct_beam>%s</direct_beam>\n" % data['background_transmission_empty']
-        xml += "    <beam_radius>%s</beam_radius>\n" % data['beam_radius']
+        xml += "    <beam_radius>%s</beam_radius>\n" % beam_radius
         xml += "  </DirectBeam>\n"
         xml += "  <combine_transmission_frames>%s</combine_transmission_frames>\n" % data['fit_frames_together']
         xml += "</Background>\n"
@@ -370,7 +373,7 @@ class ReductionOptions(forms.Form):
         return data
     
     @classmethod
-    def as_mantid_script(self, data, output_path='/tmp'):
+    def as_mantid_script(cls, data, output_path='/tmp'):
         """
             Return the Mantid script associated with the current parameters
             @param data: dictionary of reduction properties
@@ -420,9 +423,12 @@ class ReductionOptions(forms.Form):
         else:
             script += "NoSensitivityCorrection()\n"
             
+        beam_radius = data['beam_radius']
+        if beam_radius is None:
+            beam_radius=cls.base_fields['beam_radius'].initial
         script += "DirectBeamTransmission(\"%s\", \"%s\", beam_radius=%s)\n" % (data['transmission_sample'],
                                                                                 data['transmission_empty'],
-                                                                                data['beam_radius'])
+                                                                                beam_radius)
         
         script += "ThetaDependentTransmission(%s)\n" % data['theta_dependent_correction']
         if data['nickname'] is not None and len(data['nickname'])>0:
@@ -437,7 +443,7 @@ class ReductionOptions(forms.Form):
             script += "BckCombineTransmissionFits(%s)\n" % data['fit_frames_together']
             script += "BckDirectBeamTransmission(\"%s\", \"%s\", beam_radius=%g)\n" % (data['background_transmission_sample'],
                                                                                        data['background_transmission_empty'],
-                                                                                       data['beam_radius'])
+                                                                                       beam_radius)
         
         script += "SaveIq(process='None')\n"
         script += "Reduce()"
