@@ -52,7 +52,7 @@ class ReductionConfigurationForm(forms.Form):
         Configuration form for EQSANS reduction
     """
     # General information
-    reduction_name = forms.CharField(required=False)
+    reduction_name = forms.CharField(required=False, initial='Configuration')
     experiment = forms.CharField(required=True, initial='uncategorized')
     absolute_scale_factor = forms.FloatField(required=False, initial=1.0)
     dark_current_run = forms.CharField(required=False, initial='')

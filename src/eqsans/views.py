@@ -212,7 +212,12 @@ def reduction_configuration(request, config_id=None):
             if 'data_file' in request.GET:
                 initial_values = [{'data_file': request.GET.get('data_file','')}]
             options_form = ReductionOptionsSet(initial=initial_values)
-            config_form = forms.ReductionConfigurationForm(request.GET)
+            initial_config = {}
+            if 'experiment' in request.GET:
+                initial_config['experiment'] = request.GET.get('experiment','')
+            if 'reduction_name' in request.GET:
+                initial_config['reduction_name'] = request.GET.get('reduction_name','')
+            config_form = forms.ReductionConfigurationForm(initial=initial_config)
         # Retrieve existing configuration
         else:
             reduction_config = get_object_or_404(ReductionConfiguration, pk=config_id, owner=request.user)
