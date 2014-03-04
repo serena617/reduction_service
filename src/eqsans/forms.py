@@ -409,7 +409,7 @@ class ReductionOptions(forms.Form):
         if 'mask_file' in data and len(data['mask_file'])>0:
             script += "MaskDetectors(detector_ids)\n"
         if data['dark_current_run'] and len(data['dark_current_run'])>0:
-            script += "\tDarkCurrentFile='%s',\n" % data['dark_current_run']
+            script += "DarkCurrentFile='%s',\n" % data['dark_current_run']
         
         if data['fit_direct_beam']:
             script += "DirectBeamCenter(\"%s\")\n" % data['direct_beam_run']
