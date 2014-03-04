@@ -8,7 +8,7 @@ IPTS date: {{ icat_info.createTime|default:"-" }}<br>
 Run range: <b>{{ icat_info.run_range|default:"-" }}</b>
 {% else %}
 <span class="ui-state-error-text"><span class="ui-icon ui-icon-info"></span>
- The experiment <i>{{ ipts_number }}</i> was not in the catalog. Try using the following format <i>IPTS-1234</i>.
+ The experiment <i>{{ ipts_number }}</i> was not found in the catalog. Try using the following format <i>IPTS-1234</i>.
 </span>
 {% endif %}
 {% endif %}
