@@ -81,8 +81,8 @@ table .errorlist {
     list-style: none;
     padding: 0px;
     margin: 0px;
-    margin-left: 0px;
-}  
+    margin-left: 10px;
+}
 
 .reduction_code {
     font-size:11px;
@@ -98,6 +98,9 @@ table .errorlist {
     margin-left:20px;
     margin-right:auto;
     border-spacing: 0;
+    display: block;
+    min-width:685px;
+    overflow-x:scroll;
 }
 
 .reduction_table thead th,
@@ -107,6 +110,8 @@ table .errorlist {
     padding-right:5px;
     border-left: 1px solid #ddd;
     border-bottom: 1px solid #ddd;
+    overflow-x:scroll;
+    max-width:120px;
 }
 
 .reduction_table tfoot td {
