@@ -1,19 +1,22 @@
 {% extends "eqsans/eqsans_base.html" %}
 
-
 {% block content %}
-<p>
 {% if is_categorized %}
+{% if icat_info %}
 Title: {{ icat_info.title|default:"-" }}<br>
 IPTS date: {{ icat_info.createTime|default:"-" }}<br>
 Run range: <b>{{ icat_info.run_range|default:"-" }}</b>
-</p>
+{% else %}
+<span class="ui-state-error-text"><span class="ui-icon ui-icon-info"></span>
+ The experiment <i>{{ ipts_number }}</i> was not in the catalog. Try using the following format <i>IPTS-1234</i>.
+</span>
+{% endif %}
 {% endif %}
 
 {% if reductions %}
 <div class='display_section'>
 <p>The following are all the reductions processes you have for this experiment:</p>
-<table class="reduction_table">
+<table class="scrolling_table reduction_table">
   <thead>
     <tr>
       <th>Run</th><th>Beam center run</th><th>Transmission</th><th>Background</th><th>Dark current</th><th>Sensitivity</th><th>Sample aperture</th><th></th>
@@ -45,7 +48,7 @@ Run range: <b>{{ icat_info.run_range|default:"-" }}</b>
 <div class='display_section'>
 <p >The following are all the configurations you have for this experiment. You can use a configurations to
 defined several reduction jobs and submit them all at once.</p>
-<table class="reduction_table">
+<table class="scrolling_table reduction_table">
   <thead>
     <tr>
       <th>Configuration</th><th>Beam center run</th><th>Transmission</th><th>Dark current</th><th>Sensitivity</th><th>Sample aperture</th><th></th>

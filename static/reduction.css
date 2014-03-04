@@ -94,13 +94,26 @@ table .errorlist {
     overflow: auto;
 }
 
+.ie .scrolling_table {
+    width:950px;
+    table-layout:fixed;
+}
+.scrolling_table { 
+    overflow-x:scroll;
+}
+.scrolling_table thead th,
+.scrolling_table tbody td,
+.scrolling_table tfoot td {
+    overflow-x:auto;
+    max-width:130px;
+}
+
 .reduction_table {
     margin-left:20px;
     margin-right:auto;
     border-spacing: 0;
     display: block;
     min-width:685px;
-    overflow-x:scroll;
 }
 
 .reduction_table thead th,
@@ -110,8 +123,6 @@ table .errorlist {
     padding-right:5px;
     border-left: 1px solid #ddd;
     border-bottom: 1px solid #ddd;
-    overflow-x:scroll;
-    max-width:120px;
 }
 
 .reduction_table tfoot td {
@@ -146,3 +157,6 @@ table .errorlist {
 .ui-button a:visited {color:#0077cc; text-decoration:none;}
 .ui-button a:hover {color:#0077cc; text-decoration:underline;}
 .ui-button a:active {color:#0077cc; text-decoration:none;}
+
+.ui-state-error-text { display:-webkit-inline-box; }
+.ui-state-error-text .ui-icon { margin-right: 6px; }

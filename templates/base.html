@@ -12,12 +12,6 @@
 {% if is_mobile %}
 <link rel="stylesheet" href="{% static 'mobile.css' %}" type="text/css" title="no title" charset="utf-8">
 {% endif %}
-<!--[if !(IE)]>
-<style>
-.fixed_table td, th { overflow:scroll; }
-.fixed_table { overflow:scroll; }
-</style>
-<![endif]-->
 <link rel="icon" type="image/png" href="{% static 'favicon.ico' %}" />
 <link rel="apple-touch-icon-precomposed" href="{% static 'apple-touch-icon-precomposed.png' %}">
 <link rel="apple-touch-icon-precomposed" href="{% static 'apple-touch-icon-72x72-precomposed.png' %}">
@@ -46,7 +40,8 @@
     }
 </script>
 </head>
-<body>
+<!--[if IE]><body class="ie"><![endif]--> 
+<![if !IE]><body><![endif]>
 {% if user_alert %}
 <script id="source" language="javascript" type="text/javascript">
     $(document).ready(show_alert);
