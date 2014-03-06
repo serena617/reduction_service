@@ -74,7 +74,7 @@
                      'x_label': x_label,
                      'y_label': y_label,
                      'log_scale': {% if plot_object.layout %}{{ plot_object.layout.is_y_log|lower }}{% else %}true{% endif %}};
-      plot_1d(data, options); 
+      plot_1d(data, "plot_anchor", options); 
     </script>
     {% endif %}
     {% if plot_2d %}

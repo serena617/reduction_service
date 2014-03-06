@@ -176,3 +176,13 @@ class RemoteJob(models.Model):
         if len(plots)>0:
             return plots[0]
         return None
+
+class RemoteJobSet(models.Model):
+    """
+        Defines a set of RemoteJob objects belonging to the same transaction
+    """
+    transaction = models.ForeignKey(Transaction)
+    configuration = models.ForeignKey(ReductionConfiguration)
+    jobs = models.ManyToManyField(RemoteJob, related_name='_remote_set_jobs')
+    timestamp = models.DateTimeField('timestamp', auto_now=True)
+    

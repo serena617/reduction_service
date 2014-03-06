@@ -8,6 +8,7 @@
     }
     $(function() {
       $("#submit_button").button();
+      $("#execute_jobs_button").button();
     });
 </script>
 {% endblock %}
@@ -83,6 +84,7 @@
         </table>
       </div>
     <p><input id='submit_button' type="submit" value="update"/>
+    {% if config_id %}<input title="Click to submit this list of reductions for execution" id="execute_jobs_button" type="button" value="submit" onclick='window.location.href = "{% url 'eqsans_configuration_submit' config_id %}"'/>{% endif %}
   </form>
 
   <script id="source" language="javascript" type="text/javascript">

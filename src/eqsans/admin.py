@@ -1,4 +1,4 @@
-from models import ReductionProcess, Instrument, Experiment, RemoteJob, ReductionConfiguration
+from models import ReductionProcess, Instrument, Experiment, RemoteJob, ReductionConfiguration, RemoteJobSet
 from django.contrib import admin
 import logging
 import sys
@@ -63,7 +63,7 @@ class ExperimentAdmin(admin.ModelAdmin):
             return ', '.join(instr) 
         except:
             return ''
-    get_instruments.short_description = "Instruments"    
+    get_instruments.short_description = "Instruments"
 
 class RemoteJobAdmin(admin.ModelAdmin):
     list_display = ('id', 'reduction', 'remote_id', 'get_plots', 'get_plots2d')
@@ -93,8 +93,22 @@ class RemoteJobAdmin(admin.ModelAdmin):
 class InstrumentAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     
+class RemoteJobSetAdmin(admin.ModelAdmin):
+    list_display = ('id', 'transaction', 'get_jobs', 'timestamp')
+    
+    def get_jobs(self, obj):
+        jobs = []
+        try:
+            for item in obj.jobs.all():
+                jobs.append(str(item))
+            return ', '.join(jobs)
+        except:
+            return ''
+    get_jobs.short_description = "Remote jobs"
+    
 admin.site.register(Experiment, ExperimentAdmin)
 admin.site.register(Instrument, InstrumentAdmin)
 admin.site.register(ReductionProcess, ReductionProcessAdmin)
 admin.site.register(RemoteJob, RemoteJobAdmin)
 admin.site.register(ReductionConfiguration, ReductionConfigurationAdmin)
+admin.site.register(RemoteJobSet, RemoteJobSetAdmin)

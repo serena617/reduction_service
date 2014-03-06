@@ -199,7 +199,7 @@ def query_job(request, job_id):
     """
         Query Fermi for a specific job
         @param request: request object
-        @param job_id: pk of the RemoteJob object
+        @param job_id: remote job id string
         
         The call to Fermi will look like this:
             https://fermi.ornl.gov/MantidRemote/query?JobID=7665

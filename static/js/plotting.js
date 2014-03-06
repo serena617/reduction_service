@@ -1,4 +1,4 @@
-function plot_1d(raw_data, options) {
+function plot_1d(raw_data, anchor, options) {
     options = (typeof options === "undefined") ? {} : options;
     color = (typeof options.color === "undefined") ? '#0077cc' : options.color;
     marker_size = (typeof options.marker_size === "undefined") ? 2 : options.marker_size;
@@ -28,9 +28,9 @@ function plot_1d(raw_data, options) {
     var yAxisMinor = d3.svg.axis().scale(y).orient("left").ticks(5).tickSize(3,3).tickSubdivide(5).tickFormat('');
     
     // Remove old plot
-    d3.select("plot_anchor").select("svg").remove();
+    d3.select(anchor).select("svg").remove();
     
-    var svg = d3.select("plot_anchor").append("svg")
+    var svg = d3.select(anchor).append("svg")
       .attr("class", "default_1d")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)

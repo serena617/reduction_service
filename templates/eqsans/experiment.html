@@ -36,7 +36,9 @@ Run range: <b>{{ icat_info.run_range|default:"-" }}</b>
         <td>{% if r.dark_current_run %}<div class='subtitle_black'>{{ r.dark_current_run }}</div>{% endif %}</td>
         <td>{% if r.sensitivity_file %}<div class='subtitle_black'>{{ r.sensitivity_file }}</div>{% endif %}</td>
         <td>{% if r.sample_aperture_diameter %}<div class='subtitle_black'>{{ r.sample_aperture_diameter }} mm</div>{% endif %}</td>
-        <td title='Click to delete this reduction'><a href="{% url 'eqsans_delete_reduction' r.id %}?back_url={{ back_url }}"><span class="ui-icon ui-icon-trash"></span></a></td>
+        <td><a title='Click to delete this reduction' href="{% url 'eqsans_delete_reduction' r.id %}?back_url={{ back_url }}"><span style='display:inline-block' class="ui-icon ui-icon-trash"></span></a>
+        {% if r.completed_job %}<a title='Click to see latest results' href="{{ r.completed_job }}"><span style='display:inline-block' class="ui-icon ui-icon-info"></span></a>{% endif %}
+        </td>
     </tr>
   {% endfor %}
   </tbody>

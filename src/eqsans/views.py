@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
-from models import ReductionProcess, Experiment, RemoteJob, Instrument, ReductionConfiguration
+from models import ReductionProcess, Experiment, RemoteJob, Instrument, ReductionConfiguration, RemoteJobSet
 import reduction_service.view_util
 import remote.view_util
 import view_util
@@ -18,6 +18,8 @@ from catalog.icat_server_communication import get_ipts_info
 from . import forms
 from django.forms.formsets import formset_factory
 import copy
+import zipfile
+import StringIO
 
 @login_required
 def experiment(request, ipts):
@@ -65,6 +67,9 @@ def experiment(request, ipts):
         data_dict = r.get_data_dict()
         data_dict['id'] = r.id
         data_dict['config'] = r.get_config()
+        latest_job = view_util.get_latest_job(request, r)
+        if latest_job is not None:
+            data_dict['completed_job'] = reverse('eqsans.views.job_details', args=[latest_job.remote_id])
         try:
             run_id = int(data_dict['data_file'])
             data_dict['webmon_url'] = "https://monitor.sns.gov/report/eqsans/%s/" % run_id
@@ -256,6 +261,115 @@ def reduction_configuration(request, config_id=None):
     return render_to_response('eqsans/reduction_table.html',
                               template_values)
     
+@login_required
+def reduction_configuration_submit(request, config_id):
+    """
+        Submit all reductions for this configuration.
+        @param request: request object
+        @param config_id: pk of configuration
+    """
+    reduction_config = get_object_or_404(ReductionConfiguration, pk=config_id, owner=request.user)
+    reductions = reduction_config.reductions.all()
+    if len(reductions)>0:
+        # Start a new transaction
+        transaction = remote.view_util.transaction(request, start=True)
+        job_set = RemoteJobSet(transaction=transaction,
+                               configuration=reduction_config)
+        job_set.save()
+        # Loop through the reductions and submit them
+        for item in reductions:
+            data = forms.ReductionOptions.data_from_db(request.user, item.id)
+            code = forms.ReductionOptions.as_mantid_script(data, transaction.directory)
+            jobID = remote.view_util.submit_job(request, transaction, code)
+            if jobID is not None:
+                job = RemoteJob(reduction=item,
+                                remote_id=jobID,
+                                properties=item.properties,
+                                transaction=transaction)
+                job.save()
+                job_set.jobs.add(job)
+    return redirect(reverse('eqsans.views.reduction_configuration', args=[config_id]))
+    
+@login_required
+def reduction_configuration_query(request, remote_set_id):
+    """
+        Query all jobs in a job set
+        @param request: request object
+        @param remote_id: pk of RemoteJobSet object
+    """
+    job_set = get_object_or_404(RemoteJobSet, pk=remote_set_id)
+    
+    breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
+    breadcrumbs += " &rsaquo; <a href='%s'>eqsans reduction</a>" % reverse('eqsans.views.reduction_home')
+    breadcrumbs += " &rsaquo; <a href='%s'>configuration %s</a>" % (reverse('eqsans.views.reduction_configuration', args=[job_set.configuration.id]), job_set.configuration.id)
+    breadcrumbs += " &rsaquo; <a href='%s'>jobs</a>" % reverse('eqsans.views.reduction_jobs')
+    breadcrumbs += " &rsaquo; job results"
+    
+    template_values = {'remote_set_id': remote_set_id,
+                       'configuration_title': job_set.configuration.name,
+                       'configuration_id': job_set.configuration.id,
+                       'breadcrumbs': breadcrumbs,
+                       'title': 'EQSANS job results',
+                       'trans_id': job_set.transaction.trans_id,
+                       'job_directory': job_set.transaction.directory,
+                       'back_url': request.path}
+    
+    # Get status of each job
+    job_set_info = []
+    first_job = None
+    for item in job_set.jobs.all():
+        first_job = item
+        job_info = remote.view_util.query_job(request, item.remote_id)
+        job_info['reduction_name'] = item.reduction.name
+        job_info['reduction_id'] = item.reduction.id
+        job_info['job_id'] = item.remote_id
+        job_info['parameters'] = item.get_data_dict()
+        job_set_info.append(job_info)
+    template_values['job_set_info'] = job_set_info
+    
+    # Show list of files in the transaction
+    template_values['job_files'] = remote.view_util.query_files(request, job_set.transaction.trans_id)
+
+    # I(q) plots
+    plot_data = []
+    if first_job is not None:
+        for f in template_values['job_files']:
+            if f.endswith('_Iq.txt'):
+                plot_info = view_util.process_iq_output(request, first_job, 
+                                                        template_values['trans_id'], f)
+                plot_info['name'] = f
+                plot_data.append(plot_info)
+    template_values['plot_data'] = plot_data
+ 
+    # Link to download all I(q) files
+    template_values = reduction_service.view_util.fill_template_values(request, **template_values)
+    return render_to_response('eqsans/reduction_configuration_query.html', template_values)
+    
+@login_required
+def reduction_configuration_iq(request, remote_set_id):
+    """
+        @param request: request object
+        @param remote_id: pk of RemoteJobSet object
+    """
+    job_set = get_object_or_404(RemoteJobSet, pk=remote_set_id)
+    files = remote.view_util.query_files(request, job_set.transaction.trans_id)
+    
+    str_io = StringIO.StringIO()
+    output_zip_file = zipfile.ZipFile(str_io, 'w')
+    for f in files:
+        if f.endswith('_Iq.txt'):
+            file_data = remote.view_util.download_file(request, job_set.transaction, f)
+            fd = StringIO.StringIO()
+            fd.write(file_data)
+            output_zip_file.writestr(f, fd.getvalue())
+            fd.close()
+    output_zip_file.close()
+    # Create response with correct MIME-type
+    resp = HttpResponse(str_io.getvalue(), mimetype = "application/x-zip-compressed")
+    resp['Content-Disposition'] = 'attachment; filename=%s' % 'iq_transaction_%s.zip' % job_set.transaction.trans_id
+    str_io.close()
+    return resp
+
 @login_required
 def reduction_configuration_job_delete(request, config_id, reduction_id):
     """

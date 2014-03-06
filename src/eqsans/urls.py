@@ -18,6 +18,9 @@ urlpatterns = patterns('',
     url(r'^configuration/$', 'eqsans.views.reduction_configuration', name='eqsans_new_configuration'),
     url(r'^configuration/(?P<config_id>\d+)/$', 'eqsans.views.reduction_configuration', name='eqsans_configuration'),
     url(r'^configuration/(?P<config_id>\d+)/delete$', 'eqsans.views.reduction_configuration_delete', name='eqsans_configuration_delete'),
+    url(r'^configuration/(?P<config_id>\d+)/submit$', 'eqsans.views.reduction_configuration_submit', name='eqsans_configuration_submit'),
+    url(r'^configuration/query/(?P<remote_set_id>\d+)/$', 'eqsans.views.reduction_configuration_query', name='eqsans_configuration_query'),
+    url(r'^configuration/iq/(?P<remote_set_id>\d+)/$', 'eqsans.views.reduction_configuration_iq', name='eqsans_configuration_iq'),
     url(r'^configuration/(?P<config_id>\d+)/(?P<reduction_id>\d+)/delete$', 'eqsans.views.reduction_configuration_job_delete', name='eqsans_configuration_job_delete'),
 
 )

@@ -20,7 +20,7 @@
                      'x_label': $('#x_label').val(),
                      'y_label': $('#y_label').val(),
                      'log_scale': $('#scale_log').is(':checked')};
-      plot_1d(data, options); 
+      plot_1d(data, "plot_anchor", options); 
       if (send_to_server) {
    
       $.ajax({ url: "{% url 'updated_parameters_1d' plot1d.id %}",

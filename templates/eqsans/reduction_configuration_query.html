@@ -1,0 +1,78 @@
+{% extends "eqsans/eqsans_base.html" %}
+{% load staticfiles %}
+
+{% block header %}
+  <link rel="stylesheet" href="{% static 'css/plotting.css' %}" type="text/css" title="no title" charset="utf-8">
+  <link rel="stylesheet" href="{% static 'css/plotting_print.css' %}" type="text/css" media="print" title="no title" charset="utf-8">
+  <script type="text/javascript" src="{% static 'thirdparty/d3.v3/d3.v3.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'js/plotting.js' %}"></script>
+   
+  <script type="text/javascript">
+    {% for item in plot_data %}
+    var data_{{ forloop.counter }} = {{ item.plot_1d|safe }};
+    {% endfor %}
+    $(function() {
+        $("#download_iq_button").button();
+    });
+  </script>  
+{% endblock %}
+
+{% block content %}
+<h2>Results for reduction jobs for <a href="{% url 'eqsans_configuration' configuration_id %}" title="Click to see configuration details">configuration {{ configuration_id }}</a>: {{ configuration_title }}</h2>
+<p>
+<div class='tiled_area'>
+  <div class='tile'>
+  {% for job_info in job_set_info %}
+    <div class='sub-tile'>
+      Job <a href="{% url 'eqsans_job_details' job_info.job_id %}" title="See detailed result for this job">{{ job_info.job_id }}</a> - Data: <b>{{ job_info.parameters.data_file }}</b> (<a href="{% url 'eqsans_reduction' job_info.reduction_id %}" title='Edit latest version of this reduction'>edit <span style="padding-bottom:3px" class="ui-button ui-icon ui-icon-pencil"></span></a>)
+      <ul>
+        <li>Status: {{ job_info.JobStatus }}</li>
+        <li>Start time: {{ job_info.StartDate }}</li>
+        <li>End time: {{ job_info.CompletionDate }}</li>
+      </ul>
+    </div>
+  {% endfor %}
+  </div>
+  <div class='tile'>
+    Job directory: {{ job_directory }}
+    <ul>
+    {% for file in job_files %}
+      {% url 'remote_download' trans_id file as download_url %}
+      {% if download_url %}
+      <li><a href="{{ download_url }}">{{ file }}</a></li>
+      {% else %}
+      <li>{{ file }}</li>
+      {% endif %}
+    {% endfor %}
+    </ul>
+    {% if job_files %}<input title="Click to download all I(q) files" id="download_iq_button" type="button" value="download I(q)" onclick='window.location.href = "{% url 'eqsans_configuration_iq' remote_set_id %}"'/>{% endif %}
+  </div>
+</div>
+<div class='tiled_area'>
+
+  {% if plot_data %}
+    {% for item in plot_data %}
+    <div class='wide_tile tile'>
+        <b>{{ item.name }}</b>
+        <plot_anchor_{{ forloop.counter }}></plot_anchor_{{ forloop.counter }}>
+      </div>
+    {% endfor %}
+  {% endif %}
+</div>
+
+<script>
+{% for item in plot_data %}
+  var x_label = $('<div />').html("{{ item.plot_object.layout.x_label|safe }}").text();
+  var y_label = $('<div />').html("{{ item.plot_object.layout.y_label|safe }}").text();
+  var options = {'color': '{{ item.plot_object.first_data_layout.color|safe }}',
+                 'marker_size': '{{ item.plot_object.first_data_layout.size }}',
+                 'width': '370',
+                 'height': '150',
+                 'x_label': x_label,
+                 'y_label': y_label,
+                 'log_scale': {% if item.plot_object.layout %}{{ item.plot_object.layout.is_y_log|lower }}{% else %}true{% endif %}};
+  plot_1d(data_{{ forloop.counter }}, "plot_anchor_{{ forloop.counter }}", options); 
+{% endfor %}
+</script>
+
+{% endblock %}
