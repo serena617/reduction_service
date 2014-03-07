@@ -22,74 +22,82 @@
 {% endblock %}
 
 {% block content %}
-    <div>Job {{ job_id }}</div>
-    <div class='tool_area'>
-      <ul>
-        <li>Status: {{ job_info.JobStatus }}</li>
-        <li>Start time: {{ job_info.StartDate }}</li>
-        <li>End time: {{ job_info.CompletionDate }}</li>
-      </ul>
+    <h2>Results for <a href="{% url 'eqsans_reduction' remote_job.reduction.id %}" title='Click to see the latest version of this reduction'>{% if remote_job.reduction.name|length > 0 %}{{ remote_job.reduction.name }}{% else %}reduction {{ remote_job.reduction.id }}{% endif %}</a></h2>
+    <div class='tiled_area'>
+      <div class='tile'>
+        Job {{ job_id }}
+        <ul>
+          <li>Status: {{ job_info.JobStatus }}</li>
+          <li>Start time: {{ job_info.StartDate }}</li>
+          <li>End time: {{ job_info.CompletionDate }}</li>
+        </ul>
+      </div>
+      
+      <div class='tile'>
+        Reduction parameters
+        <ul>
+          <li>Sample data: {{ parameters.data_file }}</li>
+          <li>Beam center data: {{ parameters.direct_beam_run }}</li>
+          <li>Sample transmission: {{ parameters.transmission_sample }}</li>
+          <li>Empty transmission: {{ parameters.transmission_empty }}</li>
+          <li>Background: {{ parameters.background_file }}</li>
+          <li>Background transmission: {{ parameters.background_transmission_sample }}</li>
+          <li>Background empty transmission: {{ parameters.background_transmission_empty }}</li>
+        </ul>
+      </div>
+      <div class='tile'>
+        Job directory: {{ job_directory }}
+        <ul>
+        {% for file in job_files %}
+          {% url 'remote_download' trans_id file as download_url %}
+          {% if download_url %}
+          <li><a href="{{ download_url }}">{{ file }}</a></li>
+          {% else %}
+          <li>{{ file }}</li>
+          {% endif %}
+        {% endfor %}
+        </ul>
+      </div>
     </div>
-    <p>
-    <div>Reduction</div>
-    <div class='tool_area'>
-      <ul>
-        <li><b>{{ remote_job.reduction.name }}</b> (<a href="{% url 'eqsans_reduction' remote_job.reduction.id %}" title='Edit latest version of this reduction'>edit <span style="padding-bottom:3px" class="ui-button ui-icon ui-icon-pencil"></span></a>)</li>
-        <br>
-        <li>Sample data: {{ parameters.data_file }}</li>
-        <li>Beam center data: {{ parameters.direct_beam_run }}</li>
-        <li>Sample transmission: {{ parameters.transmission_sample }}</li>
-        <li>Empty transmission: {{ parameters.transmission_empty }}</li>
-        <li>Background: {{ parameters.background_file }}</li>
-        <li>Background transmission: {{ parameters.background_transmission_sample }}</li>
-        <li>Background empty transmission: {{ parameters.background_transmission_empty }}</li>
-      </ul>
+    {% if plot_1d_id or plot_2d %}
+    <div class='tiled_area'>
+    <div class='wide_tile tile'>
+    Need to print? Click the 'adjust plot' link and use the print functionality of your browser.
     </div>
-  
-    <p>
-    Job directory: <b>{{ job_directory }}</b>
-    <div class='tool_area'>
-      <ul>
-      {% for file in job_files %}
-        {% url 'remote_download' trans_id file as download_url %}
-        {% if download_url %}
-        <li><a href="{{ download_url }}">{{ file }}</a></li>
-        {% else %}
-        <li>{{ file }}</li>
-        {% endif %}
-      {% endfor %}
-      </ul>
-    </div>
-    
     {% if plot_1d_id %}
-    <plot_anchor></plot_anchor>
-    <a href="{% url 'plotting_adjust_1d' plot_1d_id %}/?back={{ back_url }}">adjust plot</a>
-    <script>
-      var x_label = $('<div />').html("{{ plot_object.layout.x_label|safe }}").text();
-      var y_label = $('<div />').html("{{ plot_object.layout.y_label|safe }}").text();
-      var options = {'color': '{{ plot_object.first_data_layout.color|safe }}',
-                     'marker_size': '{{ plot_object.first_data_layout.size }}',
-                     'width': '{{ plot_object.layout.width }}',
-                     'height': '{{ plot_object.layout.height }}',
-                     'x_label': x_label,
-                     'y_label': y_label,
-                     'log_scale': {% if plot_object.layout %}{{ plot_object.layout.is_y_log|lower }}{% else %}true{% endif %}};
-      plot_1d(data, "plot_anchor", options); 
-    </script>
+      <div class='wide_tile tile'>
+        <plot_anchor></plot_anchor>
+        <a href="{% url 'plotting_adjust_1d' plot_1d_id %}/?back={{ back_url }}">adjust plot</a>
+      </div>
+      <script>
+        var x_label = $('<div />').html("{{ plot_object.layout.x_label|safe }}").text();
+        var y_label = $('<div />').html("{{ plot_object.layout.y_label|safe }}").text();
+        var options = {'color': '{{ plot_object.first_data_layout.color|safe }}',
+                       'marker_size': '{{ plot_object.first_data_layout.size }}',
+                       'width': '370',
+                       'height': '200',
+                       'x_label': x_label,
+                       'y_label': y_label,
+                       'log_scale': {% if plot_object.layout %}{{ plot_object.layout.is_y_log|lower }}{% else %}true{% endif %}};
+        plot_1d(data, "plot_anchor", options); 
+      </script>
     {% endif %}
     {% if plot_2d %}
-    <plot_anchor_2d></plot_anchor_2d>
-    <a href="{% url 'plotting_adjust_2d' plot_2d.id %}/?back={{ back_url }}">adjust plot</a>
-    <script>
-      var x_label2d = $('<div />').html("{{ plot_2d.layout.x_label|safe }}").text();
-      var y_label2d = $('<div />').html("{{ plot_2d.layout.y_label|safe }}").text();
-      var options2d = {'width': '{{ plot_2d.layout.width }}',
-                     'height': '{{ plot_2d.layout.height }}',
-                     'x_label': x_label2d,
-                     'y_label': y_label2d,
-                     'log_scale': {% if plot_2d.layout %}{{ plot_2d.layout.is_y_log|lower }}{% else %}true{% endif %}};
-      plot_2d(data2d, qx, qy, max_iq, options2d);
-    </script>
-
+      <div class='wide_tile tile'>
+        <plot_anchor_2d></plot_anchor_2d>
+        <a href="{% url 'plotting_adjust_2d' plot_2d.id %}/?back={{ back_url }}">adjust plot</a>
+      </div>
+      <script>
+        var x_label2d = $('<div />').html("{{ plot_2d.layout.x_label|safe }}").text();
+        var y_label2d = $('<div />').html("{{ plot_2d.layout.y_label|safe }}").text();
+        var options2d = {'width': '370',
+                       'height': '370',
+                       'x_label': x_label2d,
+                       'y_label': y_label2d,
+                       'log_scale': {% if plot_2d.layout %}{{ plot_2d.layout.is_y_log|lower }}{% else %}true{% endif %}};
+        plot_2d(data2d, qx, qy, max_iq, options2d);
+      </script>
+    {% endif %}
+    </div>
     {% endif %}
 {% endblock %}

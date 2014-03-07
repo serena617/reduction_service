@@ -14,11 +14,14 @@
 {% endblock %}
 
 {% block content %}
-  <form action="" method="POST">{% csrf_token %}
-    <div class="modifiable_title">
-      <b>Configuration description</b> {{ config_form.reduction_name.errors }}{{ config_form.reduction_name }}
-    </div>
-    <p>
+<h2>Configuration and reduction parameters</h2>
+<form action="" method="POST">{% csrf_token %}
+  <div class='tiled_area'>
+    <div class='flexible tile'>
+      <div class="modifiable_title">
+        <b>Configuration description</b> {{ config_form.reduction_name.errors }}{{ config_form.reduction_name }}
+      </div>
+      <p>
       <div>
         <table cellspacing="0" class="property_table">
           <tbody>
@@ -37,11 +40,11 @@
         </table>
       {{ config_form.beam_radius }} {{ config_form.fit_frames_together }} {{ config_form.theta_dependent_correction }}
       </div>
-      <hr>
+    </div>
+    <div class='flexible tile'>
       <a style='float:right' href='?extra=1'><span style='display:inline-block' class="ui-icon ui-icon-plusthick"></span> add a job</a>
       <p>
       {{ options_form.management_form }}
-      <div>
         <table cellspacing="0" class="property_table">
           <thead>
             <tr>
@@ -82,12 +85,13 @@
             {% endfor %}
           </tbody>
         </table>
-      </div>
-    <p><input id='submit_button' type="submit" value="update"/>
-    {% if config_id %}<input title="Click to submit this list of reductions for execution" id="execute_jobs_button" type="button" value="submit" onclick='window.location.href = "{% url 'eqsans_configuration_submit' config_id %}"'/>{% endif %}
-  </form>
+      <input id='submit_button' type="submit" value="update"/>
+      {% if config_id %}<input title="Click to submit this list of reductions for execution" id="execute_jobs_button" type="button" value="submit" onclick='window.location.href = "{% url 'eqsans_configuration_submit' config_id %}"'/>{% endif %}
+    </div>
+  </div>
+</form>
 
-  <script id="source" language="javascript" type="text/javascript">
+<script id="source" language="javascript" type="text/javascript">
   $(document).ready(function() {
     {% spaceless %}
     {% if config_form.transmission_empty.value %} get_icat_info('{{ config_form.transmission_empty.value }}', '{{ config_form.transmission_empty.id_for_label }}'); {% endif %}
@@ -102,5 +106,5 @@
         }
       });
     });
-  </script>
+</script>
 {% endblock %}

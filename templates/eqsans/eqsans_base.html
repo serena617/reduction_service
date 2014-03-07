@@ -34,6 +34,14 @@
         <b>Remote jobs</b><br>
         <ul>
           <li><a href="{% url 'eqsans_reduction_jobs'%}" title="See remote jobs">see all jobs</a></li>
+          {% if config_id %}
+          <li><a href="{% url 'eqsans_configuration_submit' config_id %}" title="Submit jobs for this configuration">submit jobs</a></li>
+          {% if existing_job_sets and existing_job_sets|length > 0 %}
+          {% for job in existing_job_sets %}
+          <li><a href="{% url 'eqsans_configuration_query' job.id %}" title="See job details">job set {{ job.id }}</a></li>
+          {% endfor %}
+          {% endif %}
+          {% endif %}
           {% if reduction_id %}
           <li><a href="{% url 'eqsans_submit_job' reduction_id %}" title="Submit this reduction job">submit this job</a></li>
           {% if existing_jobs and existing_jobs|length > 0 %}

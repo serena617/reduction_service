@@ -84,6 +84,11 @@ def experiment(request, ipts):
     for item in config_list:
         data_dict = item.get_data_dict()
         data_dict['id'] = item.id
+        latest_jobs = RemoteJobSet.objects.filter(configuration=item)
+        if len(latest_jobs)>0:
+            latest_job = latest_jobs.latest('id')
+            data_dict['latest_job'] = latest_job.id
+            #data_dict['latest_job'] = reverse('eqsans.views.reduction_configuration_query', args=[latest_job.id])
         configurations.append(data_dict)
     
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
@@ -167,8 +172,9 @@ def reduction_options(request, reduction_id=None):
                        'icat_url': icat_url }
     # Get existing jobs for this reduction
     if reduction_id is not None:
-        existing_jobs = RemoteJob.objects.filter(reduction=reduction_proc).order_by('id')
-        template_values['existing_jobs'] = existing_jobs
+        existing_jobs = RemoteJob.objects.filter(reduction=reduction_proc)
+        if len(existing_jobs)>0:
+            template_values['existing_jobs'] = existing_jobs.order_by('id')
         template_values['expt_list'] = reduction_proc.experiments.all()
     template_values = reduction_service.view_util.fill_template_values(request, **template_values)
     return render_to_response('eqsans/reduction_options.html',
@@ -193,6 +199,7 @@ def reduction_configuration(request, config_id=None):
 
     # The list of relevant experiments will be displayed on the page
     expt_list = None
+    job_list = None
     # Deal with data submission
     if request.method == 'POST':
         options_form = ReductionOptionsSet(request.POST)
@@ -236,7 +243,7 @@ def reduction_configuration(request, config_id=None):
             options_form = ReductionOptionsSet(initial=initial_values)
             config_form = forms.ReductionConfigurationForm(initial=initial_config)
             expt_list = reduction_config.experiments.all()
-
+            job_list = RemoteJobSet.objects.filter(configuration=reduction_config)
 
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
     breadcrumbs += " &rsaquo; <a href='%s'>eqsans reduction</a>" % reverse('eqsans.views.reduction_home')
@@ -253,6 +260,7 @@ def reduction_configuration(request, config_id=None):
                        'options_form': options_form,
                        'config_form': config_form,
                        'expt_list': expt_list,
+                       'existing_job_sets': job_list,
                        'title': 'EQSANS Reduction',
                        'breadcrumbs': breadcrumbs,
                        'icat_url': icat_url }
@@ -497,6 +505,7 @@ def job_details(request, job_id):
 
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
     breadcrumbs += " &rsaquo; <a href='%s'>eqsans reduction</a>" % reverse('eqsans.views.reduction_home')
+    breadcrumbs += " &rsaquo; <a href='%s'>reduction %s</a>" % (reverse('eqsans.views.reduction_options', args=[remote_job.reduction.id]), remote_job.reduction.id)
     breadcrumbs += " &rsaquo; <a href='%s'>jobs</a>" % reverse('eqsans.views.reduction_jobs')
     breadcrumbs += " &rsaquo; %s" % job_id
 
@@ -507,6 +516,7 @@ def job_details(request, job_id):
                        'back_url': request.path}
     template_values = remote.view_util.fill_job_dictionary(request, job_id, **template_values)
     template_values = reduction_service.view_util.fill_template_values(request, **template_values)
+    template_values['title'] = "EQSANS job results"
     
     # Go through the files and find data to plot
     if 'job_files' in template_values and 'trans_id' in template_values:
@@ -545,20 +555,37 @@ def reduction_jobs(request):
     jobs = RemoteJob.objects.filter(transaction__owner=request.user)
     status_data = []
     for job in jobs:
-        if not job.transaction.is_active:
+        if not job.transaction.is_active or job.reduction.get_config() is not None:
             continue
-        j_data = {'ID': job.remote_id,
-                  'JobName': job.reduction.name,
-                  'StartDate': job.transaction.start_time,
-                  'Data': job.reduction.data_file,
-                  'TransID': job.transaction.trans_id,
+        j_data = {'id': job.remote_id,
+                  'name': job.reduction.name,
+                  'reduction_id': job.reduction.id,
+                  'start_date': job.transaction.start_time,
+                  'data': job.reduction.data_file,
+                  'trans_id': job.transaction.trans_id,
+                  'experiments': job.reduction.get_experiments()
                  }
         status_data.append(j_data)
+    
+    # Get config jobs
+    config_jobs = RemoteJobSet.objects.filter(transaction__owner=request.user)
+    config_data = []
+    for job in config_jobs:
+        if not job.transaction.is_active:
+            continue
+        j_data = {'id': job.id,
+                  'config_id': job.configuration.id,
+                  'name': job.configuration.name,
+                  'trans_id': job.transaction.trans_id,
+                  'experiments': job.configuration.get_experiments()
+                 }
+        config_data.append(j_data)
     
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
     breadcrumbs += " &rsaquo; <a href='%s'>eqsans reduction</a>" % reverse('eqsans.views.reduction_home')
     breadcrumbs += " &rsaquo; jobs"
     template_values = {'status_data': status_data,
+                       'config_data': config_data,
                        'back_url': request.path,
                        'breadcrumbs': breadcrumbs}
     template_values = reduction_service.view_util.fill_template_values(request, **template_values)   

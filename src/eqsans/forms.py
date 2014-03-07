@@ -336,7 +336,7 @@ class ReductionOptions(forms.Form):
                 reduction_config.reductions.add(reduction_proc)
             config_property_dict = json.loads(reduction_config.properties)
             property_dict.update(config_property_dict)
-            reduction_proc.name = 'Configuration: %s' % reduction_config.name
+            reduction_proc.name = reduction_config.name
             reduction_proc.save()
             for item in reduction_config.experiments.all():
                 if item not in reduction_proc.experiments.all():

@@ -18,7 +18,7 @@
 {% endblock %}
 
 {% block content %}
-<h2>Results for reduction jobs for <a href="{% url 'eqsans_configuration' configuration_id %}" title="Click to see configuration details">configuration {{ configuration_id }}</a>: {{ configuration_title }}</h2>
+<h2>Results for reduction jobs for <a href="{% url 'eqsans_configuration' configuration_id %}" title="Click to see the latest version of this configuration">{% if configuration_title|length > 0 %}{{ configuration_title }}{% else %}configuration {{ configuration_id }}{% endif %}</a></h2>
 <p>
 <div class='tiled_area'>
   <div class='tile'>
@@ -49,7 +49,6 @@
   </div>
 </div>
 <div class='tiled_area'>
-
   {% if plot_data %}
     {% for item in plot_data %}
     <div class='wide_tile tile'>

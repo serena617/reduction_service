@@ -7,21 +7,50 @@ You need to authenticate with the Fermi remote submission service.
 Please use the form on this page.
 </div>
 {% endif %}
+
+{% if config_data %}
+<h2>Instrument configuration jobs</h2>
+The following is a list of all your reduction configuration results:
 <table class="reduction_table">
   <thead>
     <tr>
-      <th>Job</th><th>Name</th><th>Submitted</th><th>Data runs</th><th></th>
+      <th>Job</th><th>Configuration</th><th>Experiment</th><th></th>
     </tr>
   </thead>
   <tbody>
-  {% for job in status_data|dictsortreversed:"ID" %}
+  {% for job in config_data|dictsortreversed:"id" %}
     <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
-      <td><a href="{% url 'eqsans_job_details' job.ID %}">{{ job.ID }}</a></td>
-      <td>{{ job.JobName }}</td>
-      <td>{{ job.StartDate|date:"n/d H:i" }}</td><td>{{ job.Data }}</td>
-      <td title='Click to remove this reduction job'><a href="{% url 'remote_stop_transaction' job.TransID %}?back_url={{ back_url }}"><span class="ui-icon ui-icon-trash"></span></a></td>
+      <td><a href="{% url 'eqsans_configuration_query' job.id %}" title="Click to see the results of the jobs belonging to this configuration">{{ job.id }}</a></td>
+      <td><a href="{% url 'eqsans_configuration' job.config_id %}" title="Click to see the latest version of this configuration">{{ job.name }}</a></td>
+      <td>{{ job.experiments }}</td>
+      <td title='Click to remove this reduction job'><a href="{% url 'remote_stop_transaction' job.trans_id %}?back_url={{ back_url }}"><span class="ui-icon ui-icon-trash"></span></a></td>
       </tr>
   {% endfor %}
   </tbody>
 </table>
+{% endif %}
+<br>
+
+{% if status_data %}
+<h2>Individual reduction jobs</h2>
+The following is a list of your results not associated with a configuration:
+<table class="reduction_table">
+  <thead>
+    <tr>
+      <th>Job</th><th>Name</th><th>Submitted</th><th>Data runs</th><th>Experiment</th><th></th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for job in status_data|dictsortreversed:"id" %}
+    <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
+      <td><a href="{% url 'eqsans_job_details' job.id %}" title="Click to see the results this reduction job">{{ job.id }}</a></td>
+      <td><a href="{% url 'eqsans_reduction' job.reduction_id %}" title="Click to see the latest version of this reduction">{{ job.name }}</a></td>
+      <td>{{ job.start_date|date:"n/d H:i" }}</td><td>{{ job.data }}</td>
+      <td>{{ job.experiments }}</td>
+      <td title='Click to remove this reduction job'><a href="{% url 'remote_stop_transaction' job.trans_id %}?back_url={{ back_url }}"><span class="ui-icon ui-icon-trash"></span></a></td>
+      </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
 {% endblock %}

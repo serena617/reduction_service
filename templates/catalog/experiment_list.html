@@ -12,8 +12,7 @@
   </thead>
   <tbody>
   {% for r in experiments|dictsortreversed:"createTime" %}
-    <tr><td><a href="{% url 'catalog_runs' instrument r.id %}" >{{ r.id }}</a></td><td>{{ r.title|safe }}</td><td>{{ r.createTime }}</td></tr>
-
+    <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}"><td><a href="{% url 'catalog_runs' instrument r.id %}" >{{ r.id }}</a></td><td>{{ r.title|safe }}</td><td>{{ r.createTime }}</td></tr>
   {% endfor %}
   </tbody>
 </table>

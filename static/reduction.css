@@ -41,11 +41,15 @@
 }
 .tile ul {padding-left:5px; margin-top:5px; margin-bottom:5px;}
 .tile li {list-style:none;}
+.tile input[type=button] { margin-top:10px; }
+.tile input[type=submit] { margin-top:10px; }
 .tile .sub-tile {padding-bottom:15px;}
 
 .tiled_area .wide_tile {
     width:370px;
 }
+
+.tiled_area .flexible { width: auto; }
 
 .tool_area {
     border-top: 1px solid #aaaaaa;
@@ -74,8 +78,8 @@
     font-size:inherit;
     margin-left: 10px;
 }
-.long_input input { width:400px; }
-.short_input input { width:80px; }
+.long_input input { width:300px; }
+.short_input input { width:60px; }
 
 #tabs {
     font-size:12px;

@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block content %}
-<p>Choose an instrument to browse its data catalog:</p>
+<h2>Choose an instrument to browse its data catalog:</h2>
 
 {% for instr in instruments %}
 <span><a class='instrument_button' href='{{ instr|lower }}' id='{{ instr }}_button'>{{ instr }}</a></span>

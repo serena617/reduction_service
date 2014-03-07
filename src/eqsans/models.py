@@ -3,6 +3,9 @@
     TODO: Some of the models here are meant to be common to all instruments and are
     not specific to EQSANS. Those should be pulled out as we start building the common
     reduction framework.
+    
+    @author: M. Doucet, Oak Ridge National Laboratory
+    @copyright: 2014 Oak Ridge National Laboratory
 """
 from django.db import models
 from django.contrib.auth.models import User
@@ -35,7 +38,7 @@ class ExperimentManager(models.Manager):
         experiments = []
         for r in reductions:
             for e in r.experiments.all():
-                if e not in experiments:
+                if e not in experiments and len(e.name.strip())>0:
                     experiments.append(e)
         return experiments
 
@@ -105,6 +108,16 @@ class ReductionProcess(models.Model):
                      'reduction_id': self.id})
         return data
     
+    def get_experiments(self):
+        try:
+            expts = []
+            for item in self.experiments.all():
+                if len(str(item).strip())>0:
+                    expts.append(str(item).strip())
+            return ', '.join(expts) 
+        except:
+            return ''
+    
 class ReductionConfiguration(models.Model):
     """
         Common reduction properties used for a given configuration
@@ -132,6 +145,16 @@ class ReductionConfiguration(models.Model):
         data.update({'reduction_name': self.name,
                      'configuration_id': self.id})
         return data
+    
+    def get_experiments(self):
+        try:
+            expts = []
+            for item in self.experiments.all():
+                if len(str(item).strip())>0:
+                    expts.append(str(item).strip())
+            return ', '.join(expts) 
+        except:
+            return ''
     
 class RemoteJob(models.Model):
     reduction = models.ForeignKey(ReductionProcess)

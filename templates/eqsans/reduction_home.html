@@ -2,7 +2,7 @@
 
 
 {% block content %}
-List of experiments for which you have set up reductions.
+<h2>List of experiments for which you have set up reductions.</h2>
 <p>
 {% if experiments %}
 <p>
@@ -14,9 +14,9 @@ List of experiments for which you have set up reductions.
   </thead>
   <tbody>
   {% for e in experiments %}
-    <tr>
-        {% if e.name|length > 0 %} <td><a href="{% url 'eqsans_experiment' e.name %}" >{{ e.name }}</a></td>
-        <td><div class='subtitle_black'>{{ e.created_on }}</div></td>{% endif %}
+    <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
+        <td><a href="{% url 'eqsans_experiment' e.name %}" >{{ e.name }}</a></td>
+        <td><div class='subtitle_black'>{{ e.created_on }}</div></td>
     </tr>
   {% endfor %}
   </tbody>

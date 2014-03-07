@@ -14,14 +14,6 @@ import sys
 import logging
 logger = logging.getLogger('eqsans.view_util')
 
-def get_latest_job_set(request, reduction_config):
-    """
-        Returns the latest complete remote job set for this configuration
-        @param request: request object
-        @param reduction_config: ReductionConfiguration object
-    """
-    pass
-
 def get_latest_job(request, reduction_process):
     """
         Return the latest completed job for this reduction
