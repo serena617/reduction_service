@@ -8,6 +8,11 @@ Please use the form on this page.
 </div>
 {% endif %}
 
+{% if not config_data and not status_data %}
+<h2>You have no reduction jobs.</h2>
+Once you submit a reduction job, it will appear here.
+{% endif %}
+
 {% if config_data %}
 <h2>Instrument configuration jobs</h2>
 The following is a list of all your reduction configuration results:
