@@ -1,12 +1,6 @@
 {% extends "eqsans/eqsans_base.html" %}
 
 {% block content %}
-{% if not fermi_authenticated %}
-<div class="fermi_notification">
-You need to authenticate with the Fermi remote submission service.
-Please use the form on this page.
-</div>
-{% endif %}
 
 {% if not config_data and not status_data %}
 <h2>You have no reduction jobs.</h2>

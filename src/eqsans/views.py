@@ -326,13 +326,14 @@ def reduction_configuration_query(request, remote_set_id):
     job_set_info = []
     first_job = None
     for item in job_set.jobs.all():
-        first_job = item
         job_info = remote.view_util.query_job(request, item.remote_id)
-        job_info['reduction_name'] = item.reduction.name
-        job_info['reduction_id'] = item.reduction.id
-        job_info['job_id'] = item.remote_id
-        job_info['parameters'] = item.get_data_dict()
-        job_set_info.append(job_info)
+        if job_info is not None:
+            first_job = item
+            job_info['reduction_name'] = item.reduction.name
+            job_info['reduction_id'] = item.reduction.id
+            job_info['job_id'] = item.remote_id
+            job_info['parameters'] = item.get_data_dict()
+            job_set_info.append(job_info)
     template_values['job_set_info'] = job_set_info
     
     # Show list of files in the transaction
@@ -340,7 +341,7 @@ def reduction_configuration_query(request, remote_set_id):
 
     # I(q) plots
     plot_data = []
-    if first_job is not None:
+    if first_job is not None and template_values['job_files'] is not None:
         for f in template_values['job_files']:
             if f.endswith('_Iq.txt'):
                 plot_info = view_util.process_iq_output(request, first_job, 

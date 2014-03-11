@@ -22,6 +22,7 @@
 <p>
 <div class='tiled_area'>
   <div class='tile'>
+  {% if not job_set_info %}No job information could be retrieved{% endif %}
   {% for job_info in job_set_info %}
     <div class='sub-tile'>
       Job <a href="{% url 'eqsans_job_details' job_info.job_id %}" title="See detailed result for this job">{{ job_info.job_id }}</a> - Data: <b>{{ job_info.parameters.data_file }}</b> (<a href="{% url 'eqsans_reduction' job_info.reduction_id %}" title='Edit latest version of this reduction'>edit <span style="padding-bottom:3px" class="ui-button ui-icon ui-icon-pencil"></span></a>)
