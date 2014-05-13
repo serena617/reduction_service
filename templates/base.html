@@ -54,7 +54,7 @@
   {% if gravatar_url %}<img src="{{ gravatar_url|safe }}&s=16" height="16" width="16" alt="{{ user.username }}">{% endif %} {{ user.username }} |{% if help_url %} <a href="{{ help_url }}">help</a> |{% endif %}{% if user.is_authenticated %} <a href="{{ logout_url }}">logout</a>{% else %} <a href="{{ login_url }}">login</a>{% endif %}
 </div>
 
-<a class="banner_logo" href="http://neutrons.ornl.gov/" target="_blank"><img title="SNS" src="{% static 'sns_logo_111x75.png' %}" alt="SNS" /></a>
+<a class="banner_logo" href="http://neutrons.ornl.gov/" target="_blank"><img title="SNS" src="{% static 'ORNL_stacked_color.png' %}" width="150px" alt="SNS" /></a>
 <div class="banner_title">{% if title %}{{ title }}{% else %}SNS Analysis Service{% endif %}</div>
 
 <div class='user_alert'>
