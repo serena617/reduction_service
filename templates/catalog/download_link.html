@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block header %}
+<script type="text/javascript">
+var needs_refresh = 1;
+function refresh_check() { if (needs_refresh == 1)location.reload(true); }
+</script>
+{% endblock %}
+
+{% block bodytop %}
+<script id="source" language="javascript" type="text/javascript">
+    setInterval(refresh_check, 5000);
+</script>
+{% endblock %}
+
+{% block content %}
+{% if job_info.JobStatus == "COMPLETED" or job_not_found %}
+<script id="source" language="javascript" type="text/javascript"> needs_refresh = 0; </script>
+{% if file_name in job_files %}
+      <h2>Your file is ready for download: <a href="{% url 'remote_download_and_delete' trans_id file_name %}">{{ file_name }}</a></h2>
+      Please close your window after clicking the download link. The download link will work only once.
+      <p>
+{% elif job_not_found %}
+      <h2>File generation job not found.</h2>
+      Please try again from the catalog page. Please close your window after clicking the download link. The download link will work only once.
+      <p>
+{% else %}
+      <h2>We could not generate your file.</h2>
+      The file creation process has completed but your file was not generated.<br>
+      Please contact your instrument team or a member of NDAV.
+      <p>
+{% endif %}
+    
+{% else %}
+    <h2>Your file is being prepared for download.</h2>
+{% endif %}
+    
+    <div>File creation status:</div>
+    <div class='tool_area'>
+      <ul>
+        <li>Status: {{ job_info.JobStatus }}</li>
+        <li>Start time: {{ job_info.StartDate }}</li>
+        <li>End time: {{ job_info.CompletionDate }}</li>
+      </ul>
+    </div>
+{% endblock %}

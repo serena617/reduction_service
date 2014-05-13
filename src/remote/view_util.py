@@ -335,7 +335,8 @@ def fill_job_dictionary(request, remote_job_id, **template_values):
     # Query basic job info
     job_info = query_job(request, remote_job_id)
     if job_info is None:
-        template_values['user_alert'] = ["Could not connect to Fermi"]
+        template_values['user_alert'] = ["Could not find job on Fermi"]
+        template_values['job_not_found'] = True
         return template_values
     template_values['job_info'] = job_info
     

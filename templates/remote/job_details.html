@@ -31,7 +31,7 @@
     <div class='tool_area'>
       <ul>
       {% for file in job_files %}
-        <li><a href='/remote/download/{{ trans_id }}/{{ file }}'>{{ file }}</a></li>
+        <li><a href="{% url 'remote_download' trans_id file %}">{{ file }}</a></li>
       {% endfor %}
       </ul>
     </div>

@@ -5,7 +5,7 @@
     @copyright: 2014 Oak Ridge National Laboratory
 """
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, redirect
 from django.core.urlresolvers import reverse
 from django.views.decorators.cache import cache_page
 from django.conf import settings
@@ -13,6 +13,7 @@ from django.http import HttpResponse
 
 from icat_server_communication import get_ipts_runs, get_instruments, get_experiments, get_run_info
 import catalog.view_util
+import remote.view_util
 import reduction_service.view_util
 import json
 
@@ -93,3 +94,52 @@ def run_info(request, instrument, run_number):
     response = HttpResponse(json.dumps(info_dict), content_type="application/json")
     response['Connection'] = 'close'
     return response
+
+@login_required
+def download_autoreduced(request, instrument, ipts):
+    """
+        Download all the auto-reduced files for a given experiment.
+        @param request: request object
+        @param instrument: instrument name
+        @param ipts: experiment name
+    """
+    # Start a new transaction
+    transaction = remote.view_util.transaction(request, start=True)
+    if transaction is None:
+        breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
+        breadcrumbs += " &rsaquo; <a href='%s'>%s reduction</a>" % (reverse('catalog.views.experiment_list', args=[instrument]), instrument)
+        template_values = {'message':"Could not connect to Fermi and establish transaction",
+                           'back_url': reverse('catalog.views.experiment_list', args=[instrument]),
+                           'breadcrumbs': breadcrumbs,}
+        template_values = reduction_service.view_util.fill_template_values(request, **template_values)
+        return render_to_response('remote/failed_connection.html',
+                                  template_values)
+
+    file_name = "%s_%s.zip" % (instrument.upper(), ipts)
+    code =  'import os\n'
+    code += 'import zipfile\n'
+    code += 'output_zip_file = zipfile.ZipFile("%s", "w")\n' % file_name
+    code += 'for f in os.listdir("/SNS/%s/%s/shared/autoreduce"):\n' % (instrument.upper(), ipts.upper())
+    code += '    output_zip_file.write("/SNS/%s/%s/shared/autoreduce/"+f, f)\n' % (instrument.upper(), ipts.upper())
+    code += 'output_zip_file.close()\n'
+    jobID = remote.view_util.submit_job(request, transaction, code)
+
+    return redirect(reverse('catalog.views.download_link', args=[jobID, file_name]))
+
+@login_required
+def download_link(request, job_id, filename):
+    """
+        Waiting page to get a link to download a zip file containing
+        all the auto-reduced data for a given IPTS.
+        @param request: request object
+        @param job_id: remote job ID 
+    """
+    template_values = remote.view_util.fill_job_dictionary(request, job_id)
+    template_values = reduction_service.view_util.fill_template_values(request, **template_values)
+    template_values = catalog.view_util.fill_template_values(request, **template_values)
+    template_values['title'] = 'Download area'
+    template_values['file_name'] = filename
+    return render_to_response('catalog/download_link.html',
+                              template_values)
+    
+

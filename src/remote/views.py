@@ -64,19 +64,32 @@ def job_details(request, job_id):
                               template_values)
     
 @login_required
-def download_file(request, trans_id, filename):
+def download_file(request, trans_id, filename, delete=False):
     """
         Get a file from the compute node. The transaction name
         corresponds to the name it is given by the remote submission service.
         @param request: request object
         @param trans_id: remote name of the transaction
         @param filename: name of the file to download
+        @param delete: if True, the transaction will be deleted
     """
     file_content = remote.view_util.download_file(request, trans_id, filename)
+    if delete is True:
+        remote.view_util.stop_transaction(request, trans_id)
     response = HttpResponse(file_content)
     response['Content-Disposition'] = 'attachment; filename="%s"' % filename
     return response
  
+@login_required
+def download_file_and_delete(request, trans_id, filename):
+    """
+        Download a file and delete the transaction after the download.
+        @param request: request object
+        @param trans_id: remote name of the transaction
+        @param filename: name of the file to download
+    """
+    return download_file(request, trans_id, filename, delete=True)
+
 @login_required
 def stop_transaction(request, trans_id):
     """
