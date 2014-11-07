@@ -6,6 +6,8 @@
   <link rel="stylesheet" href="{% static 'css/plotting_print.css' %}" type="text/css" media="print" title="no title" charset="utf-8">
   <script type="text/javascript" src="{% static 'thirdparty/d3.v3/d3.v3.min.js' %}"></script>
   <script type="text/javascript" src="{% static 'js/plotting.js' %}"></script>
+  <!-- <script type="text/javascript" src="{% static 'js/jquery-1.11.1.js' %}"></script>
+  <script type="text/javascript" src="{% static 'js/jquery-ui.js' %}"></script> -->
   <script src="{% static 'thirdparty/spectrum.js' %}"></script><!--  http://bgrins.github.io/spectrum/  -->
   <link rel='stylesheet' href="{% static 'css/spectrum.css' %}" type="text/css" />
    
@@ -19,8 +21,10 @@
                      'height': $('#plot_height').val(),
                      'x_label': $('#x_label').val(),
                      'y_label': $('#y_label').val(),
-                     'log_scale': $('#scale_log').is(':checked')};
-      plot_1d(data, "plot_anchor", options); 
+                     'title': $('#title').val(),
+                     'log_scale': $('#scale_log').is(':checked'),
+		     'grid': $('#grid').is(':checked')};
+      plot_1d(data, "#plot_anchor", options); 
       if (send_to_server) {
    
       $.ajax({ url: "{% url 'updated_parameters_1d' plot1d.id %}",
@@ -58,11 +62,15 @@
             <input type="radio" id="scale_log" name="radio"><label for="scale_log">log</label>
             <input type="radio" id="scale_lin" name="radio" checked="checked"><label for="scale_lin">linear</label>
           </div></td>
+	  <td>grid:</td><td><input type="checkbox" id="grid"></td>
         </tr>
         <tr>
           <td>marker color:</td><td><input type='text' id="picker" /></td>
           <td>marker size:</td><td><input type='number' name='marker_size' id='marker_size' value='{{ plot1d.first_data_layout.size }}' min='1' max='12'></td>
         </tr>
+	<tr>
+          <td>title label:</td><td><input type='text' id='title' value='{{ plot1d.layout.title|safe }}'/></td>
+	</tr>
         <tr>
           <td>x-axis label:</td><td><input type='text' id='x_label' value='{{ plot1d.layout.x_label|safe }}'/></td>
           <td>y-axis label:</td><td><input type='text' id='y_label' value='{{ plot1d.layout.y_label|safe }}'/></td>
@@ -78,8 +86,12 @@
   <div class='upper_right_link' ><a href='{{ back_url }}'>go back to previous page</a></div>
   {% endif %}
   
-  <plot_anchor></plot_anchor>
+  <div id="plot_anchor">
+  </div>
   <script>
+    {% if plot1d.layout.is_grid %}
+    $('#grid').prop('checked', false);
+    {% endif %}
     $("#picker").spectrum({
       color: "{{ plot1d.first_data_layout.color|safe }}"
      });
