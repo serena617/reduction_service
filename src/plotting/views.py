@@ -40,10 +40,14 @@ def updated_parameters_1d(request, plot_id):
         plot_1d.layout.height = request.GET['height']
     if 'log_scale' in request.GET:
         plot_1d.layout.is_y_log = request.GET['log_scale']=='true'
+    if 'grid' in request.GET:
+	plot_1d.layout.is_grid = request.GET['grid']=='true'
     if 'x_label' in request.GET:
         plot_1d.layout.x_label = request.GET['x_label']
     if 'y_label' in request.GET:
         plot_1d.layout.y_label = request.GET['y_label']
+    if 'title' in request.GET:
+        plot_1d.layout.title = request.GET['title']
         
     data_layout = plot_1d.first_data_layout()
     if 'color' in request.GET:
@@ -91,9 +95,13 @@ def updated_parameters_2d(request, plot_id):
         plot_2d.layout.height = request.GET['height']
     if 'log_scale' in request.GET:
         plot_2d.layout.is_y_log = request.GET['log_scale']=='true'
+    if 'grid' in request.GET:
+	plot_1d.layout.is_grid = request.GET['grid']=='true'
     if 'x_label' in request.GET:
         plot_2d.layout.x_label = request.GET['x_label']
     if 'y_label' in request.GET:
         plot_2d.layout.y_label = request.GET['y_label']
+    if 'title' in request.GET:
+        plot_2d.layout.title = request.GET['title']
     plot_2d.layout.save()
     return HttpResponse()
