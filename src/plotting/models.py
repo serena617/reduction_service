@@ -11,11 +11,12 @@ class PlotLayout(models.Model):
         related to the data points.
     """
     owner = models.ForeignKey(User)
-    title = models.TextField(default='')
+    title = models.TextField(default='A Title')
     width = models.IntegerField(default=550)
     height = models.IntegerField(default=250)
     is_x_log = models.BooleanField(default=False)
     is_y_log = models.BooleanField(default=False)
+    is_grid = models.BooleanField(default=False)
     x_label = models.TextField(default='Q [1/&Aring;]')
     y_label = models.TextField(default='Intensity')
     
