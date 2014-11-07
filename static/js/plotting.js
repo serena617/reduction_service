@@ -5,27 +5,30 @@ function plot_1d(raw_data, anchor, options) {
     height = (typeof options.height === "undefined") ? 250 : options.height;
     width = (typeof options.width === "undefined") ? 500 : options.width;
     log_scale = (typeof options.log_scale === "undefined") ? false : options.log_scale;
+    grid = (typeof options.grid === "undefined") ? false : options.grid;
     x_label = (typeof options.x_label === "undefined") ? "Q [1/\u00C5]" : options.x_label;
     y_label = (typeof options.y_label === "undefined") ? "Intensity" : options.y_label;
+    title = (typeof options.title === "undefined") ? "what" : options.title;
 
     var data = [];
     for (var i=0; i<raw_data.length; i++) {
         if (raw_data[i][1]>0 && raw_data[i][2]<raw_data[i][1]) {  data.push(raw_data[i]); };
     }
 
-    var margin = {top: 20, right: 20, bottom: 40, left: 60},
+    var margin = {top: 40, right: 100, bottom: 60, left: 60},
     width = width - margin.left - margin.right,
     height = height - margin.top - margin.bottom;
 
     var x = d3.scale.linear().range([0, width]);
     var y = log_scale ? d3.scale.log().range([height, 0]) : d3.scale.linear().range([height, 0]);
     x.domain(d3.extent(data, function(d) { return d[0]; }));
-    y.domain(d3.extent(data, function(d) { return d[1]; }));
+    y.domain([d3.min(data, function(d) { return d[1]-d[2]; }),
+	      d3.max(data, function(d) { return d[1]+d[2]; })]);
 
-    var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5).tickFormat(d3.format("5.2g"));
-    var xAxisMinor = d3.svg.axis().scale(x).orient("bottom").ticks(5).tickSize(3,3).tickSubdivide(5).tickFormat('');
-    var yAxis = d3.svg.axis().scale(y).orient("left").ticks(5).tickFormat(d3.format("5.2g"));    
-    var yAxisMinor = d3.svg.axis().scale(y).orient("left").ticks(5).tickSize(3,3).tickSubdivide(5).tickFormat('');
+    var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(8).tickFormat(d3.format("5.2g"));
+    var xAxisMinor = d3.svg.axis().scale(x).orient("bottom").ticks(4).tickSize(3,3).tickSubdivide(4).tickFormat('');
+    var yAxis = d3.svg.axis().scale(y).orient("left").ticks(4).tickFormat(d3.format("5.2g"));    
+    var yAxisMinor = d3.svg.axis().scale(y).orient("left").ticks(4).tickSize(3,3).tickSubdivide(4).tickFormat('');
     
     // Remove old plot
     d3.select(anchor).select("svg").remove();
@@ -43,8 +46,8 @@ function plot_1d(raw_data, anchor, options) {
     
     // Create X axis label   
     svg.append("text")
-    .attr("x", width )
-    .attr("y",  height+margin.top+15)
+    .attr("x", width)
+    .attr("y",  height+40)
     .attr("font-size", "12px")
     .style("text-anchor", "end")
     .text(x_label);
@@ -52,34 +55,117 @@ function plot_1d(raw_data, anchor, options) {
     // Create Y axis label
     svg.append("text")
     .attr("transform", "rotate(-90)")
-    .attr("y", 0-margin.left)
-    .attr("x", 0-margin.top)
+    .attr("y", 10-margin.left)
+    .attr("x", 40-margin.top)
     .attr("dy", "1em")
     .style("text-anchor", "end")
     .text(y_label);
 
+    // Create title
+    svg.append("text")
+    .attr("x", width/2.0 )
+    .attr("y",  -10)
+    .attr("font-size", "16px")
+    .style("text-anchor", "middle")
+    .text(title);
+
+    // Make or remove grid
+    if (grid == true){
+	// If grid checkbox is checked, add grid
+	xGrid = svg.append("g")
+	.attr("class", "grid")
+	.attr("transform", "translate(0," + height + ")")
+	.call(xAxis
+	.tickSize(-height, 0, 0)
+	.tickFormat("")
+	)
+	yGrid = svg.append("g")
+	.attr("class", "grid")
+	.call(yAxis
+	.tickSize(-width, 0, 0)
+	.tickFormat("")
+	)
+    }
+    else if (grid == false && typeof xGrid !== 'undefined' && typeof yGrid !== 'undefined'){
+	// If grid checkbox is unchecked and a grid already exists, remove grid
+	svg.select("xGrid").remove();
+	svg.select("yGrid").remove();
+    }
+
     // Plot the points
     svg.selectAll('circle')
-      .data(data)
-      .enter()
-      .append('circle')
-      .attr("cx", function(d) { return x(d[0]); })
-      .attr("cy", function(d) { return y(d[1]); })
-      .attr("r", marker_size)
-      .style('fill', color);
+	.data(data)
+	.enter()
+	.append('circle')
+	.attr("cx", function(d) { return x(d[0]); })
+	.attr("cy", function(d) { return y(d[1]); })
+	.attr("r", marker_size)
+	.style('fill', color);
 
     // Error bars
-    svg.selectAll('line')
-      .data(data)
-      .enter()
-      .append('line')
-    .attr("x1", function(d) { return x(d[0]); })
-    .attr("y1", function(d) { return y(d[1]-d[2]); })
-    .attr("x2", function(d) { return x(d[0]); })
-    .attr("y2", function(d) { return y(d[1]+d[2]); })
-    .style('stroke', color)
-    .style('stroke-width', marker_size);
+    var err = svg.selectAll('svg')
+	.data(function(d) { return data; })
+	.enter();
+	    // Append vertical dotted line
+	    err.append("line").attr("x1", function(d) { return (x(d[0])); })
+		.attr("y1", function(d) { return (y(d[1]-d[2])); })
+		.attr("x2", function(d) { return (x(d[0])); })
+		.attr("y2", function(d) { return (y(d[1]+d[2])); })
+		.attr("stroke-width", marker_size/2)
+		.attr("stroke", color)
+		.attr("stroke-dasharray", "2,2")
+		.attr("opacity", 0.7);
+	    // Append horizontal top line
+	    err.append("line").attr("x1", function(d) { return (x(d[0])-parseFloat(marker_size)); })
+		.attr("y1", function(d) { return (y(d[1]+d[2])); })
+		.attr("x2", function(d) { return (x(d[0])+parseFloat(marker_size)); })
+		.attr("y2", function(d) { return (y(d[1]+d[2])); })
+		.attr("stroke-width", marker_size/2)
+		.attr("stroke", color);
+	    // Append horizontal bottom line
+	    err.append("line").attr("x1", function(d) { return (x(d[0])-parseFloat(marker_size)); })
+		.attr("y1", function(d) { return (y(d[1]-d[2])); })
+		.attr("x2", function(d) { return (x(d[0])+parseFloat(marker_size)); })
+		.attr("y2", function(d) { return (y(d[1]-d[2])); })
+		.attr("stroke-width", marker_size/2)
+		.attr("stroke", color);
+
+
+  // Get data values on hover event
+  var bisect = d3.bisector(function(d) {return d[0];}).left;
+  var focus = svg.append("g")
+	.attr("class", "focus")
+	.style("display", "none");
+  focus.append("circle")
+	.attr("r", 4.5);
+  focus.append("text")
+	.attr("x", 9)
+	.attr("dy", "-.15em");
+  svg.append("rect")
+	.attr("class", "overlay")
+	.attr("width", width)
+	.attr("height", height)
+	.on("mouseover", function() { focus.style("display", null); })
+	.on("mouseout", function() { focus.style("display", "none"); })
+	.on("mousemove", mousemove);
+  function mousemove(){
+	var x0 = x.invert(d3.mouse(this)[0]);
+	var i = bisect(data, x0, 1);
+	var d0 = data[i-1];
+	var d1 = data[i];
+	var d = x0 - d0[0] > d1[0] - x0 ? d1 : d0;
+	focus.attr("transform", "translate(" + x(d[0]) + "," + y(d[1]) + ")");
+	focus.select("text").text(d[0] + ", " + d[1] + "\xB1" + d[2]);
+  }
+
 }
+
+
+// $("#plot_anchor").ready(function(){
+// 	$("#plot_anchor").resizable();
+// 	$("#plot_anchor").attr("class", "default_1d ui-widget-content");
+// 	$("#plot_anchor").prepend("<h3 class='ui-widget-header'>Workspace</h3>");
+// });
 
 function get_color(i, n_max) {
     var n_divs = 4.0;
@@ -114,6 +200,7 @@ function plot_2d(data, qx, qy, max_iq, options) {
     log_scale = (typeof options.log_scale === "undefined") ? false : options.log_scale;
     x_label = (typeof options.x_label === "undefined") ? "Qx [1/\u00C5]" : options.x_label;
     y_label = (typeof options.y_label === "undefined") ? "Qy [1/\u00C5]" : options.y_label;
+    title = (typeof options.title === "undefined") ? "what" : options.title;
 
     var margin = {top: 20, right: 20, bottom: 60, left: 60},
     width = width - margin.left - margin.right,
@@ -173,6 +260,15 @@ function plot_2d(data, qx, qy, max_iq, options) {
     .attr("dy", "1em")
     .style("text-anchor", "end")
     .text(y_label);
+
+    // Create title
+    svg.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 0-margin.left)
+    .attr("x", 0-margin.top)
+    .attr("dy", "1em")
+    .style("text-anchor", "end")
+    .text(title);
 
     svg.selectAll('g')
     .data(data)
