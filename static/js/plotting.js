@@ -21,9 +21,9 @@ function plot_1d(raw_data, anchor, options) {
 
     var x = d3.scale.linear().range([0, width]);
     var y = log_scale ? d3.scale.log().range([height, 0]) : d3.scale.linear().range([height, 0]);
-    x.domain(d3.extent(data, function(d) { return d[0]; }));
+    x.domain(d3.extent(data, function(d) { return d[0]; })).nice();
     y.domain([d3.min(data, function(d) { return d[1]-d[2]; }),
-	      d3.max(data, function(d) { return d[1]+d[2]; })]);
+	      d3.max(data, function(d) { return d[1]+d[2]; })]).nice();
 
     var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(8).tickFormat(d3.format("5.2g"));
     var xAxisMinor = d3.svg.axis().scale(x).orient("bottom").ticks(4).tickSize(3,3).tickSubdivide(4).tickFormat('');
