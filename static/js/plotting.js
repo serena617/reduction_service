@@ -9,6 +9,7 @@ function plot_1d(raw_data, anchor, options) {
     x_label = (typeof options.x_label === "undefined") ? "Q [1/\u00C5]" : options.x_label;
     y_label = (typeof options.y_label === "undefined") ? "Intensity" : options.y_label;
     title = (typeof options.title === "undefined") ? "what" : options.title;
+    // interp = (typeof options.interp ==="undefined") ? "none" : options.interp;
 
     var data = [];
     for (var i=0; i<raw_data.length; i++) {
@@ -97,8 +98,8 @@ function plot_1d(raw_data, anchor, options) {
 	.data(data)
 	.enter()
 	.append('circle')
-	.attr("cx", function(d) { return x(d[0]); })
-	.attr("cy", function(d) { return y(d[1]); })
+	.attr("cx", function(d) { console.log(x(d[0])); return x(d[0]); })
+	.attr("cy", function(d) { console.log(y(d[1])); return y(d[1]); })
 	.attr("r", marker_size)
 	.style('fill', color);
 
@@ -129,6 +130,24 @@ function plot_1d(raw_data, anchor, options) {
 		.attr("y2", function(d) { return (y(d[1]-d[2])); })
 		.attr("stroke-width", marker_size/2)
 		.attr("stroke", color);
+
+    // Interpolate
+    // if (interp !== 'none'){
+// 	alert(interp);
+	svg.select("path").remove();
+	var interp_line = d3.svg.line()
+	    .interpolate("linear")
+	    .x(function(d) { console.log(d[0]); return x(d[0]); })
+	    .y(function(d) { console.log(d[1]); return y(d[1]); });
+	svg.append("path")
+	    .attr("d", interp_line(data))
+	    .attr("fill", "none")
+	    .attr("stroke", "black")
+	    .attr("stroke-width", 1);
+    // }
+    // else if (interp === 'none'){
+// 	svg.select("path").remove();
+//    }
 
 
   // Get data values on hover event
