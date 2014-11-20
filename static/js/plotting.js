@@ -98,8 +98,8 @@ function plot_1d(raw_data, anchor, options) {
 	.data(data)
 	.enter()
 	.append('circle')
-	.attr("cx", function(d) { console.log(x(d[0])); return x(d[0]); })
-	.attr("cy", function(d) { console.log(y(d[1])); return y(d[1]); })
+	.attr("cx", function(d) { return x(d[0]); })
+	.attr("cy", function(d) { return y(d[1]); })
 	.attr("r", marker_size)
 	.style('fill', color);
 
